@@ -1,0 +1,13 @@
+[package]
+name = "fast_blank"
+version = "0.1.0"
+authors = ["Yehuda Katz <wycats@gmail.com>"]
+
+[lib]
+name = "fast_blank"
+doctest = false
+crate-type = ["staticlib"]
+
+[dependencies]
+
+libc = "=0.2.1"
