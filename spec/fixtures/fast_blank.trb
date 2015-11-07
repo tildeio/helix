@@ -1,5 +1,7 @@
 class String
   def blank? -> bool
-    self.chars().all(|c| c.is_whitespace())
+    <<-RUST
+      self.chars().all(|c| c.is_whitespace())
+    RUST
   end
 end

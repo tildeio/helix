@@ -1,23 +1,135 @@
 require 'spec_helper'
 
-describe TurboRuby::Parser do
-  let(:contents) { File.read(File.expand_path('../fixtures/fast_blank.trb', __FILE__)) }
+module TurboRuby
+  describe Parser do
+    let(:fast_blank_trb) { File.read(File.expand_path('../fixtures/fast_blank.trb', __FILE__)) }
 
-  it "parses a simple file" do
-    ast = subject.parse(contents)
+    it 'parses fast_blank.trb' do
+      subject.parse(fast_blank_trb)
 
-    expect(ast.length).to eq(1)
+      expect(subject.ast).to eq(ast([
+        klass('String', [
+          method('blank?', [], 'bool', [
+            "      self.chars().all(|c| c.is_whitespace())\n"
+          ])
+        ])
+      ]))
+    end
 
-    klass = ast.first
+    it 'parses a blank files' do
+      subject.parse('')
+      subject.parse('                ')
+      subject.parse(" \n \n \t \r\n  ")
 
-    expect(klass.name).to eq("String")
-    expect(klass.methods.length).to eq(1)
+      expect(subject.ast).to eq(ast([]))
+    end
 
-    meth = klass.methods[0]
+    it "does not parse incomplete source" do
+      incomplete_sources = [
+        'class',
+        'class ',
+        'class MyClass',
+        'class MyClass ',
+        "class MyClass\n  def",
+        "class MyClass\n  def ",
+        "class MyClass\n  def zomg",
+        "class MyClass\n  def zomg ",
+        "class MyClass\n  def zomg\n  end",
+        "class MyClass\n  def zomg\n  end "
+      ]
 
-    expect(meth.name).to eq("blank?")
-    expect(meth.arguments.length).to eq(0)
-    expect(meth.return_type).to eq("bool")
-    expect(meth.body).to eq(["    self.chars().all(|c| c.is_whitespace())\n"])
+      incomplete_sources.each do |source|
+        expect { subject.parse(source) }.to raise_error(ParseError)
+      end
+
+      expect(subject.ast).to eq(ast([]))
+    end
+
+    it "parses bare methods" do
+      subject.parse <<-RUBY
+        class MyClass
+          def zomg
+          end
+
+          def zomg()
+          end
+
+          def     zomg(              )#{'     '}
+          end
+
+          def _zomg
+          end
+
+          def zomg?
+          end
+
+          def zomg!
+          end
+
+          def zomg=
+          end
+
+          def 💩
+          end
+
+          def +@
+          end
+
+          def <=>
+          end
+        end
+      RUBY
+
+      expect(subject.ast).to eq(ast([
+        klass('MyClass', [
+          method('zomg', [], nil, []),
+          method('zomg', [], nil, []),
+          method('zomg', [], nil, []),
+          method('_zomg', [], nil, []),
+          method('zomg?', [], nil, []),
+          method('zomg!', [], nil, []),
+          method('zomg=', [], nil, []),
+          method('💩', [], nil, []),
+          method('@+', [], nil, []),
+          method('<=>', [], nil, [])
+        ])
+      ]))
+    end
+
+    it "does not parse invalid methods" do
+      invalid_names = [
+        '',
+        '     ',
+        '!zomg',
+        '?zomg',
+        '=zomg',
+        '?',
+        '=',
+        '@+', # should be +@
+        '>=<'
+      ]
+
+      invalid_names.each do |name|
+        expect { subject.parse("class MyClass\n  def #{name}\n  end\nend") }.to raise_error(ParseError)
+      end
+
+      expect(subject.ast).to eq(ast([]))
+    end
+
+    def ast(*args)
+      Syntax::AST.new(*args)
+    end
+
+    def klass(*args)
+      Syntax::Class.new(*args)
+    end
+
+    def method(*args)
+      Syntax::Method.new(*args)
+    end
+
+    def argument(*args)
+      Syntax::Argument.new(*args)
+    end
   end
 end
