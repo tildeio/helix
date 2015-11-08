@@ -110,7 +110,7 @@ module TurboRuby
       def write(path, content = '', &block)
         raise Errno::EISDIR, 'Is a directory' if directory?(path)
 
-        parts = path.split('/')
+        parts = path.split('/').map(&:to_sym)
         filename = parts.pop
         dir = nil
 
@@ -130,7 +130,7 @@ module TurboRuby
       end
 
       def mkdir_p(path)
-        dirs = path.split('/')
+        dirs = path.split('/').map(&:to_sym)
         dirs.inject(@tree) { |cwd, child| cwd[child] ||= {} }
       end
 
@@ -167,7 +167,7 @@ module TurboRuby
 
       private
       def get(path)
-        parts = path.split('/')
+        parts = path.split('/').map(&:to_sym)
         target = parts.pop
         cwd = @tree
 

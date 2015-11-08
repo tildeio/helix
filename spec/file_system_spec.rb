@@ -135,18 +135,18 @@ module TurboRuby::FileSystem
 
         expect(tree).to_not eq({})
         expect(tree).to eq({
-          'a' => {
-            'b' => {
-              'c' => {
-                'd' => {
-                  'e' => {}
+          a: {
+            b: {
+              c: {
+                d: {
+                  e: {}
                 },
-                'wow' => 'such file'
+                wow: 'such file'
               }
             },
-            'zomg' => 'lol'
+            zomg: 'lol'
           },
-          'boom' => ''
+          boom: ''
         })
       end
 
@@ -291,21 +291,21 @@ module TurboRuby::FileSystem
 
     it 'is equal to another `InMemoryTree` with the same content' do
       tree1 = InMemoryTree.new({
-        "omg" => "lol",
-        "very" => {
-          "deeply" => {
-            "nested" => "wow"
+        omg: "lol",
+        very: {
+          deeply: {
+            nested: "wow"
           }
         }
       })
 
       tree2 = InMemoryTree.new({
-        "very" => {
-          "deeply" => {
-            "nested" => "wow"
+        very: {
+          deeply: {
+            nested: "wow"
           }
         },
-        "omg" => "lol"
+        omg: "lol"
       })
 
       expect(tree1).to eq(tree2)
@@ -317,19 +317,19 @@ module TurboRuby::FileSystem
 
     it 'is equal to its hash representation' do
       tree = InMemoryTree.new({
-        "omg" => "lol",
-        "very" => {
-          "deeply" => {
-            "nested" => "wow"
+        omg: "lol",
+        very: {
+          deeply: {
+            nested: "wow"
           }
         }
       })
 
       expect(tree).to eq({
-        "omg" => "lol",
-        "very" => {
-          "deeply" => {
-            "nested" => "wow"
+        omg: "lol",
+        very: {
+          deeply: {
+            nested: "wow"
           }
         }
       })
