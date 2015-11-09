@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'fileutils'
+require 'tmpdir'
 
 module TurboRuby::FileSystem
   describe Tree do
@@ -30,7 +31,7 @@ module TurboRuby::FileSystem
     it 'can read files' do
       expect(turboruby.read('turboruby.gemspec')).to include('TurboRuby::VERSION')
       expect(turboruby.read('lib/turbo_ruby/file_system.rb')).to eq(lib.read('turbo_ruby/file_system.rb'))
-      expect(turboruby.read('spec/fixtures/fast_blank.trb')).to eq(spec.read('fixtures/fast_blank.trb'))
+      expect(turboruby.read('spec/fixtures/fast_blank/src/fast_blank.trb')).to eq(spec.read('fixtures/fast_blank/src/fast_blank.trb'))
     end
 
     it 'raises when reading non-existent files' do
@@ -74,6 +75,29 @@ module TurboRuby::FileSystem
         tree = Tree.new(dir)
 
         expect { tree.write('lol', 'wow') }.to raise_error(Errno::EISDIR, /Is a directory/)
+      end
+    end
+
+    it 'can remove files' do
+      Dir.mktmpdir do |dir|
+        FileUtils.mkdir_p(File.expand_path('a/b/c/d/e', dir))
+        FileUtils.touch(File.expand_path('a/b/c/d/e/f', dir))
+
+        tree = Tree.new(dir)
+
+        tree.remove('a/b/c/d/e/f')
+        expect(File.exist?(File.expand_path('a/b/c/d/e/f', dir))).to be_falsy
+        expect(File.directory?(File.expand_path('a/b/c/d/e', dir))).to be_truthy
+
+        tree.remove('a/b/c')
+        expect(File.exist?(File.expand_path('a/b/c', dir))).to be_falsy
+        expect(File.directory?(File.expand_path('a/b', dir))).to be_truthy
+      end
+    end
+
+    it 'silently fails when removeing non-existent files' do
+      Dir.mktmpdir do |dir|
+        expect { Tree.new(dir).remove('a/b/c/d/e/f') }.to_not raise_error
       end
     end
 
@@ -182,7 +206,7 @@ module TurboRuby::FileSystem
     it 'can read files' do
       expect(turboruby.read('turboruby.gemspec')).to include('TurboRuby::VERSION')
       expect(turboruby.read('lib/turbo_ruby/file_system.rb')).to eq(lib.read('turbo_ruby/file_system.rb'))
-      expect(turboruby.read('spec/fixtures/fast_blank.trb')).to eq(spec.read('fixtures/fast_blank.trb'))
+      expect(turboruby.read('spec/fixtures/fast_blank/src/fast_blank.trb')).to eq(spec.read('fixtures/fast_blank/src/fast_blank.trb'))
     end
 
     it 'raises when reading non-existent files' do
@@ -233,6 +257,29 @@ module TurboRuby::FileSystem
       end
     end
 
+    it 'can remove files' do
+      Dir.mktmpdir do |dir|
+        FileUtils.mkdir_p(File.expand_path('a/b/c/d/e', dir))
+        FileUtils.touch(File.expand_path('a/b/c/d/e/f', dir))
+
+        tree = InMemoryTree.from_root(dir)
+
+        tree.remove('a/b/c/d/e/f')
+        expect(tree.file?('a/b/c/d/e/f')).to be_falsy
+        expect(tree.directory?('a/b/c/d/e')).to be_truthy
+
+        tree.remove('a/b/c')
+        expect(tree.directory?('a/b/c')).to be_falsy
+        expect(tree.directory?('a/b')).to be_truthy
+      end
+    end
+
+    it 'silently fails when removeing non-existent files' do
+      Dir.mktmpdir do |dir|
+        expect { InMemoryTree.from_root(dir).remove('a/b/c/d/e/f') }.to_not raise_error
+      end
+    end
+
     it 'can mkdir_p' do
       Dir.mktmpdir do |dir|
         FileUtils.mkdir_p(File.expand_path('a/b/c/d/e', dir))
@@ -254,7 +301,7 @@ module TurboRuby::FileSystem
 
     it 'can glob' do
       expect(turboruby.glob('*')).to include('lib', 'Gemfile', 'turboruby.gemspec')
-      expect(turboruby.glob('*')).not_to include('fixtures', 'turboruby.rb', 'lib/turboruby.rb')
+      expect(turboruby.glob('*')).not_to include('fixtures', 'rturboruby.rb', 'lib/turboruby.rb')
 
       expect(turboruby.glob('*.gemspec')).to eq(['turboruby.gemspec'])
       expect(turboruby.glob('lib/*.rb')).to eq(['lib/turboruby.rb'])

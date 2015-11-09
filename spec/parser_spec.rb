@@ -2,7 +2,7 @@ require 'spec_helper'
 
 module TurboRuby
   describe Parser do
-    let(:fast_blank_trb) { File.read(File.expand_path('../fixtures/fast_blank.trb', __FILE__)) }
+    let(:fast_blank_trb) { File.read(File.expand_path('../fixtures/fast_blank/src/fast_blank.trb', __FILE__)) }
 
     it 'parses fast_blank.trb' do
       subject.parse(fast_blank_trb)

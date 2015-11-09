@@ -35,6 +35,10 @@ module TurboRuby
         end
       end
 
+      def remove(path)
+        FileUtils.rm_rf(expand_path(path))
+      end
+
       def mkdir_p(path)
         FileUtils.mkdir_p(expand_path(path))
       end
@@ -129,6 +133,10 @@ module TurboRuby
         end
       end
 
+      def remove(path)
+        get(dirname(path)).delete(basename(path).to_sym) rescue nil
+      end
+
       def mkdir_p(path)
         dirs = path.split('/').map(&:to_sym)
         dirs.inject(@tree) { |cwd, child| cwd[child] ||= {} }
@@ -166,7 +174,19 @@ module TurboRuby
       end
 
       private
+      def basename(path)
+        path.split('/').last
+      end
+
+      def dirname(path)
+        parts = path.split('/')
+        parts.pop
+        parts.join('/')
+      end
+
       def get(path)
+        return @tree if path.empty?
+
         parts = path.split('/').map(&:to_sym)
         target = parts.pop
         cwd = @tree
