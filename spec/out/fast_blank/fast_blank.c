@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <ruby.h>
 #include <ruby/encoding.h>
 
@@ -14,11 +15,16 @@ STR2BUF(VALUE str) {
   };
 }
 
-int trb_string_is_blank(trb_buf_t self);
+#define CHECK_FFI(expr) expr
+
+bool trb_string_is_blank(trb_buf_t self, bool*);
 
 static VALUE
 str_is_blank(VALUE self) {
-  return trb_string_is_blank(STR2BUF(self)) ? Qtrue : Qfalse;
+  bool ret;
+  CHECK_FFI(trb_string_is_blank(STR2BUF(self), &ret));
+
+  return ret ? Qtrue : Qfalse;
 }
 
 void Init_fast_blank( void ) {

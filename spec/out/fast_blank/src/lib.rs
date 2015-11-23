@@ -14,8 +14,11 @@ impl<'a> RubyString for &'a str {
     }
 }
 
+pub type ErrorDesc = Box<Buf<'static>>;
+
 #[no_mangle]
-pub extern "C" fn trb_string_is_blank(buf: &Buf) -> bool {
+pub extern "C" fn trb_string_is_blank(buf: Buf, ret: *mut bool) -> Option<ErrorDesc> {
     println!("{:?}", buf.len());
-    buf.as_slice().trb_is_blank()
+    unsafe { *ret = buf.as_slice().trb_is_blank() };
+    None
 }
