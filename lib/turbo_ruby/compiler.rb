@@ -3,6 +3,7 @@ require 'tmpdir'
 require 'active_support/core_ext/string/strip'
 require 'active_support/core_ext/string/inflections'
 require 'active_support/core_ext/string/indent'
+require 'turbo_ruby/compiler/project'
 
 module TurboRuby
   class Compiler
@@ -19,6 +20,7 @@ module TurboRuby
       parse_gemspec
       parse_trb_files
 
+      build_project
       write_gemspec
       write_cargo_toml
       write_extconf
@@ -64,14 +66,18 @@ module TurboRuby
       @ast = parser.ast
     end
 
+    def build_project
+      @project = Project.new(@gemspec, @ast)
+    end
+
     def write_gemspec
-      @out.write("#{@gemspec.name}.gemspec", @in.read(@in.glob('*.gemspec').first))
+      @out.write("#{@project.name}.gemspec", @in.read(@in.glob('*.gemspec').first))
     end
 
     def write_cargo_toml
-      name = @gemspec.name
-      version = @gemspec.version.to_s
-      authors = JSON.generate(@gemspec.authors.zip(@gemspec.email).map { |(author, email)| "#{author} <#{email}>" })
+      name = @project.name
+      version = @project.version.to_s
+      authors = JSON.generate(@project.emails.map { |(author, email)| "#{author} <#{email}>" })
 
       cargo_toml = <<-TOML.strip_heredoc
         [package]
@@ -103,7 +109,7 @@ module TurboRuby
     end
 
     def write_extconf
-      name = @gemspec.name
+      name = @project.name
 
       @out.write "extconf.rb", <<-EXTCONF.strip_heredoc
         require "mkmf"
@@ -121,7 +127,7 @@ module TurboRuby
     end
 
     def write_glue_file
-      name = @gemspec.name
+      name = @project.name
 
       glue_file = <<-GLUE_FILE.strip_heredoc
         #include <ruby.h>
@@ -271,3 +277,5 @@ module TurboRuby
     end
   end
 end
+
+
