@@ -1,0 +1,4 @@
+[package]
+name = "ffi_buf"
+version = "1.0.0"
+authors = ["Godhuda <engineering+godhuda@tilde.io>"]

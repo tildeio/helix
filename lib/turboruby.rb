@@ -1,3 +1,4 @@
+require "active_support"
 require "turbo_ruby/version"
 
 module TurboRuby

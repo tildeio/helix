@@ -1,0 +1,7 @@
+class String
+  def print_buf
+    <<-RUST
+      println!("{}", self);
+    RUST
+  end
+end

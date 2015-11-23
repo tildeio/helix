@@ -14,11 +14,11 @@ STR2BUF(VALUE str) {
   };
 }
 
-int trb_string_is_blank(trb_buf_t buf);
+int trb_string_is_blank(trb_buf_t self);
 
 static VALUE
-str_is_blank(VALUE str) {
-  return trb_string_is_blank(STR2BUF(str)) ? Qtrue : Qfalse;
+str_is_blank(VALUE self) {
+  return trb_string_is_blank(STR2BUF(self)) ? Qtrue : Qfalse;
 }
 
 void Init_fast_blank( void ) {

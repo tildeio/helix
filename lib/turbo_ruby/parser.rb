@@ -38,12 +38,18 @@ module TurboRuby
     class AST
       attr_reader :nodes
 
+      include Enumerable
+
       def initialize(nodes = [])
         @nodes = nodes
       end
 
       def to_a
         @nodes
+      end
+
+      def each(&block)
+        @nodes.each(&block)
       end
 
       def ==(other)

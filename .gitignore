@@ -1,2 +1,6 @@
 target
 Cargo.lock
+*.o
+*.so
+*.bundle
+Makefile
