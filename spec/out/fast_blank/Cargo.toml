@@ -14,4 +14,4 @@ libc = "=0.2.1"
 
 [dependencies.ffi_buf]
 version = "1.0.0"
-path = "/Users/pairing/Code/turboruby/crates/ffi_buf"
+path = "../../../crates/ffi_buf"
