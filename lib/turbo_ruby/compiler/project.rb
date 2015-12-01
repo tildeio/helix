@@ -7,7 +7,7 @@ module TurboRuby
     class Project
       def initialize(gemspec, ast)
         @gemspec = gemspec
-        @classes = ast.map { |a| Class.new(self, a) }
+        @classes = ast.map { |node| Class.new(node, project_prefix: self.name) }
       end
 
       def name
@@ -28,10 +28,40 @@ module TurboRuby
     end
 
     class Class
-      def initialize(project, ast)
-        @type = Type.from_ruby(ast.name)
-        @project = project
-        @methods = ast.methods.map { |m| Method.new(m, klass_name: ast.name, project_prefix: project.name) }
+      def initialize(node, project_prefix: "trb")
+        @type = Type.from_ruby(node.name)
+        @project_prefix = project_prefix
+        @methods = node.methods.map { |m| Method.new(m, klass_name: node.name, project_prefix: project_prefix) }
+      end
+
+      def c_const_lookup
+        <<-C.strip_heredoc.chomp
+          ID #{qualified_name}_ID = rb_intern("#{@type.ruby_name}");
+          VALUE #{qualified_name};
+
+          if (rb_const_defined(rb_cObject, #{qualified_name}_ID)) {
+            #{qualified_name} = rb_const_get(rb_cObject, #{qualified_name}_ID);
+          } else {
+            rb_raise(rb_eNotImpError, "Defining a new class is not currently supported");
+          }
+        C
+      end
+
+      def rust_trait_definition
+        out =  "trait Ruby#{@type.ruby_name} {" << "\n"
+        out << @methods.map(&:rust_trait_def).join("\n").indent(4) << "\n"
+        out << "}"
+      end
+
+      def rust_trait_impl
+        out =  "impl Ruby#{@type.ruby_name} for #{@type.rust_native_type} {" << "\n"
+        out << @methods.map(&:rust_trait_impl).join("\n\n").indent(4) << "\n"
+        out << "}"
+      end
+
+      private
+      def qualified_name
+        "#{@project_prefix}_#{@type.ruby_name}"
       end
     end
 
@@ -77,12 +107,9 @@ module TurboRuby
       end
 
       def rust_trait_impl
-        body = @body.join.strip_heredoc.indent(4).chomp
-        <<-RUST.strip_heredoc.chomp
-          #{rust_trait_header} {
-          #{body}
-          }
-        RUST
+        out =  "#{rust_trait_header} {" << "\n"
+        out << @body.join.strip_heredoc.indent(4).chomp << "\n"
+        out << "}"
       end
 
       def rust_trait_def
@@ -103,7 +130,7 @@ module TurboRuby
       end
 
       def rust_trait_header
-        "fn #{@project_prefix}_#{portable_name}(&self) -> #{@return_type.native_rust}"
+        "fn #{@project_prefix}_#{portable_name}(&self) -> #{@return_type.rust_native_type}"
       end
     end
 
@@ -174,8 +201,12 @@ module TurboRuby
         "Buf"
       end
 
+      def rust_native_type
+        "str"
+      end
+
       class Boolean < Type
-        def native_rust
+        def rust_native_type
           "bool"
         end
       end

@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <ruby.h>
 #include <ruby/encoding.h>
+#include <ruby/intern.h>
 
 typedef struct {
     void* data;
@@ -28,5 +29,14 @@ str_is_blank(VALUE self) {
 }
 
 void Init_fast_blank( void ) {
-  rb_define_method(rb_cString, "blank?", str_is_blank, 0);
+  ID String_ID = rb_intern("String");
+  VALUE cString;
+
+  if (rb_const_defined(rb_cObject, String_ID)) {
+    cString = rb_const_get(rb_cObject, String_ID);
+  } else {
+    rb_raise(rb_eNotImpError, "Unimplemented new Rust class");
+  }
+
+  rb_define_method(cString, "blank?", str_is_blank, 0);
 }
