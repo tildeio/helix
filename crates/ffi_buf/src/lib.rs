@@ -23,7 +23,7 @@ impl<'a> Buf<'a> {
         }
     }
 
-    pub fn as_slice(self) -> &'a str {
+    pub fn as_slice(&self) -> &'a str {
         unsafe {
             let s = slice::from_raw_parts(self.ptr as *const u8, self.len);
             str::from_utf8_unchecked(s)
