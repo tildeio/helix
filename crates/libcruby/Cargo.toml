@@ -1,0 +1,7 @@
+[package]
+name = "libcruby"
+version = "1.0.0"
+authors = ["Godhuda <engineering+godhuda@tilde.io>"]
+
+[dependencies]
+libc = "=0.2.1"

@@ -1,0 +1,20 @@
+[package]
+name = "zomg"
+version = "0.1.0"
+authors = ["Godfrey Chan <godfreykfc@gmail.com>"]
+
+[lib]
+name = "zomg"
+doctest = false
+crate-type = ["staticlib"]
+
+[dependencies]
+libc = "=0.2.1"
+
+[dependencies.ffi_buf]
+version = "1.0.0"
+path = "../../../crates/ffi_buf"
+
+[dependencies.libcruby]
+version = "1.0.0"
+path = "../../../crates/libcruby"
