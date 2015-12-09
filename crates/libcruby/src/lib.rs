@@ -1,5 +1,6 @@
 extern crate libc;
 
-pub mod helpers;
 pub mod ruby;
+pub mod helpers;
 pub mod types;
+pub mod consts;
