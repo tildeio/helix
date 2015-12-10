@@ -23,6 +23,7 @@ extern {
     pub static rb_cObject: VALUE;
     pub static rb_cModule: VALUE;
     pub static rb_cClass: VALUE;
+    pub static rb_cString: VALUE;
     pub static rb_mKernel: VALUE;
 
     #[link_name = "rb_rstring_len"]
@@ -31,11 +32,11 @@ extern {
     #[link_name = "rb_rstring_ptr"]
     pub fn RSTRING_PTR(str: VALUE) -> c_string;
 
-
     pub fn rb_define_method(module: VALUE, name: c_string, func: extern "C" fn(receiver: VALUE, ...) -> VALUE, argc: c_int);
     pub fn rb_define_method_id(module: VALUE, name: ID, func: extern "C" fn(receiver: VALUE, ...) -> VALUE, argc: c_int);
     pub fn rb_funcallv(receiver: VALUE, name: ID, argc: c_int, args: *const VALUE) -> VALUE;
     pub fn rb_id2str(id: ID) -> VALUE;
     pub fn rb_inspect(value: VALUE) -> VALUE;
     pub fn rb_intern(string: c_string) -> ID;
+    pub fn rb_utf8_str_new_static(string: c_string, len: c_long) -> VALUE;
 }

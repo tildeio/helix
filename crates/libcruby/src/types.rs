@@ -59,7 +59,6 @@ macro_rules! RUBY_UTILS {
     }
 }
 
-
 macro_rules! RUBY_TYPE {
     ( $x:ident ) => {
         #[repr(C)]
@@ -95,7 +94,7 @@ extern {
 }
 
 pub trait Namespace : Send {
-    fn define_method<T: Value>(&self, name: &str, func: extern "C" fn(receiver: Self) -> T) {
+    fn define_method<T: Value, U: Value>(&self, name: &str, func: extern "C" fn(receiver: T) -> U) {
         unsafe { rb_define_method_id_2(self.as_ptr(), intern(name), func as *const c_void, 0); }
     }
 }
@@ -120,6 +119,7 @@ macro_rules! RUBY_SINGLETON_TYPE {
     }
 }
 
-RUBY_SINGLETON_TYPE!(FalseClass);
-RUBY_SINGLETON_TYPE!(TrueClass);
+// RUBY_SINGLETON_TYPE!(FalseClass);
+// RUBY_SINGLETON_TYPE!(TrueClass);
+RUBY_SINGLETON_TYPE!(Boolean);
 RUBY_SINGLETON_TYPE!(NilClass);

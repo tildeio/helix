@@ -3,20 +3,24 @@ extern crate libcruby;
 use libcruby::consts::*;
 use libcruby::types::*;
 
-extern "C" fn zomg(receiver: Class) -> NilClass {
-    let name = receiver.send::<String>("name");
-    println!("zomg, I'm a {}", &name[..]);
-    Qnil
+extern "C" fn string_is_blank(receiver: String) -> Boolean {
+    if receiver[..].chars().all(|c| c.is_whitespace()) {
+        Qtrue
+    } else {
+        Qfalse
+    }
+}
+
+extern "C" fn string_is_present(receiver: String) -> Boolean {
+    if receiver[..].chars().all(|c| c.is_whitespace()) {
+        Qfalse
+    } else {
+        Qtrue
+    }
 }
 
 #[no_mangle]
 pub extern "C" fn init() {
-    Class.define_method::<NilClass>("zomg", zomg);
-    Object.send::<NilClass>("zomg");
-
-    let class_name = Object.send::<String>("name");
-
-    println!("Object.name: {:?}", class_name);
-
-    class_name.send::<NilClass>("zomg"); // undefined method `zomg' for "Object":String (NoMethodError)
+    String.define_method::<String, Boolean>("blank?", string_is_blank);
+    String.define_method::<String, Boolean>("present?", string_is_present);
 }

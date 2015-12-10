@@ -4,10 +4,10 @@ use types::*;
 
 extern {
     #[link_name = "rb_Qfalse"]
-    pub static Qfalse: FalseClass<'static>;
+    pub static Qfalse: Boolean<'static>;
 
     #[link_name = "rb_Qtrue"]
-    pub static Qtrue: TrueClass<'static>;
+    pub static Qtrue: Boolean<'static>;
 
     #[link_name = "rb_Qnil"]
     pub static Qnil: NilClass<'static>;
@@ -23,6 +23,9 @@ extern {
 
     #[link_name = "rb_cClass"]
     pub static Class: Class<'static>;
+
+    #[link_name = "rb_cString"]
+    pub static String: Class<'static>;
 
     #[link_name = "rb_mKernel"]
     pub static Kernel: Module<'static>;
