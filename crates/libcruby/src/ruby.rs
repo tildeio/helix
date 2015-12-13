@@ -32,8 +32,15 @@ extern {
     #[link_name = "rb_rstring_ptr"]
     pub fn RSTRING_PTR(str: VALUE) -> c_string;
 
+    pub fn rb_const_get(receiver: VALUE, name: ID) -> VALUE;
+    pub fn rb_const_get_at(receiver: VALUE, name: ID) -> VALUE;
+    pub fn rb_const_get_from(receiver: VALUE, name: ID) -> VALUE;
+    pub fn rb_define_class_under(outer: VALUE, name: c_string, super_class: VALUE) -> VALUE;
+    pub fn rb_define_class_id_under(outer: VALUE, name: ID, super_class: VALUE) -> VALUE;
     pub fn rb_define_method(module: VALUE, name: c_string, func: extern "C" fn(receiver: VALUE, ...) -> VALUE, argc: c_int);
     pub fn rb_define_method_id(module: VALUE, name: ID, func: extern "C" fn(receiver: VALUE, ...) -> VALUE, argc: c_int);
+    pub fn rb_define_module_under(outer: VALUE, name: c_string) -> VALUE;
+    pub fn rb_define_module_id_under(outer: VALUE, name: ID) -> VALUE;
     pub fn rb_funcallv(receiver: VALUE, name: ID, argc: c_int, args: *const VALUE) -> VALUE;
     pub fn rb_id2str(id: ID) -> VALUE;
     pub fn rb_inspect(value: VALUE) -> VALUE;

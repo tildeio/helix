@@ -1,9 +1,80 @@
-use std::marker::{PhantomData, Sync};
-use std::ops::{Index, RangeFull};
-use std::{fmt, ptr, slice, str};
+use std::ptr;
+use std::ops::{Index,RangeFull};
 use libc::*;
 use ruby::*;
-use helpers::{intern};
+use helpers::*;
+
+#[macro_use]
+mod macros {
+    #[macro_export]
+    macro_rules! RUBY_VALUE {
+      ( $x:ident ) => {
+            impl<'a> ::libcruby::types::Value for $x<'a> {
+                fn from_ptr(value: ::libcruby::ruby::VALUE) -> Self {
+                    unsafe { ::libcruby::helpers::cast_value::<Self>(value) }
+                }
+
+                fn as_ptr(&self) -> ::libcruby::ruby::VALUE {
+                    self.VALUE
+                }
+            }
+        }
+    }
+
+    #[macro_export]
+    macro_rules! RUBY_UTILS {
+        ( $x:ident ) => {
+            impl<'a> Send for $x<'a> {}
+
+            impl<'a> ::std::fmt::Display for $x<'a> {
+                fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                    write!(f, "{}", ::libcruby::helpers::rstring_to_str(self.send::<::libcruby::ruby::VALUE>("to_s")))
+                }
+            }
+
+            impl<'a> ::std::fmt::Debug for $x<'a> {
+                fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                    let inspect = unsafe { ::libcruby::ruby::rb_inspect(self.as_ptr()) };
+                    write!(f, "{}", ::libcruby::helpers::rstring_to_str(inspect))
+                }
+            }
+        }
+    }
+
+    #[macro_export]
+    macro_rules! RUBY_TYPE {
+        ( $x:ident ) => {
+            #[repr(C)]
+            #[allow(non_snake_case)]
+            pub struct $x<'a> {
+                VALUE: ::libcruby::ruby::VALUE,
+                marker: ::std::marker::PhantomData<&'a ()>
+            }
+
+            RUBY_VALUE!($x);
+            RUBY_UTILS!($x);
+        }
+
+    }
+
+    #[macro_export]
+    macro_rules! RUBY_SINGLETON_TYPE {
+        ( $x:ident ) => {
+            #[repr(C)]
+            #[allow(non_snake_case)]
+            #[derive(Copy, Clone)]
+            pub struct $x<'a> {
+                VALUE: ::libcruby::ruby::VALUE,
+                marker: ::std::marker::PhantomData<&'a ()>
+            }
+
+            unsafe impl<'a> Sync for $x<'a> {}
+
+            RUBY_VALUE!($x);
+            RUBY_UTILS!($x);
+        }
+    }
+}
 
 pub trait Value {
     fn from_ptr(value: VALUE) -> Self;
@@ -12,66 +83,8 @@ pub trait Value {
 
 pub trait Send : Value {
     fn send<T>(&self, method: &str) -> T {
-        unsafe { ptr::read(&rb_funcallv(self.as_ptr(), intern(method), 0, ptr::null()) as *const _ as *const T) }
+        unsafe { cast_value::<T>(rb_funcallv(self.as_ptr(), intern(method), 0, ptr::null())) }
     }
-}
-
-fn rstring_to_str(rstring: VALUE) -> &'static str {
-    unsafe {
-      let ptr = RSTRING_PTR(rstring) as *const u8;
-      let len = RSTRING_LEN(rstring) as usize;
-      let slice = slice::from_raw_parts(ptr, len);
-
-      str::from_utf8_unchecked(slice)
-    }
-}
-
-macro_rules! RUBY_VALUE {
-    ( $x:ident ) => {
-        impl<'a> Value for $x<'a> {
-            fn from_ptr(value: VALUE) -> Self {
-                unsafe { ptr::read(&value as *const _ as *const Self) }
-            }
-
-            fn as_ptr(&self) -> VALUE {
-                self.VALUE
-            }
-        }
-    }
-}
-
-macro_rules! RUBY_UTILS {
-    ( $x:ident ) => {
-        impl<'a> Send for $x<'a> {}
-
-        impl<'a> fmt::Display for $x<'a> {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                write!(f, "{}", rstring_to_str(self.send::<VALUE>("to_s")))
-            }
-        }
-
-        impl<'a> fmt::Debug for $x<'a> {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                let inspect = unsafe { rb_inspect(self.as_ptr()) };
-                write!(f, "{}", rstring_to_str(inspect))
-            }
-        }
-    }
-}
-
-macro_rules! RUBY_TYPE {
-    ( $x:ident ) => {
-        #[repr(C)]
-        #[allow(non_snake_case)]
-        pub struct $x<'a> {
-            VALUE: VALUE,
-            marker: PhantomData<&'a ()>
-        }
-
-        RUBY_VALUE!($x);
-        RUBY_UTILS!($x);
-    }
-
 }
 
 RUBY_TYPE!(Object);
@@ -94,6 +107,14 @@ extern {
 }
 
 pub trait Namespace : Send {
+    fn const_get<T: Value>(&self, name: &str) -> T {
+        unsafe { cast_value::<T>(rb_const_get_from(self.as_ptr(), intern(name))) }
+    }
+
+    fn define_class(&self, name: &str, super_class: &Class) -> Class {
+        unsafe { cast_value::<Class>(rb_define_class_id_under(self.as_ptr(), intern(name), super_class.as_ptr())) }
+    }
+
     fn define_method<T: Value, U: Value>(&self, name: &str, func: extern "C" fn(receiver: T) -> U) {
         unsafe { rb_define_method_id_2(self.as_ptr(), intern(name), func as *const c_void, 0); }
     }
@@ -101,23 +122,6 @@ pub trait Namespace : Send {
 
 impl<'a> Namespace for Module<'a> {}
 impl<'a> Namespace for Class<'a> {}
-
-macro_rules! RUBY_SINGLETON_TYPE {
-    ( $x:ident ) => {
-        #[repr(C)]
-        #[allow(non_snake_case)]
-        #[derive(Copy, Clone)]
-        pub struct $x<'a> {
-            VALUE: VALUE,
-            marker: PhantomData<&'a ()>
-        }
-
-        unsafe impl<'a> Sync for $x<'a> {}
-
-        RUBY_VALUE!($x);
-        RUBY_UTILS!($x);
-    }
-}
 
 // RUBY_SINGLETON_TYPE!(FalseClass);
 // RUBY_SINGLETON_TYPE!(TrueClass);
