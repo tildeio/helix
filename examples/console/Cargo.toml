@@ -1,0 +1,20 @@
+[package]
+name = "console"
+version = "0.1.0"
+authors = ["Godhuda <engineering+godhuda@tilde.io>"]
+
+[lib]
+
+crate-type = ["staticlib"]
+
+[dependencies]
+
+libc = "*"
+
+[dependencies.libcruby]
+
+path = "../.."
+
+[profile.release]
+
+lto = true

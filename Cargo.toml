@@ -1,0 +1,8 @@
+[package]
+name = "libcruby"
+version = "0.1.0"
+authors = ["Godhuda <engineering+godhuda@tilde.io>"]
+
+[dependencies.cslice]
+version = "*"
+git = "https://github.com/rustbridge/neon"
