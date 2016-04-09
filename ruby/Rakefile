@@ -1,0 +1,24 @@
+require "bundler/gem_tasks"
+require "rspec/core/rake_task"
+require "rake/extensiontask"
+
+verbose(false)
+
+Rake::ExtensionTask.new do |ext|
+  ext.name = "native"
+  ext.ext_dir = "ext/helix_runtime/native"
+  ext.lib_dir = "lib/helix_runtime"
+end
+
+Rake::ExtensionTask.new do |ext|
+  ext.name = "dummy"
+  ext.ext_dir = "spec/support/dummy/ext/dummy"
+  ext.lib_dir = "spec/support/dummy/lib"
+end
+
+RSpec::Core::RakeTask.new(:rspec) do |t|
+  t.verbose = false
+end
+
+task :rspec => :compile
+task :default => :rspec

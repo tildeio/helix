@@ -1,0 +1,21 @@
+require 'rake/clean'
+require 'bundler/setup'
+
+task :default => :irb
+
+directory 'target'
+directory 'lib/console'
+
+task :cargo_build do
+  sh "cargo build --release"
+end
+CLEAN.include('target')
+
+file "lib/console/native.bundle" => ['lib/console', :cargo_build] do
+  sh "gcc -Wl,-force_load,target/release/libconsole.a --shared -Wl,-undefined,dynamic_lookup -o lib/console/native.bundle"
+end
+CLOBBER.include('lib/console/native.bundle')
+
+task :irb => "lib/console/native.bundle" do
+  exec "irb -Ilib -rconsole"
+end
