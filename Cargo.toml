@@ -1,0 +1,16 @@
+[package]
+name = "helix"
+version = "0.1.0"
+authors = ["Godhuda <engineering+godhuda@tilde.io>"]
+
+[dependencies]
+
+libc = "*"
+
+[dependencies.cslice]
+version = "*"
+git = "https://github.com/rustbridge/neon"
+
+[dependencies.libcruby-sys]
+
+path = "crates/libcruby-sys"
