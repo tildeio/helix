@@ -1,0 +1,16 @@
+PATH
+  remote: ../../ruby
+  specs:
+    helix_runtime (0.5.0)
+
+GEM
+  specs:
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  helix_runtime!
+
+BUNDLED WITH
+   1.10.6

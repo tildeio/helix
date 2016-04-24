@@ -1,12 +1,13 @@
 #include <ruby.h>
 #include <ruby/intern.h>
 #include <stdbool.h>
+#include <helix_runtime.h>
 
-VALUE helix_Qtrue = Qtrue;
-VALUE helix_Qfalse = Qfalse;
-VALUE helix_Qnil = Qnil;
+VALUE HELIX_Qtrue = Qtrue;
+VALUE HELIX_Qfalse = Qfalse;
+VALUE HELIX_Qnil = Qnil;
 
-int HELIX_RSTRING_LEN(VALUE string) {
+long HELIX_RSTRING_LEN(VALUE string) {
   return RSTRING_LEN(string);
 }
 
@@ -16,6 +17,18 @@ const char* HELIX_RSTRING_PTR(VALUE string) {
 
 bool HELIX_RB_TYPE_P(VALUE v, int type) {
   return RB_TYPE_P(v, type);
+}
+
+VALUE HELIX_INT2FIX(int c_int) {
+  return INT2FIX(c_int);
+}
+
+VALUE HELIX_FIX2INT(VALUE v) {
+  return FIX2INT(v);
+}
+
+int HELIX_TYPE(VALUE v) {
+  return TYPE(v);
 }
 
 int HELIX_T_NONE = T_NONE;
@@ -46,7 +59,7 @@ int HELIX_T_ZOMBIE = T_ZOMBIE;
 int HELIX_T_MASK = T_MASK;
 // int HELIX_T_IMEMO = T_IMEMO;
 
-void Init_helix_runtime() {}
+void Init_native() {}
 
 void helix_inspect(void* ptr) {
   printf("ptr: %p\n", ptr);

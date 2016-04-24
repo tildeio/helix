@@ -11,6 +11,10 @@ crate-type = ["staticlib"]
 
 libc = "*"
 
+[dependencies.libcruby-sys]
+
+path = "../../crates/libcruby-sys"
+
 [dependencies.libcruby]
 
 path = "../.."

@@ -1,2 +1,2 @@
 require 'helix_runtime'
-require 'libconsole'
+require 'console/native'
