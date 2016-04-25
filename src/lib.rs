@@ -12,6 +12,9 @@ use sys::VALUE;
 
 mod macros;
 mod class_definition;
+mod coercions;
+
+pub use coercions::*;
 
 pub use class_definition::{ClassDefinition, MethodDefinition};
 

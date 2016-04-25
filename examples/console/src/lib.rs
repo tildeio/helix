@@ -1,42 +1,87 @@
-#![allow(non_snake_case)]
-#![allow(non_camel_case_types)]
-
-extern crate libc;
-extern crate libcruby_sys as sys;
-
 #[macro_use]
-extern crate libcruby as rb;
-
-use sys::VALUE;
+extern crate libcruby;
 
 declare_types! {
-    class RbConsole for Console {
-        init(call) {}
-
-        def log(string: VALUE) {
+    class Console {
+        def log(self, string: String) {
             println!("{:?}", string);
+        }
+
+        def print_self(self) {
+            println!("{:?}", self);
+        }
+
+        def hello(self) {
+            println!("hello");
+        }
+
+        def loglog(self, string1: String, string2: String) {
+            println!("{:?} {:?}", string1, string2);
+        }
+
+        def lololol(self) {
+            self.hello();
         }
     }
 }
 
-// init! {
-//     RbConsole::setup();
-//     // Console.define_method("log", log);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// macro_rules! cstr {
+//     ( $x: expr ) => { $x.as_ptr() as *const i8 }
 // }
 
-use std::mem;
-
-macro_rules! cstr {
-    ( $x: expr ) => { $x.as_ptr() as *const i8 }
-}
-
-// #[no_mangle]
-// pub extern "C" fn Init_libconsole() {
-//     unsafe {
-//         let Console = rb_define_class(cstr!(b"Console\0"), rb_cObject);
-//         rb_define_method(Console, cstr!(b"log\0"), log as void_ptr, 1);
-//     };
-// }
 
 // extern "C" fn log(_: VALUE, message: VALUE) -> VALUE {
 //     #[repr(C)]
@@ -76,8 +121,8 @@ macro_rules! cstr {
 //         }
 //     }
 
-
 // }
+
 // fn with_protect<T>(func: extern "C" fn(&T) -> VALUE, arg: &T) {
 //     let mut state: RubyException = RubyException::new();
 //     let arg: void_ptr = unsafe { mem::transmute(arg) };
