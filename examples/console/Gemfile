@@ -1,1 +1,4 @@
+source 'https://rubygems.org'
+
 gem 'helix_runtime', path: '../../ruby'
+gem 'rake', '~> 10.0'

@@ -5,12 +5,14 @@ PATH
 
 GEM
   specs:
+    rake (10.4.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   helix_runtime!
+  rake (~> 10.0)
 
 BUNDLED WITH
    1.10.6

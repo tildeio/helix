@@ -11,7 +11,7 @@ task :cargo_build do
 end
 CLEAN.include('target')
 
-file "lib/console/native.bundle" => :cargo_build do
+file "lib/console/native.bundle" => ['lib/console', :cargo_build] do
   sh "gcc -Wl,-force_load,target/release/libconsole.a --shared -Wl,-undefined,dynamic_lookup -o lib/console/native.bundle"
 end
 CLOBBER.include('lib/console/native.bundle')
