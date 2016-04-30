@@ -10,9 +10,12 @@ class Array
     return true if needle.empty?
     return false if self.empty?
 
+    needle_length = needle.length
+
+    return false if needle_length > self.length
+
     needle_position = 0
     needle_item = needle[needle_position]
-    needle_length = needle.length
 
     self.each do |item|
       if item == needle_item
