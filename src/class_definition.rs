@@ -24,6 +24,14 @@ impl ClassDefinition {
         ClassDefinition { class: Class(raw_class) }
     }
 
+    pub fn reopen(name: &str) -> ClassDefinition {
+        let raw_class = unsafe {
+            let class_id = sys::rb_intern(CString::new(name).unwrap().as_ptr());
+            sys::rb_const_get(sys::rb_cObject, class_id)
+        };
+        ClassDefinition { class: Class(raw_class) }
+    }
+
     pub fn define_method(self, def: MethodDefinition) -> ClassDefinition {
         unsafe {
             sys::rb_define_method(

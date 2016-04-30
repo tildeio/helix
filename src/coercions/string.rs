@@ -2,28 +2,8 @@ use std;
 use sys;
 use sys::{VALUE};
 use std::ffi::CString;
-use std::marker::PhantomData;
 
-pub struct CheckedValue<T> {
-    inner: VALUE,
-    marker: PhantomData<T>
-}
-
-impl<T> CheckedValue<T> {
-    unsafe fn new(inner: VALUE) -> CheckedValue<T> {
-        CheckedValue { inner: inner, marker: PhantomData }
-    }
-}
-
-pub type CheckResult<T> = Result<CheckedValue<T>, CString>;
-
-pub trait UncheckedValue<T> {
-    fn to_checked(self) -> CheckResult<T>;
-}
-
-pub trait ToRust<T> {
-    fn to_rust(self) -> T;
-}
+use super::{UncheckedValue, CheckResult, CheckedValue, ToRust};
 
 // VALUE -> to_coercible_rust<String> -> CheckResult<String> -> unwrap() -> Coercible<String> -> to_rust() -> String
 

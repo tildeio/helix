@@ -1,0 +1,31 @@
+require 'rake/clean'
+require 'rspec/core/rake_task'
+require 'bundler/setup'
+
+directory 'target'
+directory 'lib/membership'
+
+task :cargo_build do
+  sh "cargo build --release"
+end
+CLEAN.include('target')
+
+file "lib/membership/native.bundle" => ['lib/membership', :cargo_build] do
+  sh "gcc -Wl,-force_load,target/release/libmembership.a --shared -Wl,-undefined,dynamic_lookup -o lib/membership/native.bundle"
+end
+CLOBBER.include('lib/membership/native.bundle')
+
+task :irb => "lib/membership/native.bundle" do
+  exec "irb -Ilib -rmembership"
+end
+
+task :benchmark => "lib/membership/native.bundle" do
+  exec "ruby -Ilib benchmark.rb"
+end
+
+RSpec::Core::RakeTask.new(:rspec) do |t|
+  t.verbose = false
+end
+
+task :rspec => "lib/membership/native.bundle"
+task :default => :rspec

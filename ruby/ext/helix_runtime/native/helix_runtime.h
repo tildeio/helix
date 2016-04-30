@@ -11,6 +11,10 @@ extern VALUE HELIX_Qnil;
 
 long HELIX_RSTRING_LEN(VALUE string);
 const char* HELIX_RSTRING_PTR(VALUE string);
+
+long HELIX_RARRAY_LEN(VALUE array);
+void* HELIX_RARRAY_PTR(VALUE array);
+
 bool HELIX_RB_TYPE_P(VALUE v, int type);
 int HELIX_TYPE(VALUE v);
 

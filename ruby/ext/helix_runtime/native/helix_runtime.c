@@ -15,6 +15,14 @@ const char* HELIX_RSTRING_PTR(VALUE string) {
   return RSTRING_PTR(string);
 }
 
+long HELIX_RARRAY_LEN(VALUE array) {
+  return RARRAY_LEN(array);
+}
+
+void* HELIX_RARRAY_PTR(VALUE array) {
+  return RARRAY_PTR(array);
+}
+
 bool HELIX_RB_TYPE_P(VALUE v, int type) {
   return RB_TYPE_P(v, type);
 }

@@ -54,6 +54,12 @@ extern "C" {
     #[link_name = "HELIX_RSTRING_PTR"]
     pub fn RSTRING_PTR(string: VALUE) -> c_string;
 
+    #[link_name = "HELIX_RARRAY_LEN"]
+    pub fn RARRAY_LEN(array: VALUE) -> isize;
+
+    #[link_name = "HELIX_RARRAY_PTR"]
+    pub fn RARRAY_PTR(array: VALUE) -> void_ptr;
+
     #[link_name = "HELIX_RB_TYPE_P"]
     pub fn RB_TYPE_P(val: VALUE, rb_type: isize) -> bool;
 
@@ -62,8 +68,12 @@ extern "C" {
     #[link_name = "HELIX_T_STRING"]
     pub static T_STRING: isize;
 
+    #[link_name = "HELIX_T_ARRAY"]
+    pub static T_ARRAY: isize;
+
     // unknown if working?
     // fn rb_define_variable(name: c_string, value: *const VALUE);
+    pub fn rb_const_get(class: VALUE, name: ID) -> VALUE;
     pub fn rb_define_global_const(name: c_string, value: VALUE);
     pub fn rb_define_module(name: c_string) -> VALUE;
     pub fn rb_define_module_under(namespace: VALUE, name: c_string) -> VALUE;

@@ -1,26 +1,32 @@
 #[macro_use]
 extern crate libcruby;
+use libcruby::sys::{Qnil};
 
 declare_types! {
     class Console {
         def log(self, string: String) {
             println!("{:?}", string);
+            Qnil
         }
 
         def print_self(self) {
             println!("{:?}", self);
+            Qnil
         }
 
         def hello(self) {
             println!("hello");
+            Qnil
         }
 
         def loglog(self, string1: String, string2: String) {
             println!("{:?} {:?}", string1, string2);
+            Qnil
         }
 
         def lololol(self) {
             self.hello();
+            Qnil
         }
     }
 }
