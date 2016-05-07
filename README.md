@@ -4,7 +4,7 @@ binding Ruby APIs (so that we can make things ergonomic and provide **safety gua
 
 Short-term TODOs:
 
-- [ ] Rust return types coerce into Ruby values
+- [x] Rust return types coerce into Ruby values
 - [ ] Defined coercions for all of the main Ruby types
 - [ ] Calling Ruby methods on Ruby objects
 - [ ] Propagating Ruby exceptions through Rust
