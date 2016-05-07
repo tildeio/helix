@@ -1,5 +1,7 @@
 mod slice;
 mod string;
+mod unit;
+mod bool;
 
 use sys::{VALUE};
 use std::ffi::CString;
@@ -24,4 +26,8 @@ pub trait UncheckedValue<T> {
 
 pub trait ToRust<T> {
     fn to_rust(self) -> T;
+}
+
+pub trait ToRuby {
+    fn to_ruby(self) -> VALUE;
 }

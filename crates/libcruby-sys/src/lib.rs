@@ -12,7 +12,7 @@ pub type c_string = *const libc::c_char;
 pub struct ID(void_ptr);
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct VALUE(void_ptr);
 
 #[repr(C)]
@@ -70,6 +70,12 @@ extern "C" {
 
     #[link_name = "HELIX_T_ARRAY"]
     pub static T_ARRAY: isize;
+
+    #[link_name = "HELIX_T_TRUE"]
+    pub static T_TRUE: isize;
+
+    #[link_name = "HELIX_T_FALSE"]
+    pub static T_FALSE: isize;
 
     // unknown if working?
     // fn rb_define_variable(name: c_string, value: *const VALUE);

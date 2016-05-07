@@ -101,7 +101,6 @@ impl<T> CheckedValue<T> {
 For reference, here is the implementation of the coercion from a Ruby `String` to Rust `String`.
 
 ```rust
-
 impl UncheckedValue<String> for VALUE {
     fn to_checked(self) -> CheckResult<String> {
         // check whether the VALUE is actually a String
