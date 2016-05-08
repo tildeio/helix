@@ -4,8 +4,7 @@ version = "0.1.0"
 authors = ["Godhuda <engineering+godhuda@tilde.io>"]
 
 [dependencies]
-
-libc = "*"
+libc = "0.2.0"
 
 [dependencies.cslice]
 version = "*"
