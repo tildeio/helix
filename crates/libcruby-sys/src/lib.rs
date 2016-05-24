@@ -92,4 +92,6 @@ extern "C" {
                       arg: void_ptr,
                       state: *mut RubyException)
                       -> VALUE;
+
+    pub fn rb_str_new_cstr(string: c_string) -> VALUE;
 }
