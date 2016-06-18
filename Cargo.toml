@@ -5,8 +5,7 @@ authors = ["Godhuda <engineering+godhuda@tilde.io>"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-
-libc = "*"
+libc = "0.2.0"
 
 [dependencies.cslice]
 version = "*"
