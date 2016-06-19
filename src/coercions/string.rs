@@ -1,3 +1,4 @@
+use libc;
 use std;
 use sys;
 use sys::{VALUE};
@@ -28,7 +29,8 @@ impl ToRust<String> for CheckedValue<String> {
 
 impl ToRuby for String {
     fn to_ruby(self) -> VALUE {
+        let len = self.len();
         let cstr = CString::new(self).unwrap();
-        unsafe { sys::rb_str_new_cstr(cstr.as_ptr()) }
+        unsafe { sys::rb_utf8_str_new(cstr.as_ptr(), len as libc::c_long) }
     }
 }

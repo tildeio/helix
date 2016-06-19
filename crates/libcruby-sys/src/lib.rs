@@ -94,4 +94,5 @@ extern "C" {
                       -> VALUE;
 
     pub fn rb_str_new_cstr(string: c_string) -> VALUE;
+    pub fn rb_utf8_str_new(string: c_string, len: libc::c_long) -> VALUE;
 }
