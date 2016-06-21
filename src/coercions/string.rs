@@ -29,8 +29,8 @@ impl ToRust<String> for CheckedValue<String> {
 
 impl ToRuby for String {
     fn to_ruby(self) -> VALUE {
+        let ptr = self.as_ptr();
         let len = self.len();
-        let cstr = CString::new(self).unwrap();
-        unsafe { sys::rb_utf8_str_new(cstr.as_ptr(), len as libc::c_long) }
+        unsafe { sys::rb_utf8_str_new(ptr as *const libc::c_char, len as libc::c_long) }
     }
 }

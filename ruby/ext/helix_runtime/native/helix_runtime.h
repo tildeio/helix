@@ -21,6 +21,8 @@ int HELIX_TYPE(VALUE v);
 VALUE HELIX_INT2FIX(int c_int);
 VALUE HELIX_FIX2INT(VALUE fix);
 
+VALUE helix_rb_utf8_str_new(const char* str, long len);
+
 extern int HELIX_T_NONE;
 extern int HELIX_T_NIL;
 extern int HELIX_T_OBJECT;
