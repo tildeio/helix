@@ -96,11 +96,11 @@ macro_rules! class_definition {
         }
     };
 
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( $self_arg:tt , $($arg:ident : $argty:ident),* ) -> $ret:ident $body:block $($rest:tt)* } => {
+    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
         class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
     };
 
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( $self_arg:tt , $($arg:ident : $argty:ident),* ) $body:block $($rest:tt)* } => {
+    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
         class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
     };
 
