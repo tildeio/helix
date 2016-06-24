@@ -60,6 +60,9 @@ extern "C" {
     #[link_name = "HELIX_RARRAY_PTR"]
     pub fn RARRAY_PTR(array: VALUE) -> void_ptr;
 
+    #[link_name = "helix_rb_utf8_str_new"]
+    pub fn rb_utf8_str_new(string: c_string, len: libc::c_long) -> VALUE;
+
     #[link_name = "HELIX_RB_TYPE_P"]
     pub fn RB_TYPE_P(val: VALUE, rb_type: isize) -> bool;
 

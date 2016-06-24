@@ -35,6 +35,10 @@ VALUE HELIX_FIX2INT(VALUE v) {
   return FIX2INT(v);
 }
 
+VALUE helix_rb_utf8_str_new(const char* str, long len) {
+  return rb_utf8_str_new(str, len);
+}
+
 int HELIX_TYPE(VALUE v) {
   return TYPE(v);
 }
