@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate helix;
 
-use helix::{UncheckedValue, ToRust};
-
 declare_types! {
     reopen class Array {
         def is_superset_of(self, needle: &[usize]) -> bool {
@@ -28,6 +26,10 @@ declare_types! {
         }
     }
 }
+
+// Delete me:
+
+use helix::{UncheckedValue, ToRust};
 
 impl AsRef<[usize]> for Array {
     fn as_ref(&self) -> &[usize] {
