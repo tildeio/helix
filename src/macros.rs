@@ -28,7 +28,7 @@ macro_rules! define_struct {
         $(#[$attr])*
         pub struct $cls($crate::sys::VALUE);
     );
-    
+
     (false $(#[$attr:meta])* $cls:ident) => (
         #[derive(Copy, Clone, Debug)]
         #[repr(C)]
@@ -58,7 +58,7 @@ macro_rules! define_class {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! class_definition {
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; defn $name:ident; $self_arg:tt ; ($($arg:ident : $argty:ty),*) ; $body:block ; $ret:ty ; $($rest:tt)* } => {
+    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; defn $name:ident ; $self_arg:tt ; ($($arg:ident : $argty:ty),*) ; $body:block ; $ret:ty ; $($rest:tt)* } => {
         class_definition! {
             $cls ;
             ($($mimpl)* pub fn $name($self_arg, $($arg : $argty),*) -> $ret $body) ;
@@ -128,20 +128,20 @@ macro_rules! class_definition {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! reopen_class_definition {
-    ( $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block ; $ret:ty ; $($rest:tt)* ) => {
+    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; defn $name:ident ; $self_arg:tt ; ($($arg:ident : $argty:ty),*) ; $body:block ; $ret:ty ; $($rest:tt)* } => {
         reopen_class_definition! {
             $cls ;
-            ($($mimpl)* pub fn $name($self_arg, $($arg : $argty),*) -> $crate::sys::VALUE $body) ;
+            ($($mimpl)* pub fn $name($self_arg, $($arg : $argty),*) -> $ret $body) ;
             ($($mdef)* {
                 extern "C" fn __ruby_method__(rb_self: $cls, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
                     let checked = __checked_call__(rb_self, $($arg),*);
                     match checked {
-                        Ok(val) => val,
+                        Ok(val) => $crate::ToRuby::to_ruby(val),
                         Err(err) => { println!("TYPE ERROR: {:?}", err); $crate::sys::Qnil }
                     }
                 }
 
-                fn __checked_call__(rb_self: $cls, $($arg : $crate::sys::VALUE),*) -> Result<$crate::sys::VALUE, ::std::ffi::CString> {
+                fn __checked_call__(rb_self: $cls, $($arg : $crate::sys::VALUE),*) -> Result<$ret, ::std::ffi::CString> {
                     #[allow(unused_imports)]
                     use $crate::{ToRust};
 
@@ -150,7 +150,7 @@ macro_rules! reopen_class_definition {
                     )*
 
                     $(
-                        let $arg = $arg.to_rust();
+                        let $arg = $crate::ToRust::to_rust($arg);
                     )*
 
                     Ok(rb_self.$name($($arg),*))
@@ -166,13 +166,17 @@ macro_rules! reopen_class_definition {
         }
     };
 
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty { $body:block } $($rest:tt)* } => {
-        reopen_class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; def $name( $self_arg , $($arg : $argty),* ) $body ; $ret ; $($rest)*  }
+    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
+        reopen_class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
     };
 
     { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
-        reopen_class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; def $name( $self_arg , $($arg : $argty),* ) $body ; () ; $($rest)*  }
+        reopen_class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
     };
+
+    // { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
+    //     reopen_class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; def $name( $self_arg , $($arg : $argty),* ) ; $ret ; { $body } ; $($rest)* }
+    // };
 
     ( $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; ) => {
         item! {

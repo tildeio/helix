@@ -1,17 +1,16 @@
 #[macro_use]
 extern crate helix;
 
-use helix::sys::{Qtrue,Qfalse};
 use helix::{UncheckedValue, ToRust};
 
 declare_types! {
     reopen class Array {
-        def is_superset_of(self, needle: &[usize]) {
-            if needle.is_empty() { return Qtrue }
+        def is_superset_of(self, needle: &[usize]) -> bool {
+            if needle.is_empty() { return true }
 
             let haystack = self.as_ref();
 
-            if haystack.is_empty() { return Qfalse }
+            if haystack.is_empty() { return false }
 
             let mut needle = needle.iter();
             let mut needle_item = needle.next().unwrap();
@@ -19,13 +18,13 @@ declare_types! {
             for item in haystack {
                 if item == needle_item {
                     match needle.next() {
-                        None => return Qtrue,
+                        None => return true,
                         Some(next_item) => needle_item = next_item
                     }
                 }
             }
 
-            Qfalse
+            false
         }
     }
 }
