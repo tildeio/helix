@@ -72,9 +72,3 @@ int HELIX_T_MASK = T_MASK;
 // int HELIX_T_IMEMO = T_IMEMO;
 
 void Init_native() {}
-
-void helix_inspect(void* ptr) {
-  printf("ptr: %p\n", ptr);
-  printf("str: %s\n", ptr);
-  printf("hex: %x\n", ptr);
-}
