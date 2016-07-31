@@ -1,0 +1,34 @@
+require 'rake/clean'
+require 'rake/testtask'
+require 'bundler/setup'
+require 'bundler/gem_tasks'
+
+directory 'target'
+directory 'lib/duration'
+
+task :cargo_build do
+  sh "cargo build --release"
+end
+CLEAN.include('target')
+
+file "lib/duration/native.bundle" => ['lib/duration', :cargo_build] do
+  sh "gcc -Wl,-force_load,target/release/libduration.a --shared -Wl,-undefined,dynamic_lookup -o lib/duration/native.bundle"
+end
+CLOBBER.include('lib/duration/native.bundle')
+
+task :irb => "lib/duration/native.bundle" do
+  exec "irb -Ilib -rduration"
+end
+
+task :benchmark => "lib/duration/native.bundle" do
+  exec "ruby -Ilib benchmark.rb"
+end
+
+Rake::TestTask.new(:test) do |t|
+  t.libs << "test"
+  t.libs << "lib"
+  t.test_files = FileList['test/**/*_test.rb']
+end
+
+task :test => "lib/duration/native.bundle"
+task :default => :test

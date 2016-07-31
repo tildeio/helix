@@ -1,0 +1,29 @@
+PATH
+  remote: ../../ruby
+  specs:
+    helix_runtime (0.5.0)
+
+PATH
+  remote: .
+  specs:
+    duration (0.1.0)
+      helix_runtime
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.8.3)
+    rake (10.5.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bundler (~> 1.11)
+  duration!
+  helix_runtime!
+  minitest (~> 5.0)
+  rake (~> 10.0)
+
+BUNDLED WITH
+   1.12.5
