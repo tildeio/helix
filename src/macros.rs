@@ -67,7 +67,7 @@ macro_rules! class_definition {
                     let checked = __checked_call__(rb_self, $($arg),*);
                     match checked {
                         Ok(val) => $crate::ToRuby::to_ruby(val),
-                        Err(err) => { println!("TYPE ERROR: {:?}", err); $crate::sys::Qnil }
+                        Err(err) => { println!("TYPE ERROR: {:?}", err); unsafe { $crate::sys::Qnil } }
                     }
                 }
 
@@ -137,7 +137,7 @@ macro_rules! reopen_class_definition {
                     let checked = __checked_call__(rb_self, $($arg),*);
                     match checked {
                         Ok(val) => $crate::ToRuby::to_ruby(val),
-                        Err(err) => { println!("TYPE ERROR: {:?}", err); $crate::sys::Qnil }
+                        Err(err) => { println!("TYPE ERROR: {:?}", err); unsafe { $crate::sys::Qnil } }
                     }
                 }
 

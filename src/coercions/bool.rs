@@ -15,7 +15,7 @@ impl UncheckedValue<bool> for VALUE {
 
 impl ToRust<bool> for CheckedValue<bool> {
     fn to_rust(self) -> bool {
-        if self.inner == Qtrue {
+        if self.inner == unsafe { Qtrue } {
             true
         } else {
             false
@@ -26,9 +26,9 @@ impl ToRust<bool> for CheckedValue<bool> {
 impl ToRuby for bool {
     fn to_ruby(self) -> VALUE {
         if self {
-            Qtrue
+            unsafe { Qtrue }
         } else {
-            Qfalse
+            unsafe { Qfalse }
         }
     }
 }

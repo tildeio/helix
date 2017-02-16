@@ -75,7 +75,7 @@ impl RubyMethod for extern "C" fn(VALUE, VALUE) -> VALUE {
 #[allow(non_snake_case)]
 #[inline]
 fn ObjectClass() -> Class {
-    Class(sys::rb_cObject)
+    Class(unsafe { sys::rb_cObject })
 }
 
 impl Class {
