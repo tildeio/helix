@@ -10,8 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["wycats@gmail.com", "godfreykfc@gmail.com"]
 
   spec.summary       = %q{The Helix Runtime}
-  # spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.homepage      = "https://github.com/tildeio/helix"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
