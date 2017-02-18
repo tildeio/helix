@@ -7,12 +7,16 @@ declare_types! {
             inner: u32
         }
 
-        def initialize() -> Duration {
-            Duration { inner: 0 }
+        def initialize(helix: helix::Metadata) {
+            Duration { helix: helix, inner: 100 }
         }
 
-        def inspect(self) -> String {
-            format!("{}", self.inner)
+        def inspect(&self) -> String {
+            format!("{:?}", self)
+        }
+
+        def incr(&mut self) {
+            self.inner += 1;
         }
     }
 }
