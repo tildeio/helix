@@ -167,6 +167,31 @@ macro_rules! class_definition {
             }
         }
 
+        item! {
+            impl<'a> $crate::UncheckedValue<&'a $cls> for $crate::sys::VALUE {
+                fn to_checked(self) -> $crate::CheckResult<&'a $cls> {
+                    // TODO: make sure this is the right class
+                    Ok(unsafe { $crate::CheckedValue::new(self) })
+                }
+            }
+        }
+
+        item! {
+            impl<'a> $crate::ToRust<&'a $cls> for $crate::CheckedValue<&'a $cls> {
+                fn to_rust(self) -> &'a $cls {
+                    unsafe { ::std::mem::transmute($crate::sys::Data_Get_Struct_Value(self.inner)) }
+                }
+            }
+        }
+
+        item! {
+            impl<'a> $crate::ToRuby for &'a $cls {
+                fn to_ruby(self) -> $crate::sys::VALUE {
+                    self.helix
+                }
+            }
+        }
+
         init! {
             extern "C" fn __mark__(_klass: &$cls) {}
             extern "C" fn __free__(_klass: Option<Box<$cls>>) {}
@@ -205,6 +230,31 @@ macro_rules! class_definition {
 
                 fn from_checked_rb_value(value: $crate::sys::VALUE) -> $cls {
                     $cls { helix: value }
+                }
+            }
+        }
+
+        item! {
+            impl<'a> $crate::UncheckedValue<&'a $cls> for $crate::sys::VALUE {
+                fn to_checked(self) -> $crate::CheckResult<&'a $cls> {
+                    // TODO: make sure this is the right class
+                    Ok(unsafe { $crate::CheckedValue::new(self) })
+                }
+            }
+        }
+
+        item! {
+            impl<'a> $crate::ToRust<&'a $cls> for $crate::CheckedValue<&'a $cls> {
+                fn to_rust(self) -> &'a $cls {
+                    self
+                }
+            }
+        }
+
+        item! {
+            impl<'a> $crate::ToRuby for &'a $cls {
+                fn to_ruby(self) -> $crate::sys::VALUE {
+                    self
                 }
             }
         }

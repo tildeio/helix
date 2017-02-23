@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 [dependencies]
 
 libc = "*"
+rand = "*"
 
 [dependencies.libcruby-sys]
 

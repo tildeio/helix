@@ -74,5 +74,4 @@ impl Class {
     }
 }
 
-
 pub type Metadata = ::sys::VALUE;
