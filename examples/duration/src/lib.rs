@@ -2,6 +2,7 @@
 extern crate helix;
 extern crate rand;
 
+use std::fmt::Write;
 use rand::random;
 
 const SECONDS_PER_MINUTE: i64 = 60;
@@ -79,23 +80,74 @@ declare_types! {
             self.value = compute_value(&self);
         }
 
+        def iso8601(&self) -> String {
+            if self.value == 0 {
+                return "PT0S".to_string();
+            }
+
+            let mut output = String::new();
+
+            let sign = if
+                self.value < 0 &&
+                self.seconds.unwrap_or(0) < 0 &&
+                self.minutes.unwrap_or(0) < 0 &&
+                self.hours.unwrap_or(0) < 0 &&
+                self.days.unwrap_or(0) < 0 &&
+                self.weeks.unwrap_or(0) < 0 &&
+                self.months.unwrap_or(0) < 0 &&
+                self.years.unwrap_or(0) < 0 {
+                -1
+            } else {
+                1
+            };
+
+            if sign == -1 {
+                output.push('-');
+            }
+
+            output.push('P');
+
+            format_iso8601_part(&mut output, self.years, "Y");
+            format_iso8601_part(&mut output, self.months, "M");
+            format_iso8601_part(&mut output, self.weeks, "W");
+            format_iso8601_part(&mut output, self.days, "D");
+
+            if self.hours.unwrap_or(0) + self.minutes.unwrap_or(0) + self.seconds.unwrap_or(0) != 0 {
+                output.push('T');
+
+                format_iso8601_part(&mut output, self.hours, "H");
+                format_iso8601_part(&mut output, self.minutes, "M");
+                format_iso8601_part(&mut output, self.seconds, "S");
+            }
+
+            output
+        }
+
         def inspect(&self) -> String {
             let mut parts = Vec::new();
 
-            format_part(&mut parts, self.years, "year", "years");
-            format_part(&mut parts, self.months, "month", "months");
-            format_part(&mut parts, self.weeks, "week", "weeks");
-            format_part(&mut parts, self.days, "day", "days");
-            format_part(&mut parts, self.hours, "hour", "hours");
-            format_part(&mut parts, self.minutes, "minute", "minutes");
-            format_part(&mut parts, self.seconds, "second", "seconds");
+            format_inspect_part(&mut parts, self.years, "year", "years");
+            format_inspect_part(&mut parts, self.months, "month", "months");
+            format_inspect_part(&mut parts, self.weeks, "week", "weeks");
+            format_inspect_part(&mut parts, self.days, "day", "days");
+            format_inspect_part(&mut parts, self.hours, "hour", "hours");
+            format_inspect_part(&mut parts, self.minutes, "minute", "minutes");
+            format_inspect_part(&mut parts, self.seconds, "second", "seconds");
 
             to_sentence(parts)
         }
     }
 }
 
-fn format_part(parts: &mut Vec<String>, value: Option<i32>, singular: &str, plural: &str) {
+fn format_iso8601_part(string: &mut String, value: Option<i32>, unit: &str) {
+    if let Some(v) = value {
+        if v != 0 {
+            write!(string, "{}{}", v, unit).unwrap();
+        }
+    }
+}
+
+fn format_inspect_part(parts: &mut Vec<String>, value: Option<i32>, singular: &str, plural: &str) {
     if let Some(v) = value {
         parts.push(format!("{} {}", v, if v == 1 { singular } else { plural }));
     }
