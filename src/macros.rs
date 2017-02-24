@@ -243,21 +243,21 @@ macro_rules! class_definition {
             }
         }
 
-        item! {
-            impl<'a> $crate::ToRust<&'a $cls> for $crate::CheckedValue<&'a $cls> {
-                fn to_rust(self) -> &'a $cls {
-                    self
-                }
-            }
-        }
+        // item! {
+        //     impl<'a> $crate::ToRust<&'a $cls> for $crate::CheckedValue<&'a $cls> {
+        //         fn to_rust(self) -> &'a $cls {
+        //             self
+        //         }
+        //     }
+        // }
 
-        item! {
-            impl<'a> $crate::ToRuby for &'a $cls {
-                fn to_ruby(self) -> $crate::sys::VALUE {
-                    self
-                }
-            }
-        }
+        // item! {
+        //     impl<'a> $crate::ToRuby for &'a $cls {
+        //         fn to_ruby(self) -> $crate::sys::VALUE {
+        //             self
+        //         }
+        //     }
+        // }
 
         init! {
             $crate::ClassDefinition::new(stringify!($cls))$(.define_method($mdef))*;
