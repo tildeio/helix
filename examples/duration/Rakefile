@@ -1,34 +1,8 @@
-require 'rake/clean'
-require 'rake/testtask'
 require 'bundler/setup'
-require 'bundler/gem_tasks'
+require 'rake/testtask'
 
-directory 'lib/duration'
-
-namespace :cargo do
-  task :build do
-    sh "cargo rustc --release -- -C link-args='-Wl,-undefined,dynamic_lookup'"
-  end
-
-  task :clean do
-    sh "cargo clean"
-  end
-end
-
-task :clobber => "cargo:clean"
-
-file "lib/duration/native.bundle" => ["lib/duration", "cargo:build"] do
-  cp "../../target/release/libduration.dylib", "lib/duration/native.bundle"
-end
-CLOBBER.include("lib/duration/native.bundle")
-
-task :irb => "lib/duration/native.bundle" do
-  exec "irb -Ilib -rduration"
-end
-
-task :benchmark => "lib/duration/native.bundle" do
-  exec "ruby -Ilib benchmark.rb"
-end
+$example_name = 'duration'
+import File.expand_path("../../shared/example.rake", __FILE__)
 
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
@@ -36,5 +10,5 @@ Rake::TestTask.new(:test) do |t|
   t.test_files = FileList["test/**/*_test.rb"]
 end
 
-task :test => "lib/duration/native.bundle"
+task :test => :build_native
 task :default => :test
