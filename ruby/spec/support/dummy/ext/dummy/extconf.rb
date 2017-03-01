@@ -17,4 +17,8 @@ if RUBY_PLATFORM =~ /mingw/
   FileUtils.cp "#{root_dir}/lib/helix_runtime/native.so", "#{root_dir}/windows_build/native.dll"
 end
 
+# Allows proper HELIX_EXTERN
+have_func("__declspec")
+create_header
+
 create_makefile "dummy"

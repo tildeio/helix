@@ -6,6 +6,8 @@
 /doc/
 /pkg/
 /spec/reports/
+/spec/support/dummy/lib
+/windows_build
 /tmp/
 *.bundle
 *.gem
