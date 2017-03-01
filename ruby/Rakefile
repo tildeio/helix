@@ -2,7 +2,8 @@ require "bundler/gem_tasks"
 require "rspec/core/rake_task"
 require "rake/extensiontask"
 
-verbose(false)
+
+verbose(!!ENV['VERBOSE'])
 
 Rake::ExtensionTask.new do |ext|
   ext.name = "native"
@@ -14,6 +15,10 @@ Rake::ExtensionTask.new do |ext|
   ext.name = "dummy"
   ext.ext_dir = "spec/support/dummy/ext/dummy"
   ext.lib_dir = "spec/support/dummy/lib"
+end
+
+Rake::Task[:clobber].enhance do
+  rm_rf "windows_build"
 end
 
 RSpec::Core::RakeTask.new(:rspec) do |t|
