@@ -17,9 +17,7 @@ Rake::ExtensionTask.new do |ext|
   ext.lib_dir = "spec/support/dummy/lib"
 end
 
-Rake::Task[:clobber].enhance do
-  rm_rf "windows_build"
-end
+CLOBBER.include("windows_build")
 
 RSpec::Core::RakeTask.new(:rspec) do |t|
   t.verbose = false
