@@ -45,6 +45,8 @@ if is_windows
 
   abort "Couldn't find ruby dll in PATH'" unless ruby_dll
 
+  # FIXME: Can we avoid this and have it just use the full ruby.dll name? Why does the built
+  #   example library reference ruby.dll not msvcrt-ruby230.dll?
   file "#{example_lib_path}/ruby.dll" => ruby_dll do
     cp ruby_dll, "#{example_lib_path}/ruby.dll"
   end

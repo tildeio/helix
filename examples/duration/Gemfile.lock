@@ -17,6 +17,7 @@ GEM
 
 PLATFORMS
   ruby
+  x86-mingw32
 
 DEPENDENCIES
   bundler (~> 1.11)
@@ -26,4 +27,4 @@ DEPENDENCIES
   rake (~> 10.0)
 
 BUNDLED WITH
-   1.12.5
+   1.14.5
