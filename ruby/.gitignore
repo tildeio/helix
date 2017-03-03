@@ -4,6 +4,7 @@
 /_yardoc/
 /coverage/
 /doc/
+/ext/helix_runtime/native/native.def
 /pkg/
 /spec/reports/
 /spec/support/dummy/lib

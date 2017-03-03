@@ -21,7 +21,7 @@ if RUBY_PLATFORM =~ /mingw/
     # Windows looks for a .dll in PATH
     cp "#{__dir__}/lib/helix_runtime/native.so", "#{__dir__}/windows_build/helix-runtime.dll"
   end
-  CLOBBER.include("windows_build")
+  CLOBBER.include("ext/helix_runtime/native/native.def", "windows_build")
 end
 
 Rake::ExtensionTask.new do |ext|
