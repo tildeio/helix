@@ -15,8 +15,11 @@ if RUBY_PLATFORM =~ /mingw/
   Rake::Task["compile:native:#{RUBY_PLATFORM}"].enhance do
     mkdir_p "#{__dir__}/windows_build"
 
+    machine = RbConfig::CONFIG['target_cpu'] == 'x64' ? 'X64' : 'X86'
+
     sh "lib.exe /def:#{File.expand_path("ext/helix_runtime/native/native.def", __dir__)} " \
-            "/out:#{File.expand_path("windows_build/helix-runtime.lib", __dir__)}"
+            "/out:#{File.expand_path("windows_build/helix-runtime.lib", __dir__)} " \
+            "/machine:#{machine}"
 
     # Windows looks for a .dll in PATH
     cp "#{__dir__}/lib/helix_runtime/native.so", "#{__dir__}/windows_build/helix-runtime.dll"

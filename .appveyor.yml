@@ -6,11 +6,19 @@ environment:
   VERBOSE: true
   # This isn't expected to pass yet
   #- EXAMPLES="duration"
+  matrix:
+    # 32-bit
+    - RUBY_VERSION: 23
+      RUST_HOST: i686-pc-windows-msvc
+    # 64-bit
+    - RUBY_VERSION: 23-x64
+      RUST_HOST: x86_64-pc-windows-msvc
 
 install:
-  - set PATH=C:\Ruby23\bin;C:\MinGW\bin;C:\MinGW\msys\1.0\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;%HOMEPATH%\.cargo\bin;%APPVEYOR_BUILD_FOLDER%\ruby\windows_build;%PATH%
+  - set PATH=C:\Ruby%RUBY_VERSION%\bin;C:\Ruby%RUBY_VERSION%\DevKit\bin;C:\Ruby%RUBY_VERSION%\DevKit\mingw\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;%HOMEPATH%\.cargo\bin;%APPVEYOR_BUILD_FOLDER%\ruby\windows_build;%PATH%
+  - echo %PATH%
   - set HELIX_ROOT=%APPVEYOR_BUILD_FOLDER%
-  - curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly --default-host i686-pc-windows-msvc -y
+  - curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly --default-host %RUST_HOST% -y
   - bash ./scripts/ci-install
 
 test_script:
