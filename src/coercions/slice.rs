@@ -12,7 +12,7 @@ impl<'a> UncheckedValue<&'a[usize]> for VALUE {
         if unsafe { sys::RB_TYPE_P(self, sys::T_ARRAY) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            Err(CString::new(format!("No implicit conversion from {} to String", "?")).unwrap())
+            Err(CString::new(format!("No implicit conversion of {} into String", "?")).unwrap())
         }
     }
 }

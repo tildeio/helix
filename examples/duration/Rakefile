@@ -1,12 +1,8 @@
 require 'bundler/setup'
 require 'rake/testtask'
 
-$example_name = 'turbo_blank'
+$example_name = 'duration'
 import File.expand_path("../../shared/example.rake", __FILE__)
-
-task :benchmark => :build_native do
-  exec "ruby -Ilib benchmark.rb"
-end
 
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
