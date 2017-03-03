@@ -56,7 +56,6 @@ declare_types! {
         }
 
         def negate(&mut self) {
-
             self.seconds = negate_part(self.seconds);
             self.minutes = negate_part(self.minutes);
             self.hours = negate_part(self.hours);

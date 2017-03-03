@@ -112,7 +112,7 @@ impl UncheckedValue<String> for VALUE {
             // assert that we can guarantee that to_rust() can return a Rust String safely
             Ok(unsafe { CheckedValue::<String>::new(self) })
         } else {
-            Err(CString::new(format!("No implicit conversion from {} to Rust String", "?")).unwrap())
+            Err(CString::new(format!("No implicit conversion of {} into Rust String", "?")).unwrap())
         }
     }
 }
@@ -129,4 +129,4 @@ impl ToRust<String> for CheckedValue<String> {
 }
 ```
 
-This protocol allows us to fully type check a method's arguments before starting any of the coercions. It happens automatically based on the type signature you use in your Rust method `def`. 
+This protocol allows us to fully type check a method's arguments before starting any of the coercions. It happens automatically based on the type signature you use in your Rust method `def`.

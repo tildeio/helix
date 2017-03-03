@@ -48,21 +48,21 @@ macro_rules! define_struct {
 macro_rules! define_class {
     { #![reopen(false)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { struct { $($fields:tt)* } def initialize($($args:tt)*) { $($initbody:tt)* } $($body:tt)* } $($rest:tt)* } => {
         define_struct!($(#[$attr:meta])* $is_pub $cls $($fields)*);
-        class_definition! { $cls ; () ; () ; $($body)* fn initialize($($args)*) { $($initbody)* } }
+        class_definition! { #![reopen(false)] $cls ; () ; () ; $($body)* fn initialize($($args)*) { $($initbody)* } }
         declare_types! { $($rest)* }
     };
 
 
     { #![reopen(false)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { $($body:tt)* } $($rest:tt)* } => {
         define_struct!($(#[$attr:meta])* $is_pub $cls);
-        class_definition! { $cls ; () ; () ; $($body)* () }
+        class_definition! { #![reopen(false)] $cls ; () ; () ; $($body)* () }
         declare_types! { $($rest)* }
     };
 
 
     { #![reopen(true)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { $($body:tt)* } $($rest:tt)* } => {
         define_struct!($(#[$attr:meta])* $is_pub $cls);
-        reopen_class_definition! { $cls ; () ; () ; $($body)* }
+        class_definition! { #![reopen(true)] $cls ; () ; () ; $($body)* () }
         declare_types! { $($rest)* }
     };
 
@@ -71,8 +71,9 @@ macro_rules! define_class {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! class_definition {
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; defn $name:ident ; { $($self_mod:tt)* } ; $self_arg:tt ; ($($arg:ident : $argty:ty),*) ; $body:block ; $ret:ty ; $($rest:tt)* } => {
+    { #![reopen($expr:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; defn $name:ident ; { $($self_mod:tt)* } ; $self_arg:tt ; ($($arg:ident : $argty:ty),*) ; $body:block ; $ret:ty ; $($rest:tt)* } => {
         class_definition! {
+            #![reopen($expr)]
             $cls ;
             ($($mimpl)* pub fn $name($($self_mod)* $self_arg, $($arg : $argty),*) -> $ret $body) ;
             ($($mdef)* {
@@ -112,47 +113,46 @@ macro_rules! class_definition {
     };
 
     // def ident(&self, ...args) -> ty { ... }
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
+    { #![reopen($expr:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($expr)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&self, ...args) { ... }
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
-        class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
+    { #![reopen($expr:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($expr)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
     };
 
     // def ident(&self) -> ty { ... }
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
+    { #![reopen($expr:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt ) -> $ret:ty $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($expr)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&self) { ... }
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt ) $body:block $($rest:tt)* } => {
-        class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; $self_arg ; () ; $body ; () ; $($rest)*  }
+    { #![reopen($expr:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt ) $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($expr)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; $self_arg ; () ; $body ; () ; $($rest)*  }
     };
 
     // def ident(&mut self, ...args) -> ty { ... }
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
+    { #![reopen($expr:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($expr)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&mut self, ...args) { ... }
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
-        class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
+    { #![reopen($expr:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($expr)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
     };
 
     // def ident(&mut self) -> ty { ... }
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
+    { #![reopen($expr:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt ) -> $ret:ty $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($expr)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&mut self) { ... }
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt ) $body:block $($rest:tt)* } => {
-        class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; $self_arg ; () ; $body ; () ; $($rest)*  }
+    { #![reopen($expr:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt ) $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($expr)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; $self_arg ; () ; $body ; () ; $($rest)*  }
     };
 
-
-    ( $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; fn initialize($($args:tt)*) { $($initbody:tt)* } ) => {
+    ( #![reopen(false)] $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; fn initialize($($args:tt)*) { $($initbody:tt)* } ) => {
         item! {
             impl $cls {
                 fn initialize($($args)*) -> $cls {
@@ -170,8 +170,15 @@ macro_rules! class_definition {
         item! {
             impl<'a> $crate::UncheckedValue<&'a $cls> for $crate::sys::VALUE {
                 fn to_checked(self) -> $crate::CheckResult<&'a $cls> {
-                    // TODO: make sure this is the right class
-                    Ok(unsafe { $crate::CheckedValue::new(self) })
+                    use $crate::{CheckedValue, sys};
+                    use ::std::ffi::{CStr, CString};
+
+                    if unsafe { __HELIX_ID == ::std::mem::transmute(sys::rb_obj_class(self)) } {
+                        Ok(unsafe { CheckedValue::new(self) })
+                    } else {
+                        let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
+                        Err(CString::new(format!("No implicit conversion of {} into {}", val, stringify!($cls))).unwrap())
+                    }
                 }
             }
         }
@@ -191,6 +198,8 @@ macro_rules! class_definition {
                 }
             }
         }
+
+        static mut __HELIX_ID: usize = 0;
 
         init! {
             extern "C" fn __mark__(_klass: &$cls) {}
@@ -219,11 +228,38 @@ macro_rules! class_definition {
                 }
             }
 
-            $crate::ClassDefinition::wrapped(stringify!($cls), __alloc__)$(.define_method($mdef))*;
+            let def = $crate::ClassDefinition::wrapped(stringify!($cls), __alloc__)$(.define_method($mdef))*;
+            unsafe { __HELIX_ID = ::std::mem::transmute(def.class) };
         }
     };
 
-    ( $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; () ) => {
+    ( #![reopen(false)] $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; () ) => {
+        impl_simple_class!( $cls ; ($($mimpl)*) );
+
+        static mut __HELIX_ID: usize = 0;
+
+        init! {
+            let def = $crate::ClassDefinition::new(stringify!($cls))$(.define_method($mdef))*;
+            unsafe { __HELIX_ID = ::std::mem::transmute(def.class) };
+        }
+    };
+
+    ( #![reopen(true)] $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; () ) => {
+        impl_simple_class!( $cls ; ($($mimpl)*) );
+
+        static mut __HELIX_ID: usize = 0;
+
+        init! {
+            let def = $crate::ClassDefinition::reopen(stringify!($cls))$(.define_method($mdef))*;
+            unsafe { __HELIX_ID = ::std::mem::transmute(def.class) };
+        }
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! impl_simple_class {
+    ( $cls:ident ; ($($mimpl:tt)*) ) => {
         item! {
             impl $cls {
                 $($mimpl)*
@@ -237,103 +273,35 @@ macro_rules! class_definition {
         item! {
             impl<'a> $crate::UncheckedValue<&'a $cls> for $crate::sys::VALUE {
                 fn to_checked(self) -> $crate::CheckResult<&'a $cls> {
-                    // TODO: make sure this is the right class
-                    Ok(unsafe { $crate::CheckedValue::new(self) })
-                }
-            }
-        }
+                    use $crate::{CheckedValue, sys};
+                    use ::std::ffi::{CStr, CString};
 
-        // item! {
-        //     impl<'a> $crate::ToRust<&'a $cls> for $crate::CheckedValue<&'a $cls> {
-        //         fn to_rust(self) -> &'a $cls {
-        //             self
-        //         }
-        //     }
-        // }
-
-        // item! {
-        //     impl<'a> $crate::ToRuby for &'a $cls {
-        //         fn to_ruby(self) -> $crate::sys::VALUE {
-        //             self
-        //         }
-        //     }
-        // }
-
-        init! {
-            $crate::ClassDefinition::new(stringify!($cls))$(.define_method($mdef))*;
-        }
-    };
-
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! reopen_class_definition {
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; defn $name:ident ; $self_arg:tt ; ($($arg:ident : $argty:ty),*) ; $body:block ; $ret:ty ; $($rest:tt)* } => {
-        reopen_class_definition! {
-            $cls ;
-            ($($mimpl)* pub fn $name(&$self_arg, $($arg : $argty),*) -> $ret $body) ;
-            ($($mdef)* {
-                extern "C" fn __ruby_method__(rb_self: $cls, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
-                    let checked = __checked_call__(rb_self, $($arg),*);
-                    match checked {
-                        Ok(val) => $crate::ToRuby::to_ruby(val),
-                        Err(err) => { println!("TYPE ERROR: {:?}", err); unsafe { $crate::sys::Qnil } }
+                    if unsafe { __HELIX_ID == ::std::mem::transmute(sys::rb_obj_class(self)) } {
+                        Ok(unsafe { CheckedValue::new(self) })
+                    } else {
+                        let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
+                        Err(CString::new(format!("No implicit conversion of {} into {}", val, stringify!($cls))).unwrap())
                     }
                 }
-
-                fn __checked_call__(rb_self: $cls, $($arg : $crate::sys::VALUE),*) -> Result<$ret, ::std::ffi::CString> {
-                    #[allow(unused_imports)]
-                    use $crate::{ToRust};
-
-                    $(
-                        let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
-                    )*
-
-                    $(
-                        let $arg = $crate::ToRust::to_rust($arg);
-                    )*
-
-                    Ok(rb_self.$name($($arg),*))
-                }
-
-                let name = stringify!($name);
-                let arity = method_arity!($($arg),*);
-                let method = __ruby_method__ as *const $crate::libc::c_void;
-
-                $crate::MethodDefinition::new(name, method, arity)
-            }) ;
-            $($rest)*
-        }
-    };
-
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
-        reopen_class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
-    };
-
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
-        reopen_class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
-    };
-
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt ) -> $ret:ty $body:block $($rest:tt)* } => {
-        reopen_class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
-    };
-
-    { $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt ) $body:block $($rest:tt)* } => {
-        reopen_class_definition! { $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; $self_arg ; () ; $body ; () ; $($rest)*  }
-    };
-
-    ( $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; ) => {
-        item! {
-            impl $cls {
-                $($mimpl)*
             }
         }
 
-        init! {
-            $crate::ClassDefinition::reopen(stringify!($cls))$(.define_method($mdef))*;
+        item! {
+            impl<'a> $crate::ToRust<&'a $cls> for $crate::CheckedValue<&'a $cls> {
+                fn to_rust(self) -> &'a $cls {
+                    unsafe { ::std::mem::transmute(self.inner) }
+                }
+            }
         }
-    };
+
+        item! {
+            impl<'a> $crate::ToRuby for &'a $cls {
+                fn to_ruby(self) -> $crate::sys::VALUE {
+                    unsafe { ::std::mem::transmute(self) }
+                }
+            }
+        }
+    }
 }
 
 #[macro_export]

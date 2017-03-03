@@ -4,10 +4,10 @@ require 'rspec/core/rake_task'
 $example_name = 'console'
 import File.expand_path("../../shared/example.rake", __FILE__)
 
-RSpec::Core::RakeTask.new(:rspec) do |t|
+RSpec::Core::RakeTask.new(:spec) do |t|
   t.verbose = false
 end
 
-task :rspec => :build_native
-task :test => :rspec
-task :default => :rspec
+task :spec => :build_native
+task :test => :spec
+task :default => :spec

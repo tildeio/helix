@@ -1,5 +1,5 @@
 require 'bundler/setup'
-require 'rake/testtask'
+require 'rspec/core/rake_task'
 
 $example_name = 'membership'
 import File.expand_path("../../shared/example.rake", __FILE__)
@@ -8,11 +8,10 @@ task :benchmark => :build_native do
   exec "ruby -Ilib benchmark.rb"
 end
 
-Rake::TestTask.new(:test) do |t|
-  t.libs << "test"
-  t.libs << "lib"
-  t.test_files = FileList["test/**/*_test.rb"]
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.verbose = false
 end
 
-task :test => :build_native
-task :default => :test
+task :spec => :build_native
+task :test => :spec
+task :default => :spec

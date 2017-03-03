@@ -3,7 +3,7 @@ extern crate helix;
 
 declare_types! {
     reopen class Array {
-        def is_superset_of(self, needle: &[usize]) -> bool {
+        def is_superset_of(&self, needle: &[usize]) -> bool {
             if needle.is_empty() { return true }
 
             let haystack = self.as_ref();
@@ -33,7 +33,7 @@ use helix::{UncheckedValue, ToRust};
 
 impl AsRef<[usize]> for Array {
     fn as_ref(&self) -> &[usize] {
-        let checked = self.0.to_checked().unwrap();
+        let checked = self.helix.to_checked().unwrap();
         checked.to_rust()
     }
 }

@@ -15,7 +15,7 @@ impl<'a> MethodDefinition<'a> {
 }
 
 pub struct ClassDefinition {
-    class: Class,
+    pub class: Class,
 }
 
 impl ClassDefinition {

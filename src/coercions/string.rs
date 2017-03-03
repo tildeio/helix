@@ -14,7 +14,7 @@ impl UncheckedValue<String> for VALUE {
             Ok(unsafe { CheckedValue::<String>::new(self) })
         } else {
             let val = unsafe { CheckedValue::<String>::new(sys::rb_inspect(self)) };
-            Err(CString::new(format!("No implicit conversion from {} to String", val.to_rust())).unwrap())
+            Err(CString::new(format!("No implicit conversion of {} into String", val.to_rust())).unwrap())
         }
     }
 }
