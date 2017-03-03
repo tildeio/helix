@@ -1,3 +1,4 @@
+LIBRARY helix-runtime
 EXPORTS
 HELIX_Data_Get_Struct_Value
 HELIX_Data_Set_Struct_Value

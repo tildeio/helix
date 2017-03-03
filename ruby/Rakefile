@@ -11,13 +11,23 @@ Rake::ExtensionTask.new do |ext|
   ext.lib_dir = "lib/helix_runtime"
 end
 
+if RUBY_PLATFORM =~ /mingw/
+  Rake::Task["compile:native:#{RUBY_PLATFORM}"].enhance do
+    mkdir_p "#{__dir__}/windows_build"
+    res = system("lib -def:#{__dir__}/ext/helix_runtime/native/native.def -out:#{__dir__}/windows_build/helix-runtime.lib")
+    abort "can't build helix-runtime.lib" unless res
+
+    # Windows looks for a .dll in PATH
+    cp "#{__dir__}/lib/helix_runtime/native.so", "#{__dir__}/windows_build/helix-runtime.dll"
+  end
+  CLOBBER.include("windows_build")
+end
+
 Rake::ExtensionTask.new do |ext|
   ext.name = "dummy"
   ext.ext_dir = "spec/support/dummy/ext/dummy"
   ext.lib_dir = "spec/support/dummy/lib"
 end
-
-CLOBBER.include("windows_build")
 
 RSpec::Core::RakeTask.new(:rspec) do |t|
   t.verbose = false

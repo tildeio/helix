@@ -35,8 +35,7 @@ impl RubyException {
 
 pub const EMPTY_EXCEPTION: RubyException = RubyException(0);
 
-// FIXME: Windows only
-#[link(kind="dylib", name="helix_runtime")]
+#[cfg_attr(windows, link(name="helix-runtime"))]
 extern "C" {
     #[link_name = "HELIX_Qfalse"]
     pub static Qfalse: VALUE;

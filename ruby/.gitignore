@@ -7,8 +7,8 @@
 /pkg/
 /spec/reports/
 /spec/support/dummy/lib
-/windows_build
 /tmp/
+/windows_build
 *.bundle
 *.gem
 Makefile
