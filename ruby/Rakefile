@@ -14,8 +14,9 @@ end
 if RUBY_PLATFORM =~ /mingw/
   Rake::Task["compile:native:#{RUBY_PLATFORM}"].enhance do
     mkdir_p "#{__dir__}/windows_build"
-    res = system("lib -def:#{__dir__}/ext/helix_runtime/native/native.def -out:#{__dir__}/windows_build/helix-runtime.lib")
-    abort "can't build helix-runtime.lib" unless res
+
+    sh "lib.exe /def:#{File.expand_path("ext/helix_runtime/native/native.def", __dir__)} " \
+            "/out:#{File.expand_path("windows_build/helix-runtime.lib", __dir__)}"
 
     # Windows looks for a .dll in PATH
     cp "#{__dir__}/lib/helix_runtime/native.so", "#{__dir__}/windows_build/helix-runtime.dll"

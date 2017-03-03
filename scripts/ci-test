@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -x
+set -e
+
+DIR=$(dirname "${BASH_SOURCE[0]}")/..
+
+pushd "$DIR/ruby"
+bundle exec rake rspec
+popd
+
+$DIR/examples/runner test $EXAMPLES

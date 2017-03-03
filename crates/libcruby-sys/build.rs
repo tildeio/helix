@@ -16,7 +16,7 @@ fn main() {
 
     // Read info about current Ruby install
     let raw_ruby_info = Command::new("ruby")
-                                .arg(root.join("scripts/ruby_info.rb"))
+                                .arg(root.join("scripts").join("ruby_info.rb"))
                                 .output()
                                 .expect("failed to get Ruby info");
     let raw_ruby_output = String::from_utf8_lossy(&raw_ruby_info.stdout);
@@ -34,11 +34,13 @@ fn main() {
     fs::copy(ruby_libdir.join(libruby), out_dir.join(ruby_libname).with_extension("lib"))
         .expect("unable to copy libruby");
 
+    let windows_build_dir = root.join("ruby").join("windows_build");
+
     // Set up linker
-    println!("cargo:rustc-flags=-L {libpath} -l dylib={libruby} -L {root}/ruby/windows_build",
+    println!("cargo:rustc-flags=-L {libpath} -l dylib={libruby} -L {windows_build}",
               libpath=out_dir.to_str().expect("can't get str from out_dir"),
               libruby=ruby_libname,
-              root=root.to_str().expect("can't get str from root"));
+              windows_build=windows_build_dir.to_str().expect("can't get str from root"));
   }
 }
 
