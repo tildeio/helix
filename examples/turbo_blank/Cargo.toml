@@ -7,14 +7,5 @@ authors = ["Godfrey Chan <godfreykfc@gmail.com>"]
 
 crate-type = ["cdylib"]
 
-[dependencies]
-
-libc = "*"
-
-[dependencies.libcruby-sys]
-
-path = "../../crates/libcruby-sys"
-
 [dependencies.helix]
-
 path = "../.."
