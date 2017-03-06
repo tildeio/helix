@@ -9,8 +9,5 @@ if RUBY_PLATFORM =~ /mingw/
   append_ldflags("-L#{root_dir}/windows_build -lhelix-runtime")
 end
 
-# Allows proper HELIX_EXTERN
-have_func("__declspec")
-create_header
 
 create_makefile "dummy"

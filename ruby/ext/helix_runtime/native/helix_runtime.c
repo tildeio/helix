@@ -1,3 +1,5 @@
+#define BUILDING_DLL
+
 #include <ruby.h>
 #include <ruby/intern.h>
 #include <stdbool.h>

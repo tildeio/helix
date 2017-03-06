@@ -2,10 +2,14 @@
 #include <ruby/intern.h>
 #include <stdbool.h>
 
-#ifdef HAVE___DECLSPEC
-#define HELIX_EXTERN extern __declspec(dllimport)
+#if defined _WIN32 || defined __CYGWIN__
+  #ifdef BUILDING_DLL
+    #define HELIX_EXTERN __declspec(dllexport)
+  #else
+    #define HELIX_EXTERN __declspec(dllimport)
+  #endif
 #else
-#define HELIX_EXTERN extern
+  #define HELIX_EXTERN extern
 #endif
 
 #ifndef HELIXRUNTIME_H
@@ -15,28 +19,28 @@ HELIX_EXTERN VALUE HELIX_Qtrue;
 HELIX_EXTERN VALUE HELIX_Qfalse;
 HELIX_EXTERN VALUE HELIX_Qnil;
 
-long HELIX_RSTRING_LEN(VALUE string);
-const char* HELIX_RSTRING_PTR(VALUE string);
+HELIX_EXTERN long HELIX_RSTRING_LEN(VALUE string);
+HELIX_EXTERN const char* HELIX_RSTRING_PTR(VALUE string);
 
-long HELIX_RARRAY_LEN(VALUE array);
-void* HELIX_RARRAY_PTR(VALUE array);
+HELIX_EXTERN long HELIX_RARRAY_LEN(VALUE array);
+HELIX_EXTERN void* HELIX_RARRAY_PTR(VALUE array);
 
-bool HELIX_RB_TYPE_P(VALUE v, int type);
-int HELIX_TYPE(VALUE v);
+HELIX_EXTERN bool HELIX_RB_TYPE_P(VALUE v, int type);
+HELIX_EXTERN int HELIX_TYPE(VALUE v);
 
-VALUE HELIX_INT2FIX(int c_int);
-VALUE HELIX_FIX2INT(VALUE fix);
+HELIX_EXTERN VALUE HELIX_INT2FIX(int c_int);
+HELIX_EXTERN VALUE HELIX_FIX2INT(VALUE fix);
 
-VALUE HELIX_rb_utf8_str_new(const char* str, long len);
+HELIX_EXTERN VALUE HELIX_rb_utf8_str_new(const char* str, long len);
 
 // typedef VALUE (*HELIX_rb_alloc_func_t)(VALUE);
 // void HELIX_rb_define_alloc_func(VALUE klass, HELIX_rb_alloc_func_t func);
 
 typedef void (*HELIX_RUBY_DATA_FUNC)(void*);
 
-VALUE HELIX_Data_Wrap_Struct(VALUE klass, HELIX_RUBY_DATA_FUNC mark, HELIX_RUBY_DATA_FUNC free, void* data);
-void* HELIX_Data_Get_Struct_Value(VALUE obj);
-void HELIX_Data_Set_Struct_Value(VALUE obj, void* data);
+HELIX_EXTERN VALUE HELIX_Data_Wrap_Struct(VALUE klass, HELIX_RUBY_DATA_FUNC mark, HELIX_RUBY_DATA_FUNC free, void* data);
+HELIX_EXTERN void* HELIX_Data_Get_Struct_Value(VALUE obj);
+HELIX_EXTERN void HELIX_Data_Set_Struct_Value(VALUE obj, void* data);
 
 HELIX_EXTERN int HELIX_T_NONE;
 HELIX_EXTERN int HELIX_T_NIL;
