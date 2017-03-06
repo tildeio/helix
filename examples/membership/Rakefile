@@ -1,10 +1,14 @@
 require 'bundler/setup'
+require 'helix_runtime/build_task'
 require 'rspec/core/rake_task'
 
-$example_name = 'membership'
-import File.expand_path("../../shared/example.rake", __FILE__)
+ENV['HELIX_ROOT'] = File.expand_path("../../..", __FILE__)
 
-task :benchmark => :build_native do
+HelixRuntime::BuildTask.new("membership") do |t|
+  t.build_path = File.expand_path("../../../target/release", __FILE__)
+end
+
+task :benchmark => "membership:build" do
   exec "ruby -Ilib benchmark.rb"
 end
 
@@ -12,6 +16,6 @@ RSpec::Core::RakeTask.new(:spec) do |t|
   t.verbose = false
 end
 
-task :spec => :build_native
+task :spec => "membership:build"
 task :test => :spec
 task :default => :spec

@@ -1,10 +1,14 @@
 require 'bundler/setup'
+require 'helix_runtime/build_task'
 require 'rake/testtask'
 
-$example_name = 'turbo_blank'
-import File.expand_path("../../shared/example.rake", __FILE__)
+ENV['HELIX_ROOT'] = File.expand_path("../../..", __FILE__)
 
-task :benchmark => :build_native do
+HelixRuntime::BuildTask.new("turbo_blank") do |t|
+  t.build_path = File.expand_path("../../../target/release", __FILE__)
+end
+
+task :benchmark => "turbo_blank:build" do
   exec "ruby -Ilib benchmark.rb"
 end
 
@@ -14,5 +18,5 @@ Rake::TestTask.new(:test) do |t|
   t.test_files = FileList["test/**/*_test.rb"]
 end
 
-task :test => :build_native
+task :test => "turbo_blank:build"
 task :default => :test
