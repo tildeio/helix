@@ -11,12 +11,14 @@ static VALUE TEST_RSTRING_LEN(VALUE _self, VALUE val) {
   return LONG2NUM(HELIX_RSTRING_LEN(val));
 }
 
+// NOTE: We double cast to avoid compiler warning.
+//   http://stackoverflow.com/questions/14711409/compiler-warning-cast-from-pointer-to-integer-of-different-size
 static VALUE TEST_RB_RSTRING_PTR(VALUE _self, VALUE val) {
-  return LONG2NUM((long)RSTRING_PTR(val));
+  return LONG2NUM((long)(uintptr_t)RSTRING_PTR(val));
 }
 
 static VALUE TEST_RSTRING_PTR(VALUE _self, VALUE val) {
-  return LONG2NUM((long)HELIX_RSTRING_PTR(val));
+  return LONG2NUM((long)(uintptr_t)HELIX_RSTRING_PTR(val));
 }
 
 static VALUE TEST_RARRAY_LEN(VALUE _self, VALUE val) {
@@ -24,11 +26,11 @@ static VALUE TEST_RARRAY_LEN(VALUE _self, VALUE val) {
 }
 
 static VALUE TEST_RB_RARRAY_PTR(VALUE _self, VALUE val) {
-  return LONG2NUM((long)RARRAY_PTR(val));
+  return LONG2NUM((long)(uintptr_t)RARRAY_PTR(val));
 }
 
 static VALUE TEST_RARRAY_PTR(VALUE _self, VALUE val) {
-  return LONG2NUM((long)HELIX_RARRAY_PTR(val));
+  return LONG2NUM((long)(uintptr_t)HELIX_RARRAY_PTR(val));
 }
 
 static VALUE TEST_RB_TYPE_P(VALUE _self, VALUE val, VALUE type) {
