@@ -6,8 +6,8 @@ fn main() {
   let target = env::var("TARGET").unwrap();
   if target.contains("windows") {
     let root_str = env::var("HELIX_ROOT").unwrap_or(String::from("."));
-    let out_dir_str = env::var("OUT_DIR").expect("couldn't get OUT_DIR");
-    println!("out_dir_str: {}", out_dir_str);
+    let out_dir_str = env::var("OUT_DIR").expect("OUT_DIR required");
+    let version = env::var("CARGO_PKG_VERSION").expect("CARGO_PKG_VERSION required");
 
     let root = Path::new(root_str.as_str());
     let out_dir = Path::new(out_dir_str.as_str());
@@ -37,10 +37,11 @@ fn main() {
     let windows_build_dir = root.join("ruby").join("windows_build");
 
     // Set up linker
-    println!("cargo:rustc-flags=-L {libpath} -l dylib={libruby} -L {windows_build}",
+    println!("cargo:rustc-flags=-L {libpath} -l dylib={libruby} -L {windows_build} -l helix-runtime:helix-runtime-{version}",
               libpath=out_dir.to_str().expect("can't get str from out_dir"),
               libruby=ruby_libname,
-              windows_build=windows_build_dir.to_str().expect("can't get str from root"));
+              windows_build=windows_build_dir.to_str().expect("can't get str from root"),
+              version=version.replace(".", "-"));
   }
 }
 

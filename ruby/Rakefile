@@ -2,6 +2,7 @@ require "bundler/gem_tasks"
 require "rspec/core/rake_task"
 require "rake/extensiontask"
 
+ENV['HELIX_ROOT'] = File.expand_path("../..", __FILE__)
 
 verbose(!!ENV['VERBOSE'])
 
@@ -13,10 +14,11 @@ end
 
 if RUBY_PLATFORM =~ /mingw/
   build_dir = File.expand_path("windows_build", __dir__)
+  dll_name = "helix-runtime-#{HelixRuntime::VERSION.gsub('.', '-')}"
   native_so_file = File.expand_path("lib/helix_runtime/native.so", __dir__)
   native_def_file = File.expand_path("ext/helix_runtime/native/native.def", __dir__)
-  native_lib_file = File.expand_path("windows_build/helix-runtime.lib", __dir__)
-  native_dll_file = File.expand_path("windows_build/helix-runtime.dll", __dir__)
+  native_lib_file = File.expand_path("windows_build/#{dll_name}.lib", __dir__)
+  native_dll_file = File.expand_path("windows_build/#{dll_name}.dll", __dir__)
 
   directory build_dir
   file native_def_file

@@ -1,6 +1,6 @@
 [package]
 name = "libcruby-sys"
-version = "0.1.0"
+version = "0.5.0"
 authors = ["Godhuda <engineering+godhuda@tilde.io>"]
 build = "build.rs"
 

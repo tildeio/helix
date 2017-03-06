@@ -12,7 +12,7 @@ if RUBY_PLATFORM =~ /mingw/
   end
 
   File.open(File.expand_path("../native.def", __FILE__), 'w') do |f|
-    f.puts "LIBRARY helix-runtime"
+    f.puts "LIBRARY helix-runtime-#{HelixRuntime::VERSION.gsub('.', '-')}"
     f.puts "EXPORTS"
     f.puts exports
     f.puts "Init_native"

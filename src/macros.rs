@@ -309,7 +309,10 @@ macro_rules! init {
     { $($body:tt)* } => {
         #[allow(non_snake_case)]
         #[no_mangle]
-        pub extern "C" fn Init_native() { $($body)* }
+        pub extern "C" fn Init_native() {
+            $crate::sys::check_version();
+            $($body)*
+        }
     }
 }
 
