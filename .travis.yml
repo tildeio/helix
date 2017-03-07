@@ -1,4 +1,9 @@
-dist: trusty
+os:
+  - linux
+  - osx
+
+dist: trusty # For linux
+
 sudo: false
 
 language: ruby
