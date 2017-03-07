@@ -3,6 +3,10 @@ name = "helix"
 version = "0.1.0"
 authors = ["Godhuda <engineering+godhuda@tilde.io>"]
 license = "MIT/Apache-2.0"
+include = [
+  "src/**/*.rs",
+  "Cargo.toml"
+]
 
 [workspace]
 
@@ -16,3 +20,4 @@ version = "0.2"
 
 [dependencies.libcruby-sys]
 path = "crates/libcruby-sys"
+version = "0.5.0"

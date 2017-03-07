@@ -1,5 +1,6 @@
 require 'rake/tasklib'
 require 'rake/clean'
+require 'helix_runtime/version'
 require 'helix_runtime/platform'
 
 module HelixRuntime
@@ -10,6 +11,7 @@ module HelixRuntime
     attr_accessor :name
     attr_accessor :build_path
     attr_accessor :lib_path
+    attr_accessor :helix_lib_dir
 
     def initialize(name = nil, gem_spec = nil)
       init(name, gem_spec)
@@ -47,7 +49,10 @@ module HelixRuntime
       task "#{name}:cargo:build" => "helix:check_path" do
         extra_args = IS_WINDOWS ? "" : " -- -C link-args='-Wl,-undefined,dynamic_lookup'"
 
-        sh "cargo rustc --release #{extra_args}"
+        env = {}
+        env['HELIX_LIB_DIR'] = helix_lib_dir if helix_lib_dir
+
+        sh env, "cargo rustc --release #{extra_args}"
       end
 
       task "#{name}:cargo:clean" do
