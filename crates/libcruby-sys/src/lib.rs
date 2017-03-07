@@ -3,23 +3,16 @@
 
 extern crate libc;
 
-use std::ffi::CString;
+use std::ffi::CStr;
 
-pub const RUNTIME_VERSION: &'static str = env!("CARGO_PKG_VERSION");
+pub const PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 pub fn check_version() {
-    // All this to look up `HelixRuntime::VERSION`!
-    let runtime_name = unsafe { rb_intern(CString::new("HelixRuntime").unwrap().as_ptr()) };
-    let version_name = unsafe { rb_intern(CString::new("VERSION").unwrap().as_ptr()) };
-    let rb_HelixRuntime = unsafe { rb_const_get(rb_cObject, runtime_name) };
-    let rb_VERSION = unsafe { rb_const_get(rb_HelixRuntime, version_name) };
-    let size = unsafe { RSTRING_LEN(rb_VERSION) };
-    let ptr = unsafe { RSTRING_PTR(rb_VERSION) };
-    let slice = unsafe { std::slice::from_raw_parts(ptr as *const u8, size as usize) };
-    let version = unsafe { std::str::from_utf8_unchecked(slice) };
+    let raw_version = unsafe { CStr::from_ptr(HELIX_RUNTIME_VERSION) };
+    let version = raw_version.to_str().expect("HELIX_RUNTIME_VERSION must be defined");
 
-    if RUNTIME_VERSION != version {
-        panic!("Helix Rust runtime version ({}) doesn't match Ruby runtime version ({}).", RUNTIME_VERSION, version);
+    if PKG_VERSION != version {
+        panic!("libcsys-ruby version ({}) doesn't match helix_runtime version ({}).", PKG_VERSION, version);
     }
 }
 
@@ -57,6 +50,9 @@ pub const EMPTY_EXCEPTION: RubyException = RubyException(0);
 
 #[cfg_attr(windows, link(name="helix-runtime"))]
 extern "C" {
+    #[link_name = "HELIX_RUNTIME_VERSION"]
+    pub static HELIX_RUNTIME_VERSION: c_string;
+
     #[link_name = "HELIX_Qfalse"]
     pub static Qfalse: VALUE;
 
