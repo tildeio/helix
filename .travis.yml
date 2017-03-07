@@ -13,7 +13,6 @@ cache:
 
 env:
   global:
-    - IMPLEMENTATION=RUST
     - EXAMPLES="console membership turbo_blank"
     - VERBOSE=true
     # This isn't expected to pass yet

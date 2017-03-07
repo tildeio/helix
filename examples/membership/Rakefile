@@ -16,5 +16,11 @@ RSpec::Core::RakeTask.new(:spec) do |t|
 end
 
 task :spec => "membership:build"
-task :test => :spec
-task :default => :spec
+
+task :test do
+  ['RUST', 'FAST_RUBY', 'NAIVE_RUBY'].each do |impl|
+    sh({ 'IMPLEMENTATION' => impl }, 'rake spec')
+  end
+end
+
+task :default => :test
