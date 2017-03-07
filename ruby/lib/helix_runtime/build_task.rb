@@ -31,15 +31,24 @@ module HelixRuntime
 
       task "helix:check_path" do
         if IS_WINDOWS
-          dll = "helix-runtime-#{VERSION.gsub('.', '-')}.#{Platform.libext}"
-          found = ENV['PATH'].split(';').any? do |dir|
-            File.exist?(File.expand_path("#{dir}/#{dll}", __FILE__))
+          unless dll_path
+            abort "Unable to find #{dll_filename} in $PATH.\n" \
+                  "Run `rake helix:copy_dll` to copy to your Ruby bin dir or manually copy #{File.expand_path("../native.so", __FILE__)} to #{dll_filename} at a location in your $PATH"
           end
+        else
+          # No-op
+        end
+      end
 
-          unless found
-            abort "Unable to find #{dll} in $PATH.\n" \
-                  "Please copy #{File.expand_path("../native.so", __FILE__)} to #{dll} at a location in your $PATH"
-          end
+      task "helix:copy_dll" do
+        if IS_WINDOWS
+          so_path = File.expand_path("../native.#{Platform.dlext}", __FILE__)
+          abort "Unable to find native bundle at #{so_path}" unless File.exists?(so_path)
+
+          bindir = RbConfig::CONFIG['bindir']
+          abort "Unable to determine Ruby bindir" unless bindir
+
+          cp so_path, File.join(bindir, dll_filename)
         else
           # No-op
         end
@@ -47,6 +56,8 @@ module HelixRuntime
 
       # Checking the path isn't a real dependency, but this is a good time to do it
       task "#{name}:cargo:build" => "helix:check_path" do
+        # Allowing all methods to be undefined is a bit risky, would be nice to have a specific list.
+        # We have to do this here since Cargo has no internal means of specifying `-C` flags
         extra_args = IS_WINDOWS ? "" : " -- -C link-args='-Wl,-undefined,dynamic_lookup'"
 
         env = {}
@@ -78,6 +89,24 @@ module HelixRuntime
       task "#{name}:irb" => native_path do
         exec "irb -lib -r#{name}"
       end
+    end
+
+    private
+
+    def dll_filename
+      @dll_filename ||= "helix-runtime-#{VERSION.gsub('.', '-')}.#{Platform.libext}"
+    end
+
+    def dll_path
+      return nil unless IS_WINDOWS
+      return @dll_path if @dll_path_searched
+
+      dir = ENV['PATH'].split(';').find do |dir|
+        File.exist?(File.expand_path("#{dir}/#{dll_filename}", __FILE__))
+      end
+
+      @dll_path_searched = true
+      @dll_path = dir ? File.join(dir, dll_filename) : nil
     end
 
   end
