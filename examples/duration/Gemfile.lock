@@ -2,6 +2,7 @@ PATH
   remote: ../../ruby
   specs:
     helix_runtime (0.5.0)
+      rake (~> 10.0)
 
 PATH
   remote: .
@@ -17,6 +18,8 @@ GEM
 
 PLATFORMS
   ruby
+  x64-mingw32
+  x86-mingw32
 
 DEPENDENCIES
   bundler (~> 1.11)
@@ -26,4 +29,4 @@ DEPENDENCIES
   rake (~> 10.0)
 
 BUNDLED WITH
-   1.12.5
+   1.14.6

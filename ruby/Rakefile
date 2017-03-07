@@ -2,12 +2,43 @@ require "bundler/gem_tasks"
 require "rspec/core/rake_task"
 require "rake/extensiontask"
 
-verbose(false)
+ENV['HELIX_ROOT'] = File.expand_path("../..", __FILE__)
+
+verbose(!!ENV['VERBOSE'])
 
 Rake::ExtensionTask.new do |ext|
   ext.name = "native"
   ext.ext_dir = "ext/helix_runtime/native"
   ext.lib_dir = "lib/helix_runtime"
+end
+
+if RUBY_PLATFORM =~ /mingw/
+  build_dir = File.expand_path("windows_build", __dir__)
+  dll_name = "helix-runtime-#{HelixRuntime::VERSION.gsub('.', '-')}"
+  native_so_file = File.expand_path("lib/helix_runtime/native.so", __dir__)
+  native_def_file = File.expand_path("ext/helix_runtime/native/native.def", __dir__)
+  native_lib_file = File.expand_path("windows_build/#{dll_name}.lib", __dir__)
+  native_dll_file = File.expand_path("windows_build/#{dll_name}.dll", __dir__)
+
+  directory build_dir
+  file native_def_file
+  file native_so_file
+
+  file native_lib_file => [build_dir, native_def_file] do
+    machine = RbConfig::CONFIG['target_cpu'] == 'x64' ? 'X64' : 'X86'
+
+    sh "lib.exe /def:#{native_def_file} " \
+            "/out:#{native_lib_file} " \
+            "/machine:#{machine}"
+  end
+
+  file native_dll_file => native_so_file do
+    cp native_so_file, native_dll_file
+  end
+
+  Rake::Task["compile:native:#{RUBY_PLATFORM}"].enhance([native_lib_file, native_dll_file])
+
+  CLOBBER.include(native_def_file, "windows_build")
 end
 
 Rake::ExtensionTask.new do |ext|

@@ -16,6 +16,9 @@ Bundler version 1.14.4
 2. `bundle install`
 3. `bundle exec rake`
 
+NOTE: On Windows you'll need to add the `windows_build` directory to your PATH
+for the DLLs to load correctly.
+
 ### Example
 1. Go to helix/examples/project-name
 2. `bundle install`

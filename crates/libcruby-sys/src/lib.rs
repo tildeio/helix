@@ -3,6 +3,19 @@
 
 extern crate libc;
 
+use std::ffi::CStr;
+
+pub const PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
+pub fn check_version() {
+    let raw_version = unsafe { CStr::from_ptr(HELIX_RUNTIME_VERSION) };
+    let version = raw_version.to_str().expect("HELIX_RUNTIME_VERSION must be defined");
+
+    if PKG_VERSION != version {
+        panic!("libcsys-ruby version ({}) doesn't match helix_runtime version ({}).", PKG_VERSION, version);
+    }
+}
+
 pub type void_ptr = *const libc::c_void;
 pub type c_string = *const libc::c_char;
 // pub type c_func = extern "C" fn(...);
@@ -35,7 +48,11 @@ impl RubyException {
 
 pub const EMPTY_EXCEPTION: RubyException = RubyException(0);
 
+#[cfg_attr(windows, link(name="helix-runtime"))]
 extern "C" {
+    #[link_name = "HELIX_RUNTIME_VERSION"]
+    pub static HELIX_RUNTIME_VERSION: c_string;
+
     #[link_name = "HELIX_Qfalse"]
     pub static Qfalse: VALUE;
 

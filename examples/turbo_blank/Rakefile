@@ -1,18 +1,28 @@
 require 'bundler/setup'
+require 'helix_runtime/build_task'
 require 'rake/testtask'
 
-$example_name = 'turbo_blank'
-import File.expand_path("../../shared/example.rake", __FILE__)
+HelixRuntime::BuildTask.new("turbo_blank") do |t|
+  t.build_path = File.expand_path("../../../target/release", __FILE__)
+  t.helix_lib_dir = File.expand_path("../../../ruby/windows_build", __FILE__)
+end
 
-task :benchmark => :build_native do
+task :benchmark => "turbo_blank:build" do
   exec "ruby -Ilib benchmark.rb"
 end
 
-Rake::TestTask.new(:test) do |t|
+Rake::TestTask.new(:base_test) do |t|
   t.libs << "test"
   t.libs << "lib"
   t.test_files = FileList["test/**/*_test.rb"]
 end
 
-task :test => :build_native
+task :base_test => "turbo_blank:build"
+
+task :test do
+  ['RUST', 'RAILS_4_2', 'RAILS_5'].each do |impl|
+    sh({ 'IMPLEMENTATION' => impl }, 'rake base_test')
+  end
+end
+
 task :default => :test

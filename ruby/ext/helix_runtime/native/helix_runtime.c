@@ -1,7 +1,12 @@
+#define BUILDING_DLL
+
 #include <ruby.h>
 #include <ruby/intern.h>
 #include <stdbool.h>
 #include <helix_runtime.h>
+
+// Update with version.rb
+const char* HELIX_RUNTIME_VERSION = "0.5.0";
 
 VALUE HELIX_Qtrue = Qtrue;
 VALUE HELIX_Qfalse = Qfalse;
