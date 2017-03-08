@@ -55,7 +55,7 @@ module HelixRuntime
       end
 
       # Checking the path isn't a real dependency, but this is a good time to do it
-      task "#{name}:cargo:build" => "helix:check_path" do
+      task "cargo:build" => "helix:check_path" do
         # We have to do this here since Cargo has no internal means of specifying `-C` flags
         link_args = if IS_WINDOWS
           # SAFESEH is added to i686 Rust hosts
@@ -76,27 +76,28 @@ module HelixRuntime
         sh env, "cargo rustc --release#{extra_args}"
       end
 
-      task "#{name}:cargo:clean" do
+      task "cargo:clean" do
         sh "cargo clean"
       end
 
       directory lib_path
 
-      task "clobber" => "#{name}:cargo:clean"
+      task :clobber => "cargo:clean"
 
       libfile_prefix = IS_WINDOWS ? '' : 'lib'
       native_path = "#{lib_path}/native.#{Platform.dlext}"
       native_lib = "#{libfile_prefix}#{name}.#{Platform.libext}"
 
-      file native_path => [lib_path, "#{name}:cargo:build"] do
+      file native_path => [lib_path, "cargo:build"] do
         cp "#{build_path}/#{native_lib}", native_path
       end
       CLOBBER.include(native_path)
 
-      desc "Build Helix Library for #{name}"
-      task "#{name}:build" => native_path
+      desc "Build #{name}"
+      task :build => native_path
 
-      task "#{name}:irb" => native_path do
+      desc "Launch an IRB console for #{name}"
+      task :irb => :build do
         exec "bundle exec irb -r#{name}"
       end
     end

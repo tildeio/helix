@@ -6,7 +6,7 @@ set -e
 DIR=$(dirname "${BASH_SOURCE[0]}")/..
 
 pushd "$DIR/ruby"
-bundle exec rake rspec
+bundle exec rake
 popd
 
-$DIR/examples/runner test $EXAMPLES
+$DIR/examples/runner default $EXAMPLES
