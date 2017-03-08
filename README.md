@@ -2,6 +2,9 @@ Read the [*Introducting Helix*](http://blog.skylight.io/introducing-helix/) for 
 
 * * *
 
+[![Travis Build Status](https://travis-ci.org/tildeio/helix.svg?branch=master)](https://travis-ci.org/tildeio/helix)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/tildeio/helix?svg=true)](https://ci.appveyor.com/project/wagenet/helix)
+
 WARNING: This repository is still in active development. **The vast majority of important Ruby
 APIs are not yet supported**, because we are still in the process of formulating the rules for
 binding Ruby APIs (so that we can make things ergonomic and provide **safety guarantees**).
