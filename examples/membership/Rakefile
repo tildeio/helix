@@ -7,7 +7,7 @@ HelixRuntime::BuildTask.new("membership") do |t|
   t.helix_lib_dir = File.expand_path("../../../ruby/windows_build", __FILE__)
 end
 
-task :benchmark => "membership:build" do
+task :benchmark => :build do
   exec "ruby -Ilib benchmark.rb"
 end
 
@@ -15,12 +15,12 @@ RSpec::Core::RakeTask.new(:spec) do |t|
   t.verbose = false
 end
 
-task :spec => "membership:build"
+task :spec => :build
 
-task :test do
+task "spec:all" do
   ['RUST', 'FAST_RUBY', 'NAIVE_RUBY'].each do |impl|
     sh({ 'IMPLEMENTATION' => impl }, 'rake spec')
   end
 end
 
-task :default => :test
+task :default => "spec:all"
