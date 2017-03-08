@@ -3,6 +3,7 @@ mod string;
 mod unit;
 mod bool;
 mod integers;
+mod option;
 
 use sys::{VALUE};
 use std::ffi::CString;

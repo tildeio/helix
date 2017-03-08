@@ -39,6 +39,62 @@ declare_types! {
             }
         }
 
+        def seconds(&self) -> Option<i32> {
+            self.seconds
+        }
+
+        def set_seconds(&mut self, seconds: Option<i32>) {
+            self.seconds = seconds;
+        }
+
+        def minutes(&self) -> Option<i32> {
+            self.minutes
+        }
+
+        def set_minutes(&mut self, minutes: Option<i32>) {
+            self.minutes = minutes;
+        }
+
+        def hours(&self) -> Option<i32> {
+            self.hours
+        }
+
+        def set_hours(&mut self, hours: Option<i32>) {
+            self.hours = hours;
+        }
+
+        def days(&self) -> Option<i32> {
+            self.days
+        }
+
+        def set_days(&mut self, days: Option<i32>) {
+            self.days = days;
+        }
+
+        def weeks(&self) -> Option<i32> {
+            self.weeks
+        }
+
+        def set_weeks(&mut self, weeks: Option<i32>) {
+            self.weeks = weeks;
+        }
+
+        def months(&self) -> Option<i32> {
+            self.months
+        }
+
+        def set_months(&mut self, months: Option<i32>) {
+            self.months = months;
+        }
+
+        def years(&self) -> Option<i32> {
+            self.years
+        }
+
+        def set_years(&mut self, years: Option<i32>) {
+            self.years = years;
+        }
+
         def value(&self) -> i64 {
             self.value
         }
