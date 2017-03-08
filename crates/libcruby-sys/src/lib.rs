@@ -104,6 +104,18 @@ extern "C" {
     #[link_name = "HELIX_I642NUM"]
     pub fn I642NUM(num: i64) -> VALUE;
 
+    #[link_name = "HELIX_NUM2U32"]
+    pub fn NUM2U32(v: VALUE) -> u32;
+
+    #[link_name = "HELIX_U322NUM"]
+    pub fn U322NUM(num: u32) -> VALUE;
+
+    #[link_name = "HELIX_NUM2I32"]
+    pub fn NUM2I32(v: VALUE) -> i32;
+
+    #[link_name = "HELIX_I322NUM"]
+    pub fn I322NUM(num: i32) -> VALUE;
+
     #[link_name = "HELIX_T_STRING"]
     pub static T_STRING: isize;
 

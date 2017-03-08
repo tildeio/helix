@@ -61,6 +61,22 @@ VALUE HELIX_I642NUM(RUST_I64 num) {
   return LL2NUM(num);
 }
 
+RUST_U32 HELIX_NUM2U32(VALUE obj) {
+  return NUM2UINT(obj);
+}
+
+VALUE HELIX_U322NUM(RUST_U32 num) {
+  return UINT2NUM(num);
+}
+
+RUST_I32 HELIX_NUM2I32(VALUE obj) {
+  return NUM2INT(obj);
+}
+
+VALUE HELIX_I322NUM(RUST_I32 num) {
+  return INT2NUM(num);
+}
+
 void* HELIX_Data_Get_Struct_Value(VALUE obj) {
   void* data;
   Data_Get_Struct(obj, void*, data);
