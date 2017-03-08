@@ -56,14 +56,24 @@ module HelixRuntime
 
       # Checking the path isn't a real dependency, but this is a good time to do it
       task "#{name}:cargo:build" => "helix:check_path" do
-        # Allowing all methods to be undefined is a bit risky, would be nice to have a specific list.
         # We have to do this here since Cargo has no internal means of specifying `-C` flags
-        extra_args = IS_WINDOWS ? "" : " -- -C link-args='-Wl,-undefined,dynamic_lookup'"
+        link_args = if IS_WINDOWS
+          # SAFESEH is added to i686 Rust hosts
+          # https://github.com/rust-lang/rust/blob/1.15.1/src/librustc_back/target/i686_pc_windows_msvc.rs#L25
+          if `rustc -vV` =~ /host:\s+i686/
+            '/SAFESEH:NO' # Can't use SAFESEH with .libs from dlltool
+          end
+        else
+          # Allowing all methods to be undefined is a bit risky, would be nice to have a specific list.
+          '-Wl,-undefined,dynamic_lookup'
+        end
 
         env = {}
         env['HELIX_LIB_DIR'] = helix_lib_dir if helix_lib_dir
 
-        sh env, "cargo rustc --release #{extra_args}"
+        extra_args = link_args ? " -- -C link-args=#{link_args}" : ''
+
+        sh env, "cargo rustc --release#{extra_args}"
       end
 
       task "#{name}:cargo:clean" do

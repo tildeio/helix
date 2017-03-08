@@ -25,11 +25,9 @@ if RUBY_PLATFORM =~ /mingw/
   file native_so_file
 
   file native_lib_file => [build_dir, native_def_file] do
-    machine = RbConfig::CONFIG['target_cpu'] == 'x64' ? 'X64' : 'X86'
-
-    sh "lib.exe /def:#{native_def_file} " \
-            "/out:#{native_lib_file} " \
-            "/machine:#{machine}"
+    # Generate and then move. Symbols include generated file name, so avoid long path.
+    sh "dlltool.exe -D #{dll_name} -d #{native_def_file} -l #{File.basename(native_lib_file)}"
+    mv File.basename(native_lib_file), native_lib_file
   end
 
   file native_dll_file => native_so_file do

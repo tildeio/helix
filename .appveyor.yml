@@ -14,7 +14,7 @@ environment:
       RUST_HOST: x86_64-pc-windows-msvc
 
 install:
-  - set PATH=C:\Ruby%RUBY_VERSION%\bin;C:\Ruby%RUBY_VERSION%\DevKit\bin;C:\Ruby%RUBY_VERSION%\DevKit\mingw\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;%HOMEPATH%\.cargo\bin;%APPVEYOR_BUILD_FOLDER%\ruby\windows_build;%PATH%
+  - set PATH=C:\Ruby%RUBY_VERSION%\bin;C:\Ruby%RUBY_VERSION%\DevKit\bin;C:\Ruby%RUBY_VERSION%\DevKit\mingw\bin;%HOMEPATH%\.cargo\bin;%APPVEYOR_BUILD_FOLDER%\ruby\windows_build;%PATH%
   - echo %PATH%
   - set HELIX_ROOT=%APPVEYOR_BUILD_FOLDER%
   - curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly --default-host %RUST_HOST% -y
