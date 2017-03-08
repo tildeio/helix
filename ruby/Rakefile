@@ -24,12 +24,17 @@ if RUBY_PLATFORM =~ /mingw/
   file native_def_file
   file native_so_file
 
+  # Build a .lib file for linking in dummy native and libcruby-sys
+  # This file needs to be copied to the libcruby-sys directory for distribution.
   file native_lib_file => [build_dir, native_def_file] do
     # Generate and then move. Symbols include generated file name, so avoid long path.
     sh "dlltool.exe -D #{dll_name} -d #{native_def_file} -l #{File.basename(native_lib_file)}"
     mv File.basename(native_lib_file), native_lib_file
   end
 
+  # Copy the native.so to the appropriately named .dll. This makes it easy to
+  # add the windows_build directory to PATH for testing on Windows. This file
+  # isn't used in any distributions.
   file native_dll_file => native_so_file do
     cp native_so_file, native_dll_file
   end
