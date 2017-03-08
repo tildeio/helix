@@ -2,6 +2,7 @@ mod slice;
 mod string;
 mod unit;
 mod bool;
+mod integers;
 
 use sys::{VALUE};
 use std::ffi::CString;

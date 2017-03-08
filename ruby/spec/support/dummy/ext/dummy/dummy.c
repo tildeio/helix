@@ -48,6 +48,22 @@ static VALUE TEST_FIX2INT(VALUE _self, VALUE val) {
   return INT2FIX(HELIX_FIX2INT(val));
 }
 
+static VALUE TEST_NUM2U64(VALUE _self, VALUE val) {
+  return ULL2NUM(HELIX_NUM2U64(val));
+}
+
+static VALUE TEST_U642NUM(VALUE _self, VALUE val) {
+  return HELIX_U642NUM(NUM2ULL(val));
+}
+
+static VALUE TEST_NUM2I64(VALUE _self, VALUE val) {
+  return LL2NUM(HELIX_NUM2I64(val));
+}
+
+static VALUE TEST_I642NUM(VALUE _self, VALUE val) {
+  return HELIX_I642NUM(NUM2LL(val));
+}
+
 static VALUE TEST_STR2STR(VALUE _self, VALUE str, VALUE len) {
   return HELIX_rb_utf8_str_new(RSTRING_PTR(str), FIX2LONG(len));
 }
@@ -140,6 +156,11 @@ void Init_dummy() {
   EXPORT_FUNC(TYPE, 1);
   EXPORT_FUNC(INT2FIX, 1);
   EXPORT_FUNC(FIX2INT, 1);
+
+  EXPORT_FUNC(NUM2U64, 1);
+  EXPORT_FUNC(U642NUM, 1);
+  EXPORT_FUNC(NUM2I64, 1);
+  EXPORT_FUNC(I642NUM, 1);
 
   EXPORT_FUNC(STR2STR, 2);
 

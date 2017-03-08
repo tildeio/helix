@@ -45,6 +45,22 @@ VALUE HELIX_Data_Wrap_Struct(VALUE klass, HELIX_RUBY_DATA_FUNC mark, HELIX_RUBY_
   return Data_Wrap_Struct(klass, mark, free, data);
 }
 
+RUST_U64 HELIX_NUM2U64(VALUE obj) {
+  return NUM2ULL(obj);
+}
+
+VALUE HELIX_U642NUM(RUST_U64 num) {
+  return ULL2NUM(num);
+}
+
+RUST_I64 HELIX_NUM2I64(VALUE obj) {
+  return NUM2LL(obj);
+}
+
+VALUE HELIX_I642NUM(RUST_I64 num) {
+  return LL2NUM(num);
+}
+
 void* HELIX_Data_Get_Struct_Value(VALUE obj) {
   void* data;
   Data_Get_Struct(obj, void*, data);

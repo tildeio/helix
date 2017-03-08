@@ -39,8 +39,8 @@ declare_types! {
             }
         }
 
-        def value(&self) -> /* i64 */ String {
-            format!("{}", self.value)
+        def value(&self) -> i64 {
+            self.value
         }
 
         def plus(&mut self, other: &Duration) {

@@ -92,6 +92,18 @@ extern "C" {
 
     pub fn rb_check_type(v: VALUE, rb_type: isize);
 
+    #[link_name = "HELIX_NUM2U64"]
+    pub fn NUM2U64(v: VALUE) -> u64;
+
+    #[link_name = "HELIX_U642NUM"]
+    pub fn U642NUM(num: u64) -> VALUE;
+
+    #[link_name = "HELIX_NUM2I64"]
+    pub fn NUM2I64(v: VALUE) -> i64;
+
+    #[link_name = "HELIX_I642NUM"]
+    pub fn I642NUM(num: i64) -> VALUE;
+
     #[link_name = "HELIX_T_STRING"]
     pub static T_STRING: isize;
 
@@ -103,6 +115,12 @@ extern "C" {
 
     #[link_name = "HELIX_T_FALSE"]
     pub static T_FALSE: isize;
+
+    #[link_name = "HELIX_T_FIXNUM"]
+    pub static T_FIXNUM: isize;
+
+    #[link_name = "HELIX_T_BIGNUM"]
+    pub static T_BIGNUM: isize;
 
     // unknown if working?
     // fn rb_define_variable(name: c_string, value: *const VALUE);
