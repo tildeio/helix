@@ -87,7 +87,7 @@ module HelixRuntime
       task "#{name}:build" => native_path
 
       task "#{name}:irb" => native_path do
-        exec "irb -lib -r#{name}"
+        exec "bundle exec irb -r#{name}"
       end
     end
 
