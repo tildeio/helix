@@ -6,7 +6,7 @@ if RUBY_PLATFORM =~ /mingw/
 
   exports = []
   File.readlines(header_path).each do |line|
-    if line =~ /^\w.+(HELIX_[\w_]+)[;\(]/
+    if line =~ /^\w.+(HELIX_\w+)[;\(]/
       exports << $1
     end
   end
