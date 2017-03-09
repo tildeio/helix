@@ -43,11 +43,27 @@ end
 
 directory windows_build_dir
 
+def dlltool
+  # allow override with env vars
+  if dlltool_env = ENV['DLLTOOL']
+    dlltool_env
+  # if on windows
+  elsif RUBY_PLATFORM =~ /mingw/
+    "dlltool.exe"
+  elsif system("x86_64-w64-mingw32-dlltool > /dev/null")
+    "x86_64-w64-mingw32-dlltool"
+  elsif system("i686-w64-mingw32-dlltool > /dev/null")
+    "i686-w64-mingw32-dlltool"
+  else
+    "dlltool"
+  end
+end
+
 # Build a .lib file for linking in dummy native and libcruby-sys
 # This file needs to be copied to the libcruby-sys directory for distribution.
 file native_lib_file => [windows_build_dir, native_def_file] do
   # Generate and then move. Symbols include generated file name, so avoid long path.
-  sh "dlltool.exe -D #{dll_name} -d #{native_def_file} -l #{File.basename(native_lib_file)}"
+  sh "#{dlltool} -D #{dll_name} -d #{native_def_file} -l #{File.basename(native_lib_file)}"
   mv File.basename(native_lib_file), native_lib_file
 end
 task :native_lib_file => native_lib_file
