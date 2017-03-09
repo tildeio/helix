@@ -15,15 +15,18 @@ fn main() {
 
   // Best way I could find to tell if we're packaging vs just building
   let is_packaging = root.parent().expect("root has no parent").ends_with("target/package");
-  let libfile = format!("helix-runtime-{}.lib", version.replace(".", "-"));
+  let libname32 = format!("helix-runtime-{}.i386", version.replace(".", "-"));
+  let libname64 = format!("helix-runtime-{}.x86_64", version.replace(".", "-"));
+  let libname = if target.starts_with("x86_64") { libname64.clone() } else { libname32.clone() };
 
   // Not required for non-Windows, but it needs to be part of the package
-  if is_packaging && !root.join(&libfile).exists() {
-      panic!("{} must exist when packaging. Copy from ruby/windows_build", libfile);
+  if is_packaging && (!root.join(format!("{}.lib", libname32)).exists() ||
+                      !root.join(format!("{}.lib", libname64)).exists()) {
+    panic!("{}.lib and {}.lib must exist when packaging. Please run ./prepackage.sh", libname32, libname64);
   }
 
-  if !lib_root.join(&libfile).exists() && target.contains("windows") {
-      panic!("{} must exist when running. Set HELIX_LIB_DIR or copy from ruby/windows_build", libfile);
+  if target.contains("windows") && !lib_root.join(format!("{}.lib", libname)).exists() {
+    panic!("{}.lib must exist when running. Set HELIX_LIB_DIR to ruby/windows_build for development.", libname);
   }
 
   if target.contains("windows") {
@@ -52,11 +55,11 @@ fn main() {
         .expect("unable to copy libruby");
 
     // Set up linker
-    println!("cargo:rustc-flags=-L {libpath} -l dylib={libruby} -L {root} -l helix-runtime:helix-runtime-{version}",
+    println!("cargo:rustc-flags=-L {libpath} -l dylib={libruby} -L {root} -l helix-runtime:{libname}",
               libpath=out_dir.to_str().expect("can't get str from out_dir"),
               libruby=ruby_libname,
               root=lib_root.to_str().expect("can't get str from root dir"),
-              version=version.replace(".", "-"));
+              libname=libname);
   }
 }
 

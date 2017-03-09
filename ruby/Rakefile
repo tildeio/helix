@@ -1,10 +1,42 @@
 require "bundler/gem_tasks"
 require "rspec/core/rake_task"
 require "rake/extensiontask"
+require "tmpdir"
 
 ENV['HELIX_ROOT'] = File.expand_path("../..", __FILE__)
 
 verbose(!!ENV['VERBOSE'])
+
+native_header_path = File.expand_path("ext/helix_runtime/native/helix_runtime.h", __dir__)
+native_def_file = File.expand_path("ext/helix_runtime/native/native.def", __dir__)
+windows_build_dir = File.expand_path("windows_build", __dir__)
+dll_name = "helix-runtime-#{HelixRuntime::VERSION.gsub('.', '-')}"
+native_so_file = File.expand_path("lib/helix_runtime/native.so", __dir__)
+native_lib_file = File.join(windows_build_dir, "#{dll_name}.lib")
+native_lib_file_32 = File.join(windows_build_dir, "#{dll_name}.i386.lib")
+native_lib_file_64 = File.join(windows_build_dir, "#{dll_name}.x86_64.lib")
+native_dll_file = File.join(windows_build_dir, "#{dll_name}.dll")
+
+file native_header_path
+file native_def_file => native_header_path do
+  # Hackish way to pull exported methods out of the header
+  exports = []
+  File.readlines(native_header_path).each do |line|
+    if line =~ /^\w.+(HELIX_\w+)[;\(]/
+      exports << $1
+    end
+  end
+
+  File.open(File.expand_path("ext/helix_runtime/native/native.def", __dir__), 'w') do |f|
+    f.puts "LIBRARY helix-runtime-#{HelixRuntime::VERSION.gsub('.', '-')}"
+    f.puts "EXPORTS"
+    f.puts exports
+    f.puts "Init_native"
+  end
+end
+
+task :native_def_file => native_def_file
+CLOBBER.include(native_def_file)
 
 Rake::ExtensionTask.new do |ext|
   ext.name = "native"
@@ -12,25 +44,66 @@ Rake::ExtensionTask.new do |ext|
   ext.lib_dir = "lib/helix_runtime"
 end
 
-if RUBY_PLATFORM =~ /mingw/
-  build_dir = File.expand_path("windows_build", __dir__)
-  dll_name = "helix-runtime-#{HelixRuntime::VERSION.gsub('.', '-')}"
-  native_so_file = File.expand_path("lib/helix_runtime/native.so", __dir__)
-  native_def_file = File.expand_path("ext/helix_runtime/native/native.def", __dir__)
-  native_lib_file = File.expand_path("windows_build/#{dll_name}.lib", __dir__)
-  native_dll_file = File.expand_path("windows_build/#{dll_name}.dll", __dir__)
+directory windows_build_dir
 
-  directory build_dir
-  file native_def_file
-  file native_so_file
-
-  # Build a .lib file for linking in dummy native and libcruby-sys
-  # This file needs to be copied to the libcruby-sys directory for distribution.
-  file native_lib_file => [build_dir, native_def_file] do
-    # Generate and then move. Symbols include generated file name, so avoid long path.
-    sh "dlltool.exe -D #{dll_name} -d #{native_def_file} -l #{File.basename(native_lib_file)}"
-    mv File.basename(native_lib_file), native_lib_file
+def dlltool
+  # allow override with env vars
+  if dlltool_env = ENV['DLLTOOL']
+    dlltool_env
+  # if on windows
+  elsif RUBY_PLATFORM =~ /mingw/
+    "dlltool.exe"
+  elsif system("x86_64-w64-mingw32-dlltool > /dev/null")
+    "x86_64-w64-mingw32-dlltool"
+  elsif system("i686-w64-mingw32-dlltool > /dev/null")
+    "i686-w64-mingw32-dlltool"
+  else
+    "dlltool"
   end
+end
+
+def build_native_lib(arch, dll_name, native_def_file, target)
+  Dir.mktmpdir do |dir|
+    Dir.chdir(dir) do
+      # Generate and then move. Symbols include generated file name, so avoid long path.
+      cmd = [dlltool]
+      cmd << "-D #{dll_name}"
+      cmd << "-m #{arch}" if arch
+      cmd << "-d #{native_def_file}"
+      cmd << "-l #{dll_name}.lib"
+      sh cmd.join(" ")
+
+      mv "#{dll_name}.lib", target
+    end
+  end
+end
+
+# Build 32- and 64-bit .lib files for linking in libcruby-sys
+# These file need to be copied to the libcruby-sys directory for distribution.
+task :native_lib_files => [native_lib_file_64, native_lib_file_32]
+file native_lib_file_64 => [windows_build_dir, native_def_file] do
+  begin
+    build_native_lib("i386:x86-64", dll_name, native_def_file, native_lib_file_64)
+  rescue RuntimeError
+    if RbConfig::CONFIG['host_cpu'] !~ /64/
+      warn "Unable to build 64-bit lib file. This is likely due to a 32-bit version of dlltool."
+    else
+      raise
+    end
+  end
+end
+
+file native_lib_file_32 => [windows_build_dir, native_def_file] do
+  build_native_lib("i386", dll_name, native_def_file, native_lib_file_32)
+end
+
+# Build a .lib file for linking in dummy native
+file native_lib_file => [windows_build_dir, native_def_file] do
+  build_native_lib(nil, dll_name, native_def_file, native_lib_file)
+end
+
+if RUBY_PLATFORM =~ /mingw/
+  file native_so_file
 
   # Copy the native.so to the appropriately named .dll. This makes it easy to
   # add the windows_build directory to PATH for testing on Windows. This file
@@ -40,9 +113,9 @@ if RUBY_PLATFORM =~ /mingw/
   end
 
   Rake::Task["compile:native:#{RUBY_PLATFORM}"].enhance([native_lib_file, native_dll_file])
-
-  CLOBBER.include(native_def_file, "windows_build")
 end
+
+CLOBBER.include(windows_build_dir)
 
 Rake::ExtensionTask.new do |ext|
   ext.name = "dummy"
@@ -56,3 +129,8 @@ end
 
 task :rspec => :compile
 task :default => :rspec
+
+# On Windows, also build native_lib_files to help with dev
+if RUBY_PLATFORM =~ /mingw/
+  task :default => :native_lib_files
+end
