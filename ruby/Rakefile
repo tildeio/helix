@@ -1,6 +1,7 @@
 require "bundler/gem_tasks"
 require "rspec/core/rake_task"
 require "rake/extensiontask"
+require "tmpdir"
 
 ENV['HELIX_ROOT'] = File.expand_path("../..", __FILE__)
 
@@ -12,6 +13,8 @@ windows_build_dir = File.expand_path("windows_build", __dir__)
 dll_name = "helix-runtime-#{HelixRuntime::VERSION.gsub('.', '-')}"
 native_so_file = File.expand_path("lib/helix_runtime/native.so", __dir__)
 native_lib_file = File.join(windows_build_dir, "#{dll_name}.lib")
+native_lib_file_32 = File.join(windows_build_dir, "#{dll_name}.i386.lib")
+native_lib_file_64 = File.join(windows_build_dir, "#{dll_name}.x86_64.lib")
 native_dll_file = File.join(windows_build_dir, "#{dll_name}.dll")
 
 file native_header_path
@@ -59,35 +62,37 @@ def dlltool
   end
 end
 
-def build_native_lib(arch, dll_name, native_def_file, native_lib_file)
-  # Generate and then move. Symbols include generated file name, so avoid long path.
-  cmd = [dlltool]
-  cmd << "-D #{dll_name}"
-  cmd << "-m #{arch}" if arch
-  cmd << "-d #{native_def_file}"
-  cmd << "-l #{File.basename(native_lib_file)}"
-  sh cmd.join(" ")
+def build_native_lib(arch, dll_name, native_def_file, target)
+  Dir.mktmpdir do |dir|
+    Dir.chdir(dir) do
+      # Generate and then move. Symbols include generated file name, so avoid long path.
+      cmd = [dlltool]
+      cmd << "-D #{dll_name}"
+      cmd << "-m #{arch}" if arch
+      cmd << "-d #{native_def_file}"
+      cmd << "-l #{dll_name}.lib"
+      sh cmd.join(" ")
+
+      mv "#{dll_name}.lib", target
+    end
+  end
 end
 
-# Build a .lib file for linking in dummy native and libcruby-sys
-# This file needs to be copied to the libcruby-sys directory for distribution.
-# and also builds both a 64-bit and 32-bit version of the .lib file
-task :native_lib_file => ["#{native_lib_file}.x86_64", "#{native_lib_file}.i386"]
-file "#{native_lib_file}.x86_64" => [windows_build_dir, native_def_file] do
-  build_native_lib("i386:x86-64", dll_name, native_def_file, native_lib_file)
-  mv File.basename(native_lib_file), "#{native_lib_file}.x86_64"
+# Build 32- and 64-bit .lib files for linking in libcruby-sys
+# These file need to be copied to the libcruby-sys directory for distribution.
+task :native_lib_files => [native_lib_file_64, native_lib_file_32]
+file native_lib_file_64 => [windows_build_dir, native_def_file] do
+  build_native_lib("i386:x86-64", dll_name, native_def_file, native_lib_file_64)
 end
 
-file "#{native_lib_file}.i386" => [windows_build_dir, native_def_file] do
-  build_native_lib("i386", dll_name, native_def_file, native_lib_file)
-  mv File.basename(native_lib_file), "#{native_lib_file}.i386"
+file native_lib_file_32 => [windows_build_dir, native_def_file] do
+  build_native_lib("i386", dll_name, native_def_file, native_lib_file_32)
 end
 
+# Build a .lib file for linking in dummy native
 file native_lib_file => [windows_build_dir, native_def_file] do
   build_native_lib(nil, dll_name, native_def_file, native_lib_file)
-  mv File.basename(native_lib_file), native_lib_file
 end
-
 
 if RUBY_PLATFORM =~ /mingw/
   file native_so_file
@@ -116,3 +121,8 @@ end
 
 task :rspec => :compile
 task :default => :rspec
+
+# On Windows, also build native_lib_files to help with dev
+if RUBY_PLATFORM =~ /mingw/
+  task :default => :native_lib_files
+end

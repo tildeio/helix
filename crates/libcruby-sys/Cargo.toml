@@ -7,7 +7,9 @@ include = [
     "**/*.rs",
     "Cargo.toml",
     "ruby_info.rb",
-    "helix-runtime-0-5-0.lib" # Keep in sync with version
+    # Keep in sync with version
+    "helix-runtime-0-5-0.i386.lib",
+    "helix-runtime-0-5-0.x86_64.lib"
 ]
 
 [dependencies]
