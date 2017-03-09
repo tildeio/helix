@@ -6,31 +6,54 @@ ENV['HELIX_ROOT'] = File.expand_path("../..", __FILE__)
 
 verbose(!!ENV['VERBOSE'])
 
+native_header_path = File.expand_path("ext/helix_runtime/native/helix_runtime.h", __dir__)
+native_def_file = File.expand_path("ext/helix_runtime/native/native.def", __dir__)
+windows_build_dir = File.expand_path("windows_build", __dir__)
+dll_name = "helix-runtime-#{HelixRuntime::VERSION.gsub('.', '-')}"
+native_so_file = File.expand_path("lib/helix_runtime/native.so", __dir__)
+native_lib_file = File.join(windows_build_dir, "#{dll_name}.lib")
+native_dll_file = File.join(windows_build_dir, "#{dll_name}.dll")
+
+file native_header_path
+file native_def_file => native_header_path do
+  # Hackish way to pull exported methods out of the header
+  exports = []
+  File.readlines(native_header_path).each do |line|
+    if line =~ /^\w.+(HELIX_\w+)[;\(]/
+      exports << $1
+    end
+  end
+
+  File.open(File.expand_path("ext/helix_runtime/native/native.def", __dir__), 'w') do |f|
+    f.puts "LIBRARY helix-runtime-#{HelixRuntime::VERSION.gsub('.', '-')}"
+    f.puts "EXPORTS"
+    f.puts exports
+    f.puts "Init_native"
+  end
+end
+
+task :native_def_file => native_def_file
+CLOBBER.include(native_def_file)
+
 Rake::ExtensionTask.new do |ext|
   ext.name = "native"
   ext.ext_dir = "ext/helix_runtime/native"
   ext.lib_dir = "lib/helix_runtime"
 end
 
+directory windows_build_dir
+
+# Build a .lib file for linking in dummy native and libcruby-sys
+# This file needs to be copied to the libcruby-sys directory for distribution.
+file native_lib_file => [windows_build_dir, native_def_file] do
+  # Generate and then move. Symbols include generated file name, so avoid long path.
+  sh "dlltool.exe -D #{dll_name} -d #{native_def_file} -l #{File.basename(native_lib_file)}"
+  mv File.basename(native_lib_file), native_lib_file
+end
+task :native_lib_file => native_lib_file
+
 if RUBY_PLATFORM =~ /mingw/
-  build_dir = File.expand_path("windows_build", __dir__)
-  dll_name = "helix-runtime-#{HelixRuntime::VERSION.gsub('.', '-')}"
-  native_so_file = File.expand_path("lib/helix_runtime/native.so", __dir__)
-  native_def_file = File.expand_path("ext/helix_runtime/native/native.def", __dir__)
-  native_lib_file = File.expand_path("windows_build/#{dll_name}.lib", __dir__)
-  native_dll_file = File.expand_path("windows_build/#{dll_name}.dll", __dir__)
-
-  directory build_dir
-  file native_def_file
   file native_so_file
-
-  # Build a .lib file for linking in dummy native and libcruby-sys
-  # This file needs to be copied to the libcruby-sys directory for distribution.
-  file native_lib_file => [build_dir, native_def_file] do
-    # Generate and then move. Symbols include generated file name, so avoid long path.
-    sh "dlltool.exe -D #{dll_name} -d #{native_def_file} -l #{File.basename(native_lib_file)}"
-    mv File.basename(native_lib_file), native_lib_file
-  end
 
   # Copy the native.so to the appropriately named .dll. This makes it easy to
   # add the windows_build directory to PATH for testing on Windows. This file
@@ -40,9 +63,9 @@ if RUBY_PLATFORM =~ /mingw/
   end
 
   Rake::Task["compile:native:#{RUBY_PLATFORM}"].enhance([native_lib_file, native_dll_file])
-
-  CLOBBER.include(native_def_file, "windows_build")
 end
+
+CLOBBER.include(windows_build_dir)
 
 Rake::ExtensionTask.new do |ext|
   ext.name = "dummy"

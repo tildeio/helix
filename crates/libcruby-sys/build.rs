@@ -19,11 +19,11 @@ fn main() {
 
   // Not required for non-Windows, but it needs to be part of the package
   if is_packaging && !root.join(&libfile).exists() {
-      panic!("{} must exist when packaging. Copy from ruby/windows_build", libfile);
+      panic!("{} must exist when packaging. Please run ./prepackage.sh", libfile);
   }
 
   if !lib_root.join(&libfile).exists() && target.contains("windows") {
-      panic!("{} must exist when running. Set HELIX_LIB_DIR or copy from ruby/windows_build", libfile);
+      panic!("{} must exist when running. Set HELIX_LIB_DIR to ruby/windows_build for development.", libfile);
   }
 
   if target.contains("windows") {
