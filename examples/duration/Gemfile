@@ -3,3 +3,4 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'helix_runtime', path: '../../ruby'
+gem 'activesupport', '5.1.0.beta1'
