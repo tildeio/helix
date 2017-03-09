@@ -59,14 +59,35 @@ def dlltool
   end
 end
 
+def build_native_lib(arch, dll_name, native_def_file, native_lib_file)
+  # Generate and then move. Symbols include generated file name, so avoid long path.
+  cmd = [dlltool]
+  cmd << "-D #{dll_name}"
+  cmd << "-m #{arch}" if arch
+  cmd << "-d #{native_def_file}"
+  cmd << "-l #{File.basename(native_lib_file)}"
+  sh cmd.join(" ")
+end
+
 # Build a .lib file for linking in dummy native and libcruby-sys
 # This file needs to be copied to the libcruby-sys directory for distribution.
+# and also builds both a 64-bit and 32-bit version of the .lib file
+task :native_lib_file => ["#{native_lib_file}.x86_64", "#{native_lib_file}.i386"]
+file "#{native_lib_file}.x86_64" => [windows_build_dir, native_def_file] do
+  build_native_lib("i386:x86-64", dll_name, native_def_file, native_lib_file)
+  mv File.basename(native_lib_file), "#{native_lib_file}.x86_64"
+end
+
+file "#{native_lib_file}.i386" => [windows_build_dir, native_def_file] do
+  build_native_lib("i386", dll_name, native_def_file, native_lib_file)
+  mv File.basename(native_lib_file), "#{native_lib_file}.i386"
+end
+
 file native_lib_file => [windows_build_dir, native_def_file] do
-  # Generate and then move. Symbols include generated file name, so avoid long path.
-  sh "#{dlltool} -D #{dll_name} -d #{native_def_file} -l #{File.basename(native_lib_file)}"
+  build_native_lib(nil, dll_name, native_def_file, native_lib_file)
   mv File.basename(native_lib_file), native_lib_file
 end
-task :native_lib_file => native_lib_file
+
 
 if RUBY_PLATFORM =~ /mingw/
   file native_so_file
