@@ -82,7 +82,15 @@ end
 # These file need to be copied to the libcruby-sys directory for distribution.
 task :native_lib_files => [native_lib_file_64, native_lib_file_32]
 file native_lib_file_64 => [windows_build_dir, native_def_file] do
-  build_native_lib("i386:x86-64", dll_name, native_def_file, native_lib_file_64)
+  begin
+    build_native_lib("i386:x86-64", dll_name, native_def_file, native_lib_file_64)
+  rescue RuntimeError
+    if RbConfig::CONFIG['host_cpu'] !~ /64/
+      warn "Unable to build 64-bit lib file. This is likely due to a 32-bit version of dlltool."
+    else
+      raise
+    end
+  end
 end
 
 file native_lib_file_32 => [windows_build_dir, native_def_file] do
