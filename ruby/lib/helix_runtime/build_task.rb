@@ -71,9 +71,25 @@ module HelixRuntime
         env = {}
         env['HELIX_LIB_DIR'] = helix_lib_dir if helix_lib_dir
 
-        extra_args = link_args ? " -- -C link-args=#{link_args}" : ''
+        cargo_args = ["--release"]
+        rustc_args = []
 
-        sh env, "cargo rustc --release#{extra_args}"
+        if ENV['DEBUG_RUST_MACROS']
+          rustc_args << "--pretty expanded"
+          rustc_args << "-Z unstable-options"
+        end
+        if ENV['VERBOSE']
+          cargo_args << " --verbose"
+        end
+        if link_args
+          rustc_args << "-C link-args=#{link_args}"
+        end
+
+        unless rustc_args.empty?
+          cargo_args << "-- #{rustc_args.join(' ')}"
+        end
+
+        sh env, "cargo rustc #{cargo_args.join(' ')}"
       end
 
       task "cargo:clean" do
