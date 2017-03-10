@@ -10,7 +10,7 @@ include = [
 
 [workspace]
 
-members = ["crates/libcruby-sys", "examples/console", "examples/duration", "examples/membership", "examples/turbo_blank"]
+members = ["crates/libcruby-sys", "examples/console", "examples/duration", "examples/membership", "examples/no_macros", "examples/turbo_blank"]
 
 [dependencies]
 libc = "0.2.0"

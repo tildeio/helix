@@ -1,0 +1,11 @@
+[package]
+name = "no_macros"
+version = "0.1.0"
+authors = ["Peter Wagenet <peter.wagenet@gmail.com>"]
+
+[lib]
+
+crate-type = ["cdylib"]
+
+[dependencies.helix]
+path = "../.."
