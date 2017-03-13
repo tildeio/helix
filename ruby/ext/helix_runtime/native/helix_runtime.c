@@ -80,6 +80,14 @@ VALUE HELIX_I322NUM(RUST_I32 num) {
   return INT2NUM(num);
 }
 
+RUST_F64 HELIX_NUM2F64(VALUE obj) {
+  return NUM2DBL(obj);
+}
+
+VALUE HELIX_F642NUM(RUST_F64 num) {
+  return DBL2NUM(num);
+}
+
 void* HELIX_Data_Get_Struct_Value(VALUE obj) {
   void* data;
   Data_Get_Struct(obj, void*, data);
