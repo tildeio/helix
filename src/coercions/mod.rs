@@ -3,6 +3,7 @@ mod string;
 mod unit;
 mod bool;
 mod integers;
+mod float;
 mod option;
 
 use sys::{VALUE};
