@@ -1,0 +1,11 @@
+[package]
+name = "calculator"
+version = "0.1.0"
+authors = ["Peter Wagenet <peter@tilde.io>"]
+
+[lib]
+
+crate-type = ["cdylib"]
+
+[dependencies.helix]
+path = "../.."
