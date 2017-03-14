@@ -1,4 +1,6 @@
 # TODO: Maybe add caching
+cache:
+  - '%HOMEPATH%\.cargo -> .appveyor.yml'
 
 environment:
   EXAMPLES: console membership turbo_blank
@@ -17,7 +19,7 @@ install:
   - set PATH=C:\Ruby%RUBY_VERSION%\bin;C:\Ruby%RUBY_VERSION%\DevKit\bin;C:\Ruby%RUBY_VERSION%\DevKit\mingw\bin;%HOMEPATH%\.cargo\bin;%APPVEYOR_BUILD_FOLDER%\ruby\windows_build;%PATH%
   - echo %PATH%
   - set HELIX_ROOT=%APPVEYOR_BUILD_FOLDER%
-  - curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly --default-host %RUST_HOST% -y
+  - IF NOT EXIST %HOMEPATH%\.cargo\bin (curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly --default-host %RUST_HOST% -y)
   - bash ./scripts/ci-install
 
 test_script:
