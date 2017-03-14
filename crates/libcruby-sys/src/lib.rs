@@ -72,6 +72,9 @@ extern "C" {
     #[link_name = "HELIX_SPRINTF_INSPECT"]
     pub static SPRINTF_INSPECT: c_string;
 
+    #[link_name = "rb_mKernel"]
+    pub static rb_mKernel: VALUE;
+
     #[link_name = "rb_cObject"]
     pub static rb_cObject: VALUE;
 
