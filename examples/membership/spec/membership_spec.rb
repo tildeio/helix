@@ -14,6 +14,11 @@ describe Array do
       expect([]).to be_superset_of([])
     end
 
+    it 'should handle strings' do
+      pending if ENV['IMPLEMENTATION'] == 'RUST'
+      expect(['a', 'b', 'c']).to be_superset_of(['a', 'b'])
+    end
+
     it 'should return true if the needle is fully contained in the source' do
       expect([1,2,3,4,5]).to be_superset_of([1])
       expect([1,2,3,4,5]).to be_superset_of([2])

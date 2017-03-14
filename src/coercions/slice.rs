@@ -5,14 +5,12 @@ use std::ffi::CString;
 
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust};
 
-// VALUE -> to_coercible_rust<String> -> CheckResult<String> -> unwrap() -> Coercible<String> -> to_rust() -> String
-
 impl<'a> UncheckedValue<&'a[usize]> for VALUE {
     fn to_checked(self) -> CheckResult<&'a[usize]> {
         if unsafe { sys::RB_TYPE_P(self, sys::T_ARRAY) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            Err(CString::new(format!("No implicit conversion of {} into String", "?")).unwrap())
+            Err(CString::new(format!("No implicit conversion of {} into Slice", "?")).unwrap())
         }
     }
 }
