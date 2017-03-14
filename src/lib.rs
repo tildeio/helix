@@ -7,6 +7,9 @@ pub extern crate libc;
 pub extern crate libcruby_sys as sys;
 // pub use rb;
 
+#[doc(hidden)]
+pub extern crate num_complex;
+
 use std::ffi::CString;
 use sys::VALUE;
 

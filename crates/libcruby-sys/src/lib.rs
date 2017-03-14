@@ -139,6 +139,9 @@ extern "C" {
     #[link_name = "HELIX_T_BIGNUM"]
     pub static T_BIGNUM: isize;
 
+    #[link_name = "HELIX_T_COMPLEX"]
+    pub static T_COMPLEX: isize;
+
     // unknown if working?
     // fn rb_define_variable(name: c_string, value: *const VALUE);
     pub fn rb_obj_class(obj: VALUE) -> VALUE;
@@ -154,6 +157,7 @@ extern "C" {
     pub fn rb_define_singleton_method(class: VALUE, name: c_string, func: void_ptr, arity: isize);
     pub fn rb_inspect(value: VALUE) -> VALUE;
     pub fn rb_intern(string: c_string) -> ID;
+    pub fn rb_funcall(target: VALUE, name: ID, argc: isize, ...) -> VALUE;
     pub fn rb_jump_tag(state: RubyException) -> !;
     pub fn rb_protect(try: extern "C" fn(v: void_ptr) -> VALUE,
                       arg: void_ptr,

@@ -5,6 +5,7 @@ mod bool;
 mod integers;
 mod float;
 mod option;
+mod complex;
 
 use sys::{VALUE};
 use std::ffi::CString;
