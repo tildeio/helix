@@ -6,6 +6,7 @@ mod integers;
 mod float;
 mod option;
 mod complex;
+mod rational;
 
 use sys::{VALUE};
 use std::ffi::CString;

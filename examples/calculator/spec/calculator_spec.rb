@@ -13,4 +13,8 @@ describe "Calculator" do
     expect(calculator.add_complex(Complex(-2.1, 9.1), Complex(-9.1, 2.1))).to eq(Complex(-11.2, 11.2))
   end
 
+  it "can add rational" do
+    expect(calculator.add_rational(Rational(1,2), Rational(1,4))).to eq(Rational(3,4))
+  end
+
 end

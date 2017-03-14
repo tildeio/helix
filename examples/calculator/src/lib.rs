@@ -2,6 +2,7 @@
 extern crate helix;
 
 use helix::num_complex::Complex64;
+use helix::num_rational::Rational64;
 
 declare_types! {
     class Calculator {
@@ -10,6 +11,10 @@ declare_types! {
         }
 
         def add_complex(&self, one: Complex64, two: Complex64) -> Complex64 {
+            one + two
+        }
+
+        def add_rational(&self, one: Rational64, two: Rational64) -> Rational64 {
             one + two
         }
     }

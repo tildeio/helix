@@ -142,6 +142,9 @@ extern "C" {
     #[link_name = "HELIX_T_COMPLEX"]
     pub static T_COMPLEX: isize;
 
+    #[link_name = "HELIX_T_RATIONAL"]
+    pub static T_RATIONAL: isize;
+
     // unknown if working?
     // fn rb_define_variable(name: c_string, value: *const VALUE);
     pub fn rb_obj_class(obj: VALUE) -> VALUE;

@@ -10,6 +10,9 @@ pub extern crate libcruby_sys as sys;
 #[doc(hidden)]
 pub extern crate num_complex;
 
+#[doc(hidden)]
+pub extern crate num_rational;
+
 use std::ffi::CString;
 use sys::VALUE;
 
