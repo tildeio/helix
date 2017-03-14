@@ -10,6 +10,7 @@ mod result;
 mod slice;
 mod vec;
 mod hash;
+mod regex;
 
 use sys::{VALUE};
 use super::{Error, ToError};

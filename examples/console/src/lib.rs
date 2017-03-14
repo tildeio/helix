@@ -41,6 +41,14 @@ ruby! {
             string.starts_with("\x1B[0;31;49m") && string.ends_with("\x1B[0m")
         }
 
+        def log_regex(&self, re: helix::regex::Regex) {
+            self.log(re.to_string());
+        }
+
+        def filter(&self, string: String) -> helix::regex::Regex {
+            helix::regex::Regex::new(format!("LOG[({})?]:\\s+", string).as_str()).unwrap()
+        }
+
         def raise(&self) -> Result<(), helix::Error> {
             raise!("raised from Rust with `raise`");
         }

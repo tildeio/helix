@@ -42,6 +42,14 @@ describe "Console" do
     expect(console.is_red("hello".colorize(:red))).to eq(true)
   end
 
+  it "can take a regex" do
+    expect { console.log_regex(/[a-z]\w+/im) }.to println('(?mi-x:[a-z]\w+)')
+  end
+
+  it "can return a regex" do
+    expect(console.filter("testing")).to eq(/LOG[(testing)?]:\s+/)
+  end
+
   [:raise, :raise_panic, :panic].each do |method|
     it "can handle #{method}" do
       expect { console.send(method) }.to raise_error(RuntimeError, "raised from Rust with `#{method}`")

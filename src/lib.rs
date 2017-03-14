@@ -14,6 +14,9 @@ pub extern crate libc;
 pub extern crate libcruby_sys as sys;
 // pub use rb;
 
+#[doc(hidden)]
+pub extern crate regex;
+
 use std::ffi::CStr;
 use sys::{VALUE, ID};
 
