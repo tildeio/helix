@@ -25,10 +25,8 @@ impl ToRust<Complex64> for CheckedValue<Complex64> {
 
 impl ToRuby for Complex64 {
     fn to_ruby(self) -> VALUE {
-        let class_id = unsafe { sys::rb_intern(CString::new("Complex").unwrap().as_ptr()) };
-        let klass = unsafe { sys::rb_const_get(sys::rb_cObject, class_id) };
         let real = unsafe { sys::F642NUM(self.re) };
         let imag = unsafe { sys::F642NUM(self.im) };
-        unsafe { sys::rb_funcall(klass, sys::rb_intern(CString::new("rectangular").unwrap().as_ptr()), 2, real, imag) }
+        unsafe { sys::rb_funcall(sys::rb_mKernel, sys::rb_intern(CString::new("Complex").unwrap().as_ptr()), 2, real, imag) }
     }
 }

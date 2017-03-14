@@ -25,10 +25,8 @@ impl ToRust<Rational64> for CheckedValue<Rational64> {
 
 impl ToRuby for Rational64 {
     fn to_ruby(self) -> VALUE {
-        let class_id = unsafe { sys::rb_intern(CString::new("Kernel").unwrap().as_ptr()) };
-        let klass = unsafe { sys::rb_const_get(sys::rb_cObject, class_id) };
         let numerator = unsafe { sys::I642NUM(*self.numer()) };
         let denominator = unsafe { sys::I642NUM(*self.denom()) };
-        unsafe { sys::rb_funcall(klass, sys::rb_intern(CString::new("Rational").unwrap().as_ptr()), 2, numerator, denominator) }
+        unsafe { sys::rb_funcall(sys::rb_mKernel, sys::rb_intern(CString::new("Rational").unwrap().as_ptr()), 2, numerator, denominator) }
     }
 }

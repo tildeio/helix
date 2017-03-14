@@ -62,6 +62,9 @@ extern "C" {
     #[link_name = "HELIX_Qnil"]
     pub static Qnil: VALUE;
 
+    #[link_name = "rb_mKernel"]
+    pub static rb_mKernel: VALUE;
+
     #[link_name = "rb_cObject"]
     pub static rb_cObject: VALUE;
 
