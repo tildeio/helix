@@ -8,6 +8,10 @@ describe "Console" do
     expect { console.log("hello") }.to println("hello")
   end
 
+  it "can log a symbol" do
+    expect { console.log(:hello) }.to println("hello")
+  end
+
   it "can inspect itself" do
     expect { console.inspect }.to print(/Console { .+ }\n\z/)
   end
