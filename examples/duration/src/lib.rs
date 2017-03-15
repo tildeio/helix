@@ -25,22 +25,18 @@ declare_types! {
             value:   i64,
         }
 
-        def initialize(helix, seconds: Option<i32>, minutes: Option<i32>, hours: Option<i32>, days: Option<i32>, weeks: Option<i32>, months: Option<i32>, years: Option<i32>) {
-            let mut duration = Duration {
+        def initialize(helix: helix::Metadata) {
+            Duration {
                 helix:   helix,
-                seconds: seconds,
-                minutes: minutes,
-                hours:   hours,
-                days:    days,
-                weeks:   weeks,
-                months:  months,
-                years:   years,
+                seconds: Some(0),
+                minutes: None,
+                hours:   None,
+                days:    None,
+                weeks:   None,
+                months:  None,
+                years:   None,
                 value:   0,
-            };
-
-            duration.value = compute_value(&duration);
-
-            duration
+            }
         }
 
         def seconds(&self) -> Option<i32> {

@@ -46,16 +46,9 @@ macro_rules! define_struct {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! define_class {
-    { #![reopen(false)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { struct { $($fields:tt)* } def initialize($helix:ident, $($args:tt)*) { $($initbody:tt)* } $($body:tt)* } $($rest:tt)* } => {
+    { #![reopen(false)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { struct { $($fields:tt)* } def initialize($($args:tt)*) { $($initbody:tt)* } $($body:tt)* } $($rest:tt)* } => {
         define_struct!($(#[$attr:meta])* $is_pub $cls $($fields)*);
-        class_definition! { #![reopen(false)] $cls ; () ; () ; $($body)* fn initialize($helix, $($args)*) { $($initbody)* } }
-        declare_types! { $($rest)* }
-    };
-
-
-    { #![reopen(false)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { struct { $($fields:tt)* } def initialize($helix:ident) { $($initbody:tt)* } $($body:tt)* } $($rest:tt)* } => {
-        define_struct!($(#[$attr:meta])* $is_pub $cls $($fields)*);
-        class_definition! { #![reopen(false)] $cls ; () ; () ; $($body)* fn initialize($helix,) { $($initbody)* } }
+        class_definition! { #![reopen(false)] $cls ; () ; () ; $($body)* fn initialize($($args)*) { $($initbody)* } }
         declare_types! { $($rest)* }
     };
 
@@ -96,13 +89,11 @@ macro_rules! class_definition {
                     #[allow(unused_imports)]
                     use $crate::{ToRust};
 
-                    let rust_self = try!($crate::UncheckedValue::<$($self_mod)* $cls>::to_checked(rb_self));
+                    let rust_self = $cls::from_checked_rb_value(rb_self);
 
                     $(
                         let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
                     )*
-
-                    let rust_self = rust_self.to_rust();
 
                     $(
                         let $arg = $crate::ToRust::to_rust($arg);
@@ -115,7 +106,7 @@ macro_rules! class_definition {
                 let arity = method_arity!($($arg),*);
                 let method = __ruby_method__ as *const $crate::libc::c_void;
 
-                $crate::MethodDefinition::instance(name, method, arity)
+                $crate::MethodDefinition::new(name, method, arity)
             }) ;
             $($rest)*
         }
@@ -161,19 +152,44 @@ macro_rules! class_definition {
         class_definition! { #![reopen($expr)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; $self_arg ; () ; $body ; () ; $($rest)*  }
     };
 
-    ( #![reopen(false)] $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; fn initialize($helix:ident, $($arg:ident : $argty:ty),*) { $($initbody:tt)* } ) => {
+    ( #![reopen(false)] $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; fn initialize($($args:tt)*) { $($initbody:tt)* } ) => {
         item! {
             impl $cls {
-                fn initialize($helix: $crate::Metadata, $($arg : $argty),*) -> $cls {
+                fn initialize($($args)*) -> $cls {
                     $($initbody)*
+                }
+
+                fn from_checked_rb_value<'a>(value: $crate::sys::VALUE) -> &'a mut $cls {
+                    unsafe { ::std::mem::transmute($crate::sys::Data_Get_Struct_Value(value)) }
                 }
 
                 $($mimpl)*
             }
         }
 
-        impl_struct_coercions!(&'a $cls);
-        impl_struct_coercions!(&'a mut $cls);
+        item! {
+            impl<'a> $crate::UncheckedValue<&'a $cls> for $crate::sys::VALUE {
+                fn to_checked(self) -> $crate::CheckResult<&'a $cls> {
+                    use $crate::{CheckedValue, sys};
+                    use ::std::ffi::{CStr, CString};
+
+                    if unsafe { __HELIX_ID == ::std::mem::transmute(sys::rb_obj_class(self)) } {
+                        Ok(unsafe { CheckedValue::new(self) })
+                    } else {
+                        let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
+                        Err(CString::new(format!("No implicit conversion of {} into {}", val, stringify!($cls))).unwrap())
+                    }
+                }
+            }
+        }
+
+        item! {
+            impl<'a> $crate::ToRust<&'a $cls> for $crate::CheckedValue<&'a $cls> {
+                fn to_rust(self) -> &'a $cls {
+                    unsafe { ::std::mem::transmute($crate::sys::Data_Get_Struct_Value(self.inner)) }
+                }
+            }
+        }
 
         item! {
             impl<'a> $crate::ToRuby for &'a $cls {
@@ -198,50 +214,21 @@ macro_rules! class_definition {
                         ::std::ptr::null()
                     );
 
+                    // FIXME: this should really be called during Ruby's initialize, with arguments
+                    __initialize__(instance);
+
                     instance
                 }
             }
 
-            let def_initialize = {
-                extern "C" fn __initialize__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
-                    let result = __checked_initialize__(rb_self $(, $arg)*);
-
-                    match result {
-                        Ok(rust_self) => {
-                            let data = Box::new(rust_self);
-                            unsafe { $crate::sys::Data_Set_Struct_Value(rb_self, ::std::mem::transmute(data)) };
-                        }
-                        Err(err) => { println!("TYPE ERROR: {:?}", err); }
-                    }
-
-                    rb_self
+            extern "C" fn __initialize__(rb_self: $crate::sys::VALUE) {
+                unsafe {
+                    let data = Box::new($cls::initialize(rb_self));
+                    $crate::sys::Data_Set_Struct_Value(rb_self, ::std::mem::transmute(data));
                 }
+            }
 
-                fn __checked_initialize__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$cls, ::std::ffi::CString> {
-                    #[allow(unused_imports)]
-                    use $crate::{ToRust};
-
-                    $(
-                        let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
-                    )*
-
-                    $(
-                        let $arg = $crate::ToRust::to_rust($arg);
-                    )*
-
-                    Ok($cls::initialize(rb_self, $($arg),*))
-                }
-
-                let arity = method_arity!($($arg),*);
-                let method = __initialize__ as *const $crate::libc::c_void;
-
-                $crate::MethodDefinition::instance("initialize", method, arity)
-            };
-
-            let def = $crate::ClassDefinition::wrapped(stringify!($cls), __alloc__)
-                .define_method(def_initialize)
-                $(.define_method($mdef))*;
-
+            let def = $crate::ClassDefinition::wrapped(stringify!($cls), __alloc__)$(.define_method($mdef))*;
             unsafe { __HELIX_ID = ::std::mem::transmute(def.class) };
         }
     };
@@ -271,45 +258,15 @@ macro_rules! class_definition {
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! impl_struct_coercions {
-  ($cls:ty) => {
-    item! {
-        impl<'a> $crate::ToRust<$cls> for $crate::CheckedValue<$cls> {
-            fn to_rust(self) -> $cls {
-                unsafe { ::std::mem::transmute($crate::sys::Data_Get_Struct_Value(self.inner)) }
-            }
-        }
-    }
-
-    item! {
-        impl<'a> $crate::UncheckedValue<$cls> for $crate::sys::VALUE {
-            fn to_checked(self) -> $crate::CheckResult<$cls> {
-                use $crate::{CheckedValue, sys};
-                use ::std::ffi::{CStr, CString};
-
-                if unsafe { __HELIX_ID == ::std::mem::transmute(sys::rb_obj_class(self)) } {
-                    if unsafe { $crate::sys::Data_Get_Struct_Value(self) == ::std::ptr::null() } {
-                        Err(CString::new(format!("Uninitialized {}", $crate::inspect(unsafe { sys::rb_obj_class(self) }))).unwrap())
-                    } else {
-                        Ok(unsafe { CheckedValue::new(self) })
-                    }
-                } else {
-                    let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
-                    Err(CString::new(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(self) }))).unwrap())
-                }
-            }
-        }
-    }
-  }
-}
-
-#[doc(hidden)]
-#[macro_export]
 macro_rules! impl_simple_class {
     ( $cls:ident ; ($($mimpl:tt)*) ) => {
         item! {
             impl $cls {
                 $($mimpl)*
+
+                fn from_checked_rb_value(value: $crate::sys::VALUE) -> $cls {
+                    $cls { helix: value }
+                }
             }
         }
 
