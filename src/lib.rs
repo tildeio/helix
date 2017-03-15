@@ -74,4 +74,8 @@ impl Class {
     }
 }
 
+pub fn inspect(val: VALUE) -> String {
+    unsafe { CheckedValue::<String>::new(sys::rb_inspect(val)).to_rust() }
+}
+
 pub type Metadata = ::sys::VALUE;
