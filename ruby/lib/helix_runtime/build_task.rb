@@ -21,7 +21,7 @@ module HelixRuntime
 
     def init(name = nil, gem_spec = nil)
       @name = name
-      @build_path = "target/release"
+      @build_path = ENV["DEBUG_RUST"] ? "target/debug" : "target/release"
       @lib_path = "lib/#{name}"
     end
 
@@ -71,12 +71,15 @@ module HelixRuntime
         env = {}
         env['HELIX_LIB_DIR'] = helix_lib_dir if helix_lib_dir
 
-        cargo_args = ["--release"]
+        cargo_args = []
         rustc_args = []
 
         if ENV['DEBUG_RUST_MACROS']
           rustc_args << "--pretty expanded"
           rustc_args << "-Z unstable-options"
+        end
+        unless ENV['DEBUG_RUST']
+          cargo_args << ["--release"]
         end
         if ENV['VERBOSE']
           cargo_args << " --verbose"
