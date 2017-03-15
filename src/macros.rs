@@ -46,9 +46,16 @@ macro_rules! define_struct {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! define_class {
-    { #![reopen(false)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { struct { $($fields:tt)* } def initialize($($args:tt)*) { $($initbody:tt)* } $($body:tt)* } $($rest:tt)* } => {
+    { #![reopen(false)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { struct { $($fields:tt)* } def initialize($helix:ident, $($args:tt)*) { $($initbody:tt)* } $($body:tt)* } $($rest:tt)* } => {
         define_struct!($(#[$attr:meta])* $is_pub $cls $($fields)*);
-        class_definition! { #![reopen(false)] $cls ; () ; () ; $($body)* fn initialize($($args)*) { $($initbody)* } }
+        class_definition! { #![reopen(false)] $cls ; () ; () ; $($body)* fn initialize($helix, $($args)*) { $($initbody)* } }
+        declare_types! { $($rest)* }
+    };
+
+
+    { #![reopen(false)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { struct { $($fields:tt)* } def initialize($helix:ident) { $($initbody:tt)* } $($body:tt)* } $($rest:tt)* } => {
+        define_struct!($(#[$attr:meta])* $is_pub $cls $($fields)*);
+        class_definition! { #![reopen(false)] $cls ; () ; () ; $($body)* fn initialize($helix,) { $($initbody)* } }
         declare_types! { $($rest)* }
     };
 
@@ -108,7 +115,7 @@ macro_rules! class_definition {
                 let arity = method_arity!($($arg),*);
                 let method = __ruby_method__ as *const $crate::libc::c_void;
 
-                $crate::MethodDefinition::new(name, method, arity)
+                $crate::MethodDefinition::instance(name, method, arity)
             }) ;
             $($rest)*
         }
@@ -154,10 +161,10 @@ macro_rules! class_definition {
         class_definition! { #![reopen($expr)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; $self_arg ; () ; $body ; () ; $($rest)*  }
     };
 
-    ( #![reopen(false)] $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; fn initialize($($args:tt)*) { $($initbody:tt)* } ) => {
+    ( #![reopen(false)] $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; fn initialize($helix:ident, $($arg:ident : $argty:ty),*) { $($initbody:tt)* } ) => {
         item! {
             impl $cls {
-                fn initialize($($args)*) -> $cls {
+                fn initialize($helix: $crate::Metadata, $($arg : $argty),*) -> $cls {
                     $($initbody)*
                 }
 
@@ -195,15 +202,46 @@ macro_rules! class_definition {
                 }
             }
 
-            extern "C" fn __initialize__(rb_self: $crate::sys::VALUE) -> $crate::sys::VALUE {
-                unsafe {
-                    let data = Box::new($cls::initialize(rb_self));
-                    $crate::sys::Data_Set_Struct_Value(rb_self, ::std::mem::transmute(data));
+            let def_initialize = {
+                extern "C" fn __initialize__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
+                    let result = __checked_initialize__(rb_self $(, $arg)*);
+
+                    match result {
+                        Ok(rust_self) => {
+                            let data = Box::new(rust_self);
+                            unsafe { $crate::sys::Data_Set_Struct_Value(rb_self, ::std::mem::transmute(data)) };
+                        }
+                        Err(err) => { println!("TYPE ERROR: {:?}", err); }
+                    }
+
                     rb_self
                 }
-            }
 
-            let def = $crate::ClassDefinition::wrapped(stringify!($cls), __alloc__, __initialize__)$(.define_method($mdef))*;
+                fn __checked_initialize__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$cls, ::std::ffi::CString> {
+                    #[allow(unused_imports)]
+                    use $crate::{ToRust};
+
+                    $(
+                        let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
+                    )*
+
+                    $(
+                        let $arg = $crate::ToRust::to_rust($arg);
+                    )*
+
+                    Ok($cls::initialize(rb_self, $($arg),*))
+                }
+
+                let arity = method_arity!($($arg),*);
+                let method = __initialize__ as *const $crate::libc::c_void;
+
+                $crate::MethodDefinition::instance("initialize", method, arity)
+            };
+
+            let def = $crate::ClassDefinition::wrapped(stringify!($cls), __alloc__)
+                .define_method(def_initialize)
+                $(.define_method($mdef))*;
+
             unsafe { __HELIX_ID = ::std::mem::transmute(def.class) };
         }
     };
@@ -351,4 +389,3 @@ macro_rules! method_arity {
     { 0isize $(+ replace_expr!($id 1isize))* }
   }
 }
-
