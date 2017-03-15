@@ -1,6 +1,7 @@
 # TODO: Maybe add caching
 cache:
   - '%HOMEDRIVE%%HOMEPATH%\.cargo -> .appveyor.yml'
+  - '%HOMEDRIVE%%HOMEPATH%\.multirust -> .appveyor.yml'
 
 environment:
   EXAMPLES: console membership turbo_blank
@@ -20,6 +21,7 @@ install:
   - echo %PATH%
   - set HELIX_ROOT=%APPVEYOR_BUILD_FOLDER%
   - IF NOT EXIST %HOMEDRIVE%%HOMEPATH%\.cargo\bin (curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly --default-host %RUST_HOST% -y)
+  - rustup default nightly-%RUST_HOST%
   - bash ./scripts/ci-install
 
 test_script:
