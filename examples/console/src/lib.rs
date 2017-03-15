@@ -1,10 +1,17 @@
 #[macro_use]
-extern crate helix_runtime;
+extern crate helix_runtime as helix;
+
+use helix::Symbol;
+use std::collections::HashMap;
 
 declare_types! {
     class Console {
         def log(&self, string: String) {
             println!("{}", string);
+        }
+
+        def log_hash(&self, hash: HashMap<String, String>) {
+            for (k,v) in hash { self.log(format!("{}: {}", k, v)) }
         }
 
         def inspect(&self) {
@@ -25,6 +32,14 @@ declare_types! {
 
         def colorize(&self, string: String) -> String {
             format!("\x1B[0;31;49m{}\x1B[0m", string)
+        }
+
+        def colorize_hash(&self, hash: HashMap<String, String>) -> HashMap<Symbol, String> {
+            let mut out = HashMap::new();
+            for (k,v) in hash {
+                out.insert(Symbol::new(k), self.colorize(v));
+            }
+            out
         }
 
         def is_red(&self, string: String) -> bool {
