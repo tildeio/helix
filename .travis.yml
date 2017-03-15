@@ -32,3 +32,9 @@ install:
 
 script:
   - ./scripts/ci-test
+
+notifications:
+  slack:
+    rooms:
+      - secure: "EeBBy+QWPtj20Dh0dw9MrIiul6kmVb7YrAqaf8VzpujD8BctasqoPx8VEefHZbBYnzDo8+/yerNorwczU7w5SmSXPvYgTCpUe3eKMgbLNBDBkLhp7L5WMO6YWdlsBpOT+i7lpImqecxTasMcTeMTMPoljtkaZdF+6+kh0dPntGMXsJlh8WWipFHH08anbTz4Ll8R9kta54r9yT2YDp0LSBKC+C2mW6ll6yvRwHZMbLi3c+DzR1mqCIljmeNTIqVm0+Er34Jj8lKOL8dYhyB8TncmxlDdbpzA9R8rJ8GczwvUJOkY3IREvY0eZh1T8JZ4yZZucIq1VgukgMo8rWjMBxq5jJjHpO/EmcyGPvvNnrkg5/Jy/2zDPpdqLvAieD5DReGUEkXcyPjNC2o0K6HAMQnloO2qVRwWIsuvwPu/EK9CFtSebZYSA1cDbQsvAyQ8c4S8nxYOy5YiZwJoD55N051p6ehTGe0gPDn254GwDMEmPEpH4xP/TmYEMzMFqjeSpOKPHNKRqrTmM7dff5yQnRdcm8o2t5GABf29uRkbao0fJa5kVQkVchbzo7U0mfguMGCSMJWM9yMp+mJ8dlz5WitsbGx0Bimu2ZnjOQ5YdQaJWQnCX1Rf+DwqGEipI3ii+l9xeg1VKfZi9Geckn9cF8yaw/y5A/EuvQOKmeOQ7qQ="
+    on_pull_requests: false
