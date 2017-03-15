@@ -2,15 +2,24 @@ use libc;
 use std::ffi::CString;
 use { Class, sys };
 
-pub struct MethodDefinition<'a> {
+pub struct MethodSpecification<'a> {
     name: &'a str,
     function: *const libc::c_void,
     arity: isize,
 }
 
+pub enum MethodDefinition<'a> {
+    Class(MethodSpecification<'a>),
+    Instance(MethodSpecification<'a>)
+}
+
 impl<'a> MethodDefinition<'a> {
-    pub fn new(name: &str, function: *const libc::c_void, arity: isize) -> MethodDefinition {
-        MethodDefinition { name: name, function: function, arity: arity }
+    pub fn class(name: &str, function: *const libc::c_void, arity: isize) -> MethodDefinition {
+        MethodDefinition::Class(MethodSpecification { name: name, function: function, arity: arity })
+    }
+
+    pub fn instance(name: &str, function: *const libc::c_void, arity: isize) -> MethodDefinition {
+        MethodDefinition::Instance(MethodSpecification { name: name, function: function, arity: arity })
     }
 }
 
@@ -39,14 +48,22 @@ impl ClassDefinition {
     }
 
     pub fn define_method(self, def: MethodDefinition) -> ClassDefinition {
-        unsafe {
-            sys::rb_define_method(
-                self.class.0,
-                CString::new(def.name).unwrap().as_ptr(),
-                def.function,
-                def.arity
-            );
-        };
+        match def {
+            MethodDefinition::Instance(def) => {
+                unsafe {
+                    sys::rb_define_method(
+                        self.class.0,
+                        CString::new(def.name).unwrap().as_ptr(),
+                        def.function,
+                        def.arity
+                    );
+                };
+            },
+            MethodDefinition::Class(_) => {
+                unreachable!();
+            }
+        }
+
         self
     }
 }
