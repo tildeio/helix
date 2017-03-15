@@ -9,7 +9,8 @@ module HelixRuntime
     IS_WINDOWS = RUBY_PLATFORM =~ /mingw/
 
     attr_accessor :name
-    attr_accessor :build_path
+    attr_accessor :debug_rust
+    attr_accessor :build_root
     attr_accessor :lib_path
     attr_accessor :helix_lib_dir
 
@@ -21,8 +22,17 @@ module HelixRuntime
 
     def init(name = nil, gem_spec = nil)
       @name = name
-      @build_path = ENV["DEBUG_RUST"] ? "target/debug" : "target/release"
+      @debug_rust = ENV['DEBUG_RUST']
+      @build_root = nil
       @lib_path = "lib/#{name}"
+    end
+
+    def debug_rust?
+      !!@debug_rust
+    end
+
+    def build_path
+      File.expand_path(debug_rust? ? 'target/debug' : 'target/release', build_root)
     end
 
     def define
@@ -78,7 +88,7 @@ module HelixRuntime
           rustc_args << "--pretty expanded"
           rustc_args << "-Z unstable-options"
         end
-        unless ENV['DEBUG_RUST']
+        unless debug_rust?
           cargo_args << ["--release"]
         end
         if ENV['VERBOSE']

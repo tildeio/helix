@@ -3,8 +3,8 @@ require 'helix_runtime/build_task'
 require 'rspec/core/rake_task'
 
 HelixRuntime::BuildTask.new("membership") do |t|
-  t.build_path = File.expand_path("../../../target/release", __FILE__)
-  t.helix_lib_dir = File.expand_path("../../../ruby/windows_build", __FILE__)
+  t.build_root = File.expand_path("../..", __dir__)
+  t.helix_lib_dir = File.expand_path("../../ruby/windows_build", __dir__)
 end
 
 task :benchmark => :build do
