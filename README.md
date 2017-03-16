@@ -40,7 +40,7 @@ declare_types! {
 ```shell
 $ irb
 >> require "console/native"
->> Console.new.log("I'm in your rust")
+>> Console.new.log("I'm in your Rust")
 LOG: I'm in your Rust
 ```
 
