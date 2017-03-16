@@ -15,6 +15,11 @@ when "RUST"
     alias_method :-@, :negate
     alias_method :<=>, :cmp
     alias_method :==, :eq
+
+    # FIXME: We don't handle default arguments in Rust yet
+    def iso8601(precision: nil)
+      iso8601_precise(precision)
+    end
   end
 
   ActiveSupport::Duration = ::Duration

@@ -57,6 +57,10 @@ class DurationTest < ActiveSupport::TestCase
   include ActiveSupport::Testing::MethodCallAssertions
   include TimeZoneTestHelpers
 
+  def skip_rust
+    skip "not supported in Rust yet" if ENV['IMPLEMENTATION'] == 'RUST'
+  end
+
   setup do
     I18n.available_locales = [:en, :de]
   end
@@ -66,8 +70,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_is_a
-    skip "is_a? Integer, kind_of? Integer and kind_of? Numeric are not working yet"
-
+    skip_rust
     d = 1.day
     assert d.is_a?(ActiveSupport::Duration)
     assert_kind_of ActiveSupport::Duration, d
@@ -81,8 +84,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_instance_of
-    skip "instance_of? Integer and instance_of? Numeric are not working yet"
-
+    skip_rust
     assert 1.minute.instance_of?(1.class)
     assert 2.days.instance_of?(ActiveSupport::Duration)
     assert !3.second.instance_of?(Numeric)
@@ -95,8 +97,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_equals
-    skip "Compatibility with Integer#== is not working yet"
-
+    skip_rust
     assert 1.day == 1.day
     assert 1.day == 1.day.to_i
     assert 1.day.to_i == 1.day
@@ -108,8 +109,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_eql
-    skip "Duration#eql? is not working yet"
-
+    skip_rust
     assert 1.minute.eql?(1.minute)
     assert 1.minute.eql?(60.seconds)
     assert 2.days.eql?(48.hours)
@@ -121,6 +121,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_inspect
+    skip_rust
     assert_equal "0 seconds",                       0.seconds.inspect
     assert_equal "1 month",                         1.month.inspect
     assert_equal "1 month and 1 day",               (1.month + 1.day).inspect
@@ -136,8 +137,7 @@ class DurationTest < ActiveSupport::TestCase
 
   def test_inspect_locale
     current_locale = I18n.default_locale
-
-    skip "Localization is not working yet"
+    skip_rust
 
     I18n.default_locale = :de
     I18n.backend.store_translations(:de, support: { array: { last_word_connector: " und " } })
@@ -151,14 +151,12 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_plus_with_time
-    skip "Duration#+ with overloads other than Integer are not working yet"
-
+    skip_rust
     assert_equal 1 + 1.second, 1.second + 1, "Duration + Numeric should == Numeric + Duration"
   end
 
   def test_time_plus_duration_returns_same_time_datatype
-    skip "Duration#since is not working yet"
-
+    skip_rust
     twz = ActiveSupport::TimeWithZone.new(nil, ActiveSupport::TimeZone["Moscow"] , Time.utc(2016, 4, 28, 00, 45))
     now = Time.now.utc
     %w( second minute hour day week month year ).each do |unit|
@@ -167,40 +165,35 @@ class DurationTest < ActiveSupport::TestCase
     end
   end
 
-  def test_type_error
-    skip "Duration#ago is not working yet"
-
-    e = assert_raise TypeError do
+  def test_argument_error
+    skip_rust
+    e = assert_raise ArgumentError do
       1.second.ago("")
     end
     assert_equal 'expected a time or date, got ""', e.message, "ensure TypeError is not being raised by dependencies.rb"
   end
 
   def test_fractional_weeks
-    skip "Floats are not working yet"
-
+    skip_rust
     assert_equal((86400 * 7) * 1.5, 1.5.weeks)
     assert_equal((86400 * 7) * 1.7, 1.7.weeks)
   end
 
   def test_fractional_days
-    skip "Floats are not working yet"
-
+    skip_rust
     assert_equal 86400 * 1.5, 1.5.days
     assert_equal 86400 * 1.7, 1.7.days
   end
 
   def test_since_and_ago
-    skip "Duration#since and #ago are not working yet"
-
+    skip_rust
     t = Time.local(2000)
     assert_equal t + 1, 1.second.since(t)
     assert_equal t - 1, 1.second.ago(t)
   end
 
   def test_since_and_ago_without_argument
-    skip "Duration#since and #ago are not working yet"
-
+    skip_rust
     now = Time.now
     assert 1.second.since >= now + 1
     now = Time.now
@@ -208,8 +201,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_since_and_ago_with_fractional_days
-    skip "Duration#since and #ago are not working yet"
-
+    skip_rust
     t = Time.local(2000)
     # since
     assert_equal 36.hours.since(t), 1.5.days.since(t)
@@ -220,8 +212,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_since_and_ago_with_fractional_weeks
-    skip "Duration#since and #ago are not working yet"
-
+    skip_rust
     t = Time.local(2000)
     # since
     assert_equal((7 * 36).hours.since(t), 1.5.weeks.since(t))
@@ -232,8 +223,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_since_and_ago_anchored_to_time_now_when_time_zone_is_not_set
-    skip "Duration#since and #ago are not working yet"
-
+    skip_rust
     Time.zone = nil
     with_env_tz "US/Eastern" do
       Time.stub(:now, Time.local(2000)) do
@@ -248,8 +238,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_since_and_ago_anchored_to_time_zone_now_when_time_zone_is_set
-    skip "Duration#since and #ago are not working yet"
-
+    skip_rust
     Time.zone = ActiveSupport::TimeZone["Eastern Time (US & Canada)"]
     with_env_tz "US/Eastern" do
       Time.stub(:now, Time.local(2000)) do
@@ -268,24 +257,21 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_adding_hours_across_dst_boundary
-    skip "Duration#since and #ago are not working yet"
-
+    skip_rust
     with_env_tz "CET" do
       assert_equal Time.local(2009, 3, 29, 0, 0, 0) + 24.hours, Time.local(2009, 3, 30, 1, 0, 0)
     end
   end
 
   def test_adding_day_across_dst_boundary
-    skip "Duration#since and #ago are not working yet"
-
+    skip_rust
     with_env_tz "CET" do
       assert_equal Time.local(2009, 3, 29, 0, 0, 0) + 1.day, Time.local(2009, 3, 30, 0, 0, 0)
     end
   end
 
   def test_delegation_with_block_works
-    skip "Delegation is not working yet"
-
+    skip_rust
     counter = 0
     assert_nothing_raised do
       1.minute.times { counter += 1 }
@@ -294,14 +280,12 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_as_json
-    skip "Duration#as_json is not working yet"
-
+    skip_rust
     assert_equal 172800, 2.days.as_json
   end
 
   def test_to_json
-    skip "Duration#as_json is not working yet"
-
+    skip_rust
     assert_equal "172800", 2.days.to_json
   end
 
@@ -315,21 +299,18 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_respond_to
-    skip "Duration#since and #ago are not working yet"
-
+    skip_rust
     assert_respond_to 1.day, :since
     assert_respond_to 1.day, :zero?
   end
 
   def test_hash
-    skip "Duration#hash is not working yet"
-
+    skip_rust
     assert_equal 1.minute.hash, 60.seconds.hash
   end
 
   def test_comparable
-    skip "Compatibility with Integer#<=> is not working yet"
-
+    skip_rust
     assert_equal(-1, (0.seconds <=> 1.second))
     assert_equal(-1, (1.second <=> 1.minute))
     assert_equal(-1, (1 <=> 1.minute))
@@ -350,8 +331,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_adding_one_month_maintains_day_of_month
-    skip "Duration#since and #ago are not working yet"
-
+    skip_rust
     (1..11).each do |month|
       [1, 14, 28].each do |day|
         assert_equal Date.civil(2016, month + 1, day), Date.civil(2016, month, day) + 1.month
@@ -393,8 +373,7 @@ class DurationTest < ActiveSupport::TestCase
   # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   def test_iso8601_parsing_wrong_patterns_with_raise
-    skip "Parsing is not working yet"
-
+    skip_rust
     invalid_patterns = ["", "P", "PT", "P1YT", "T", "PW", "P1Y1W", "~P1Y", ".P1Y", "P1.5Y0.5M", "P1.5Y1M", "P1.5MT10.5S"]
     invalid_patterns.each do |pattern|
       assert_raise ActiveSupport::Duration::ISO8601Parser::ParsingError, pattern.inspect do
@@ -445,8 +424,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_iso8601_output_and_reparsing
-    skip "Parsing is not working yet"
-
+    skip_rust
     patterns = %w[
       P1Y P0.5Y P0,5Y P1Y1M P1Y0.5M P1Y0,5M P1Y1M1D P1Y1M0.5D P1Y1M0,5D P1Y1M1DT1H P1Y1M1DT0.5H P1Y1M1DT0,5H P1W +P1Y -P1Y
       P1Y1M1DT1H1M P1Y1M1DT1H0.5M P1Y1M1DT1H0,5M P1Y1M1DT1H1M1S P1Y1M1DT1H1M1.0S P1Y1M1DT1H1M1,0S P-1Y-2M3DT-4H-5M-6S
@@ -461,8 +439,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_iso8601_parsing_across_spring_dst_boundary
-    skip "Parsing is not working yet"
-
+    skip_rust
     with_env_tz eastern_time_zone do
       with_tz_default "Eastern Time (US & Canada)" do
         travel_to Time.utc(2016, 3, 11) do
@@ -474,8 +451,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_iso8601_parsing_across_autumn_dst_boundary
-    skip "Parsing is not working yet"
-
+    skip_rust
     with_env_tz eastern_time_zone do
       with_tz_default "Eastern Time (US & Canada)" do
         travel_to Time.utc(2016, 11, 4) do
@@ -487,8 +463,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_iso8601_parsing_equivalence_with_numeric_extensions_over_long_periods
-    skip "Parsing is not working yet"
-
+    skip_rust
     with_env_tz eastern_time_zone do
       with_tz_default "Eastern Time (US & Canada)" do
         assert_equal 3.months, ActiveSupport::Duration.parse("P3M")
@@ -504,8 +479,7 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_adding_durations_do_not_hold_prior_states
-    skip "Duration#since and #ago are not working yet"
-
+    skip_rust
     time = Time.parse("Nov 29, 2016")
     # If the implementation adds and subtracts 3 months, the
     # resulting date would have been in February so the day will
