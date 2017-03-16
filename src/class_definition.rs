@@ -59,8 +59,15 @@ impl ClassDefinition {
                     );
                 };
             },
-            MethodDefinition::Class(_) => {
-                unreachable!();
+            MethodDefinition::Class(def) => {
+                unsafe {
+                    sys::rb_define_singleton_method(
+                        self.class.0,
+                        CString::new(def.name).unwrap().as_ptr(),
+                        def.function,
+                        def.arity
+                    );
+                };
             }
         }
 

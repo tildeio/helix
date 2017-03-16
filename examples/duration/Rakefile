@@ -14,4 +14,11 @@ Rake::TestTask.new(:test) do |t|
 end
 
 task :test => :build
-task :default => :test
+
+task "test:all" do
+  ['RUST', 'RAILS'].each do |impl|
+    sh({ 'IMPLEMENTATION' => impl }, 'rake test')
+  end
+end
+
+task :default => "test:all"

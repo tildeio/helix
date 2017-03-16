@@ -75,7 +75,7 @@ macro_rules! define_class {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! class_definition {
-    { #![reopen($reopen:tt)] #![struct($has_struct:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; defn $name:ident ; { $($alt_mod:tt)* } ; { $($self_mod:tt)* } ; $self_arg:tt ; ($($arg:ident : $argty:ty),*) ; $body:block ; $ret:ty ; $($rest:tt)* } => {
+    { #![reopen($reopen:tt)] #![struct($has_struct:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; defi $name:ident ; { $($alt_mod:tt)* } ; { $($self_mod:tt)* } ; $self_arg:tt ; ($($arg:ident : $argty:ty),*) ; $body:block ; $ret:ty ; $($rest:tt)* } => {
         class_definition! {
             #![reopen($reopen)]
             #![struct($has_struct)]
@@ -119,84 +119,144 @@ macro_rules! class_definition {
         }
     };
 
+    { #![reopen($reopen:tt)] #![struct($has_struct:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; defs $name:ident ; ($($arg:ident : $argty:ty),*) ; $body:block ; $ret:ty ; $($rest:tt)* } => {
+        class_definition! {
+            #![reopen($reopen)]
+            #![struct($has_struct)]
+            $cls ;
+            ($($mimpl)* pub fn $name($($arg : $argty),*) -> $ret $body) ;
+            ($($mdef)* {
+                extern "C" fn __ruby_method__(_rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
+                    let checked = __checked_call__($($arg),*);
+                    match checked {
+                        Ok(val) => $crate::ToRuby::to_ruby(val),
+                        Err(err) => { println!("TYPE ERROR: {:?}", err); unsafe { $crate::sys::Qnil } }
+                    }
+                }
+
+                fn __checked_call__($($arg : $crate::sys::VALUE),*) -> Result<$ret, ::std::ffi::CString> {
+                    #[allow(unused_imports)]
+                    use $crate::{ToRust};
+
+                    $(
+                        let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
+                    )*
+
+                    $(
+                        let $arg = $crate::ToRust::to_rust($arg);
+                    )*
+
+                    Ok($cls::$name($($arg),*))
+                }
+
+                let name = stringify!($name);
+                let arity = method_arity!($($arg),*);
+                let method = __ruby_method__ as *const $crate::libc::c_void;
+
+                $crate::MethodDefinition::class(name, method, arity)
+            }) ;
+            $($rest)*
+        }
+    };
+
     // def ident(&self, ...args) -> ty { ... }
     { #![reopen($reopen:tt)] #![struct(true)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { & } ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&self, ...args) { ... }
     { #![reopen($reopen:tt)] #![struct(true)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { & } ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
     };
 
     // def ident(&self) -> ty { ... }
     { #![reopen($reopen:tt)] #![struct(true)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; { & } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { & } ; { & } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&self) { ... }
     { #![reopen($reopen:tt)] #![struct(true)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt ) $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { & } ; { & } ; $self_arg ; () ; $body ; () ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { & } ; { & } ; $self_arg ; () ; $body ; () ; $($rest)*  }
     };
 
     // def ident(&mut self, ...args) -> ty { ... }
     { #![reopen($reopen:tt)] #![struct(true)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { &mut } ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&mut self, ...args) { ... }
     { #![reopen($reopen:tt)] #![struct(true)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { &mut } ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
     };
 
     // def ident(&mut self) -> ty { ... }
     { #![reopen($reopen:tt)] #![struct(true)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; { &mut } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { &mut } ; { &mut } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&mut self) { ... }
     { #![reopen($reopen:tt)] #![struct(true)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt ) $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { &mut } ; { &mut } ; $self_arg ; () ; $body ; () ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(true)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { &mut } ; { &mut } ; $self_arg ; () ; $body ; () ; $($rest)*  }
     };
 
     // def ident(&self, ...args) -> ty { ... }
     { #![reopen($reopen:tt)] #![struct(false)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { } ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { } ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&self, ...args) { ... }
     { #![reopen($reopen:tt)] #![struct(false)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { } ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { } ; { & } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
     };
 
     // def ident(&self) -> ty { ... }
     { #![reopen($reopen:tt)] #![struct(false)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { } ; { & } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { } ; { & } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&self) { ... }
     { #![reopen($reopen:tt)] #![struct(false)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( & $self_arg:tt ) $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { } ; { & } ; $self_arg ; () ; $body ; () ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { } ; { & } ; $self_arg ; () ; $body ; () ; $($rest)*  }
     };
 
     // def ident(&mut self, ...args) -> ty { ... }
     { #![reopen($reopen:tt)] #![struct(false)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt , $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { } ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { } ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&mut self, ...args) { ... }
     { #![reopen($reopen:tt)] #![struct(false)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt , $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { } ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { } ; { &mut } ; $self_arg ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
     };
 
     // def ident(&mut self) -> ty { ... }
     { #![reopen($reopen:tt)] #![struct(false)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt ) -> $ret:ty $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { } ; { &mut } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { } ; { &mut } ; $self_arg ; () ; $body ; $ret ; $($rest)*  }
     };
 
     // def ident(&mut self) { ... }
     { #![reopen($reopen:tt)] #![struct(false)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( &mut $self_arg:tt ) $body:block $($rest:tt)* } => {
-        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defn $name ; { } ; { &mut } ; $self_arg ; () ; $body ; () ; $($rest)*  }
+        class_definition! { #![reopen($reopen)] #![struct(false)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defi $name ; { } ; { &mut } ; $self_arg ; () ; $body ; () ; $($rest)*  }
+    };
+
+    // def ident(...args) -> ty { ... }
+    { #![reopen($reopen:tt)] #![struct($has_struct:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( $($arg:ident : $argty:ty),* ) -> $ret:ty $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($reopen)] #![struct($has_struct)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defs $name ; ($($arg : $argty),*) ; $body ; $ret ; $($rest)*  }
+    };
+
+    // def ident(...args) { ... }
+    { #![reopen($reopen:tt)] #![struct($has_struct:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident( $($arg:ident : $argty:ty),* ) $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($reopen)] #![struct($has_struct)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defs $name ; ($($arg : $argty),*) ; $body ; () ; $($rest)*  }
+    };
+
+    // def ident() -> ty { ... }
+    { #![reopen($reopen:tt)] #![struct($has_struct:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident() -> $ret:ty $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($reopen)] #![struct($has_struct)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defs $name ; () ; $body ; $ret ; $($rest)*  }
+    };
+
+    // def ident() { ... }
+    { #![reopen($reopen:tt)] #![struct($has_struct:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; def $name:ident() $body:block $($rest:tt)* } => {
+        class_definition! { #![reopen($reopen)] #![struct($has_struct)] $cls; ($($mimpl)*) ; ($($mdef)*) ; defs $name ; () ; $body ; () ; $($rest)*  }
     };
 
     ( #![reopen(false)] #![struct(true)] $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; fn initialize($helix:ident, $($arg:ident : $argty:ty),*) { $($initbody:tt)* } ) => {
