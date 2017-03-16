@@ -1,9 +1,8 @@
 #[macro_use]
 extern crate helix;
-extern crate rand;
 
 use std::fmt::Write;
-use rand::random;
+use std::cmp::Ordering;
 
 const SECONDS_PER_MINUTE: i64 = 60;
 const SECONDS_PER_HOUR:   i64 = 3600;
@@ -43,143 +42,84 @@ declare_types! {
             duration
         }
 
-        def seconds(&self) -> Option<i32> {
-            self.seconds
+        def seconds(seconds: i32) -> Duration {
+            Duration::new(Some(seconds), None, None, None, None, None, None)
         }
 
-        def set_seconds(&mut self, seconds: Option<i32>) {
-            self.seconds = seconds;
+        def minutes(minutes: i32) -> Duration {
+            Duration::new(None, Some(minutes), None, None, None, None, None)
         }
 
-        def minutes(&self) -> Option<i32> {
-            self.minutes
+        def hours(hours: i32) -> Duration {
+            Duration::new(None, None, Some(hours), None, None, None, None)
         }
 
-        def set_minutes(&mut self, minutes: Option<i32>) {
-            self.minutes = minutes;
+        def days(days: i32) -> Duration {
+            Duration::new(None, None, None, Some(days), None, None, None)
         }
 
-        def hours(&self) -> Option<i32> {
-            self.hours
+        def weeks(weeks: i32) -> Duration {
+            Duration::new(None, None, None, None, Some(weeks), None, None)
         }
 
-        def set_hours(&mut self, hours: Option<i32>) {
-            self.hours = hours;
+        def months(months: i32) -> Duration {
+            Duration::new(None, None, None, None, None, Some(months), None)
         }
 
-        def days(&self) -> Option<i32> {
-            self.days
-        }
-
-        def set_days(&mut self, days: Option<i32>) {
-            self.days = days;
-        }
-
-        def weeks(&self) -> Option<i32> {
-            self.weeks
-        }
-
-        def set_weeks(&mut self, weeks: Option<i32>) {
-            self.weeks = weeks;
-        }
-
-        def months(&self) -> Option<i32> {
-            self.months
-        }
-
-        def set_months(&mut self, months: Option<i32>) {
-            self.months = months;
-        }
-
-        def years(&self) -> Option<i32> {
-            self.years
-        }
-
-        def set_years(&mut self, years: Option<i32>) {
-            self.years = years;
+        def years(years: i32) -> Duration {
+            Duration::new(None, None, None, None, None, None, Some(years))
         }
 
         def value(&self) -> i64 {
             self.value
         }
 
-        def plus(&mut self, other: &Duration) {
-            self.seconds = sum_part(self.seconds, other.seconds);
-            self.minutes = sum_part(self.minutes, other.minutes);
-            self.hours = sum_part(self.hours, other.hours);
-            self.days = sum_part(self.days, other.days);
-            self.weeks = sum_part(self.weeks, other.weeks);
-            self.months = sum_part(self.months, other.months);
-            self.years = sum_part(self.years, other.years);
-
-            self.value += other.value;
+        def plus(&self, other: &Duration) -> Duration {
+            Duration::new(
+                sum_part(self.seconds, other.seconds),
+                sum_part(self.minutes, other.minutes),
+                sum_part(self.hours, other.hours),
+                sum_part(self.days, other.days),
+                sum_part(self.weeks, other.weeks),
+                sum_part(self.months, other.months),
+                sum_part(self.years, other.years)
+            )
         }
 
-        def negate(&mut self) {
-            self.seconds = negate_part(self.seconds);
-            self.minutes = negate_part(self.minutes);
-            self.hours = negate_part(self.hours);
-            self.days = negate_part(self.days);
-            self.weeks = negate_part(self.weeks);
-            self.months = negate_part(self.months);
-            self.years = negate_part(self.years);
-
-            self.value *= -1;
+        def minus(&self, other: &Duration) -> Duration {
+            self.plus(&other.negate())
         }
 
-        def randomize(&mut self) {
-            self.seconds = randomize_part();
-            self.minutes = randomize_part();
-            self.hours = randomize_part();
-            self.days = randomize_part();
-            self.weeks = randomize_part();
-            self.months = randomize_part();
-            self.years = randomize_part();
-
-            self.value = compute_value(&self);
+        def negate(&self) -> Duration {
+            Duration::new(
+                negate_part(self.seconds),
+                negate_part(self.minutes),
+                negate_part(self.hours),
+                negate_part(self.days),
+                negate_part(self.weeks),
+                negate_part(self.months),
+                negate_part(self.years)
+            )
         }
 
-        def iso8601(&self) -> String {
-            if self.value == 0 {
-                return "PT0S".to_string();
+        def eq(&self, other: &Duration) -> bool {
+            self.value == other.value
+        }
+
+        def cmp(&self, other: &Duration) -> i32 {
+            match self.value.cmp(&other.value) {
+                Ordering::Less => -1,
+                Ordering::Equal => 0,
+                Ordering::Greater => 1
             }
+        }
 
-            let mut output = String::new();
+        def to_i(&self) -> i64 {
+            self.value
+        }
 
-            let sign = if
-                self.value < 0 &&
-                self.seconds.unwrap_or(0) < 0 &&
-                self.minutes.unwrap_or(0) < 0 &&
-                self.hours.unwrap_or(0) < 0 &&
-                self.days.unwrap_or(0) < 0 &&
-                self.weeks.unwrap_or(0) < 0 &&
-                self.months.unwrap_or(0) < 0 &&
-                self.years.unwrap_or(0) < 0 {
-                -1
-            } else {
-                1
-            };
-
-            if sign == -1 {
-                output.push('-');
-            }
-
-            output.push('P');
-
-            format_iso8601_part(&mut output, self.years, "Y");
-            format_iso8601_part(&mut output, self.months, "M");
-            format_iso8601_part(&mut output, self.weeks, "W");
-            format_iso8601_part(&mut output, self.days, "D");
-
-            if self.hours.unwrap_or(0) + self.minutes.unwrap_or(0) + self.seconds.unwrap_or(0) != 0 {
-                output.push('T');
-
-                format_iso8601_part(&mut output, self.hours, "H");
-                format_iso8601_part(&mut output, self.minutes, "M");
-                format_iso8601_part(&mut output, self.seconds, "S");
-            }
-
-            output
+        def to_s(&self) -> String {
+            format!("{}", self.value)
         }
 
         def inspect(&self) -> String {
@@ -195,13 +135,56 @@ declare_types! {
 
             to_sentence(parts)
         }
+
+        def iso8601(&self) -> String {
+            if self.value == 0 {
+                return "PT0S".to_string();
+            }
+
+            let mut output = String::new();
+
+            let sign = if
+                self.value < 0 &&
+                self.seconds.unwrap_or(-1) < 0 &&
+                self.minutes.unwrap_or(-1) < 0 &&
+                self.hours.unwrap_or(-1) < 0 &&
+                self.days.unwrap_or(-1) < 0 &&
+                self.weeks.unwrap_or(-1) < 0 &&
+                self.months.unwrap_or(-1) < 0 &&
+                self.years.unwrap_or(-1) < 0 {
+                -1
+            } else {
+                1
+            };
+
+            if sign == -1 {
+                output.push('-');
+            }
+
+            output.push('P');
+
+            format_iso8601_part(&mut output, sign, self.years, "Y");
+            format_iso8601_part(&mut output, sign, self.months, "M");
+            format_iso8601_part(&mut output, sign, self.weeks, "W");
+            format_iso8601_part(&mut output, sign, self.days, "D");
+
+            if self.hours.unwrap_or(0) + self.minutes.unwrap_or(0) + self.seconds.unwrap_or(0) != 0 {
+                output.push('T');
+
+                format_iso8601_part(&mut output, sign, self.hours, "H");
+                format_iso8601_part(&mut output, sign, self.minutes, "M");
+                format_iso8601_part(&mut output, sign, self.seconds, "S");
+            }
+
+            output
+        }
     }
 }
 
-fn format_iso8601_part(string: &mut String, value: Option<i32>, unit: &str) {
+fn format_iso8601_part(string: &mut String, sign: i32, value: Option<i32>, unit: &str) {
     if let Some(v) = value {
         if v != 0 {
-            write!(string, "{}{}", v, unit).unwrap();
+            write!(string, "{}{}", sign * v, unit).unwrap();
         }
     }
 }
@@ -232,14 +215,6 @@ fn negate_part(part: Option<i32>) -> Option<i32> {
     }
 }
 
-fn randomize_part() -> Option<i32> {
-    if random() {
-        Some(random::<i8>() as i32)
-    } else {
-        None
-    }
-}
-
 fn compute_part_value(part: Option<i32>, unit: i64) -> i64 {
     match part {
         Some(value) => value as i64 * unit,
@@ -267,7 +242,7 @@ fn to_sentence(mut parts: Vec<String>) -> String {
         1 => parts.pop().unwrap(),
         _ => {
             let last = parts.pop().unwrap();
-            format!("{} and {}", parts.join(", "), last)
+            format!("{}, and {}", parts.join(", "), last)
         }
     }
 }

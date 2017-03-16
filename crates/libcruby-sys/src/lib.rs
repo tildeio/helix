@@ -142,6 +142,7 @@ extern "C" {
     pub fn rb_define_class_under(namespace: VALUE, name: c_string, superclass: VALUE) -> VALUE;
     pub fn rb_define_alloc_func(klass: VALUE, func: extern "C" fn(klass: VALUE) -> VALUE);
     pub fn rb_define_method(class: VALUE, name: c_string, func: void_ptr, arity: isize);
+    pub fn rb_define_singleton_method(class: VALUE, name: c_string, func: void_ptr, arity: isize);
     pub fn rb_inspect(value: VALUE) -> VALUE;
     pub fn rb_intern(string: c_string) -> ID;
     pub fn rb_jump_tag(state: RubyException) -> !;

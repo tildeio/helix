@@ -7,8 +7,5 @@ authors = ["Godfrey Chan <godfreykfc@gmail.com>"]
 
 crate-type = ["cdylib"]
 
-[dependencies]
-rand = "*"
-
 [dependencies.helix]
 path = "../.."
