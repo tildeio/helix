@@ -1,17 +1,21 @@
 #[macro_export]
 macro_rules! declare_types {
+    // pub class Name { ... }
     { $(#[$attr:meta])* pub class $cls:ident { $($body:tt)* } $($rest:tt)* } => {
         define_class! { #![reopen(false)] #![pub(true)] $(#[$attr])* pub class $cls { $($body)* } $($rest)* }
     };
 
+    // class Name { ... }
     { $(#[$attr:meta])* class $cls:ident { $($body:tt)* } $($rest:tt)* } => {
         define_class! { #![reopen(false)] #![pub(false)] $(#[$attr])* class $cls { $($body)* } $($rest)* }
     };
 
+    // pub reopen class Name { ... }
     { $(#[$attr:meta])* pub reopen class $cls:ident { $($body:tt)* } $($rest:tt)* } => {
         define_class! { #![reopen(true)] #![pub(true)] $(#[$attr])* pub class $cls { $($body)* } $($rest)* }
     };
 
+    // reopen class Name { ... }
     { $(#[$attr:meta])* reopen class $cls:ident { $($body:tt)* } $($rest:tt)* } => {
         define_class! { #![reopen(true)] #![pub(false)] $(#[$attr])* class $cls { $($body)* } $($rest)* }
     };
@@ -22,6 +26,7 @@ macro_rules! declare_types {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! define_struct {
+    // pub struct Name { ... }
     (true $(#[$attr:meta])* $cls:ident $($fields:tt)*) => (
         #[derive(Clone, Debug)]
         #[repr(C)]
@@ -32,6 +37,7 @@ macro_rules! define_struct {
         }
     );
 
+    // struct Name { ... }
     (false $(#[$attr:meta])* $cls:ident $($fields:tt)*) => (
         #[derive(Clone, Debug)]
         #[repr(C)]
@@ -46,24 +52,28 @@ macro_rules! define_struct {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! define_class {
+    // no reopen, with initializer and args
     { #![reopen(false)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { struct { $($fields:tt)* } def initialize($helix:ident, $($args:tt)*) { $($initbody:tt)* } $($body:tt)* } $($rest:tt)* } => {
         define_struct!($(#[$attr:meta])* $is_pub $cls $($fields)*);
         class_definition! { #![reopen(false)] #![struct(true)] $cls ; () ; () ; $($body)* fn initialize($helix, $($args)*) { $($initbody)* } }
         declare_types! { $($rest)* }
     };
 
+    // no reopen, with initializer and no args
     { #![reopen(false)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { struct { $($fields:tt)* } def initialize($helix:ident) { $($initbody:tt)* } $($body:tt)* } $($rest:tt)* } => {
         define_struct!($(#[$attr:meta])* $is_pub $cls $($fields)*);
         class_definition! { #![reopen(false)] #![struct(true)] $cls ; () ; () ; $($body)* fn initialize($helix,) { $($initbody)* } }
         declare_types! { $($rest)* }
     };
 
+    // no reopen, without initializer
     { #![reopen(false)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { $($body:tt)* } $($rest:tt)* } => {
         define_struct!($(#[$attr:meta])* $is_pub $cls);
         class_definition! { #![reopen(false)] #![struct(false)] $cls ; () ; () ; $($body)* () }
         declare_types! { $($rest)* }
     };
 
+    // reopen, without initializer
     { #![reopen(true)] #![pub($is_pub:tt)] $(#[$attr:meta])* class $cls:ident { $($body:tt)* } $($rest:tt)* } => {
         define_struct!($(#[$attr:meta])* $is_pub $cls);
         class_definition! { #![reopen(true)] #![struct(false)] $cls ; () ; () ; $($body)* () }
