@@ -202,6 +202,10 @@ macro_rules! class_definition {
     ( #![reopen(false)] #![struct(true)] $cls:ident ; ($($mimpl:tt)*) ; ($($mdef:block)*) ; fn initialize($helix:ident, $($arg:ident : $argty:ty),*) { $($initbody:tt)* } ) => {
         item! {
             impl $cls {
+                pub fn new($($arg : $argty),*) -> $cls {
+                    $cls::initialize(unsafe { $crate::sys::Qnil } $(, $arg)*)
+                }
+
                 fn initialize($helix: $crate::Metadata, $($arg : $argty),*) -> $cls {
                     $($initbody)*
                 }
@@ -210,16 +214,11 @@ macro_rules! class_definition {
             }
         }
 
-        impl_struct_coercions!(&'a $cls);
-        impl_struct_coercions!(&'a mut $cls);
+        impl_struct_to_rust!(&'a $cls);
+        impl_struct_to_rust!(&'a mut $cls);
 
-        item! {
-            impl<'a> $crate::ToRuby for &'a $cls {
-                fn to_ruby(self) -> $crate::sys::VALUE {
-                    self.helix
-                }
-            }
-        }
+        impl_to_ruby!(&'a $cls);
+        impl_to_ruby!(&'a mut $cls);
 
         static mut __HELIX_ID: usize = 0;
 
@@ -227,16 +226,28 @@ macro_rules! class_definition {
             extern "C" fn __mark__(_klass: &$cls) {}
             extern "C" fn __free__(_klass: Option<Box<$cls>>) {}
 
-            extern "C" fn __alloc__(klass: $crate::sys::VALUE) -> $crate::sys::VALUE {
+            extern "C" fn __alloc__(_klass: $crate::sys::VALUE) -> $crate::sys::VALUE {
+                __alloc_with__(None)
+            }
+
+            fn __alloc_with__(rust_self: Option<Box<$cls>>) -> $crate::sys::VALUE {
+                use ::std::mem::transmute;
+
                 unsafe {
                     let instance = $crate::sys::Data_Wrap_Struct(
-                        klass,
-                        ::std::mem::transmute(__mark__ as usize),
-                        ::std::mem::transmute(__free__ as usize),
-                        ::std::ptr::null()
+                        transmute(__HELIX_ID),
+                        transmute(__mark__ as usize),
+                        transmute(__free__ as usize),
+                        transmute(rust_self)
                     );
 
                     instance
+                }
+            }
+
+            impl $crate::ToRuby for $cls {
+                fn to_ruby(self) -> $crate::sys::VALUE {
+                    __alloc_with__(Some(Box::new(self)))
                 }
             }
 
@@ -309,36 +320,36 @@ macro_rules! class_definition {
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! impl_struct_coercions {
-  ($cls:ty) => {
-    item! {
-        impl<'a> $crate::ToRust<$cls> for $crate::CheckedValue<$cls> {
-            fn to_rust(self) -> $cls {
-                unsafe { ::std::mem::transmute($crate::sys::Data_Get_Struct_Value(self.inner)) }
+macro_rules! impl_struct_to_rust {
+    ($cls:ty) => {
+        item! {
+            impl<'a> $crate::ToRust<$cls> for $crate::CheckedValue<$cls> {
+                fn to_rust(self) -> $cls {
+                    unsafe { ::std::mem::transmute($crate::sys::Data_Get_Struct_Value(self.inner)) }
+                }
             }
         }
-    }
 
-    item! {
-        impl<'a> $crate::UncheckedValue<$cls> for $crate::sys::VALUE {
-            fn to_checked(self) -> $crate::CheckResult<$cls> {
-                use $crate::{CheckedValue, sys};
-                use ::std::ffi::{CStr, CString};
+        item! {
+            impl<'a> $crate::UncheckedValue<$cls> for $crate::sys::VALUE {
+                fn to_checked(self) -> $crate::CheckResult<$cls> {
+                    use $crate::{CheckedValue, sys};
+                    use ::std::ffi::{CStr, CString};
 
-                if unsafe { __HELIX_ID == ::std::mem::transmute(sys::rb_obj_class(self)) } {
-                    if unsafe { $crate::sys::Data_Get_Struct_Value(self) == ::std::ptr::null() } {
-                        Err(CString::new(format!("Uninitialized {}", $crate::inspect(unsafe { sys::rb_obj_class(self) }))).unwrap())
+                    if unsafe { __HELIX_ID == ::std::mem::transmute(sys::rb_obj_class(self)) } {
+                        if unsafe { $crate::sys::Data_Get_Struct_Value(self) == ::std::ptr::null() } {
+                            Err(CString::new(format!("Uninitialized {}", $crate::inspect(unsafe { sys::rb_obj_class(self) }))).unwrap())
+                        } else {
+                            Ok(unsafe { CheckedValue::new(self) })
+                        }
                     } else {
-                        Ok(unsafe { CheckedValue::new(self) })
+                        let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
+                        Err(CString::new(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(self) }))).unwrap())
                     }
-                } else {
-                    let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
-                    Err(CString::new(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(self) }))).unwrap())
                 }
             }
         }
     }
-  }
 }
 
 #[doc(hidden)]
@@ -375,8 +386,18 @@ macro_rules! impl_simple_class {
             }
         }
 
+        impl_to_ruby!($cls);
+        impl_to_ruby!(&'a $cls);
+        impl_to_ruby!(&'a mut $cls);
+    }
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! impl_to_ruby {
+    ($cls:ty) => {
         item! {
-            impl<'a> $crate::ToRuby for &'a $cls {
+            impl<'a> $crate::ToRuby for $cls {
                 fn to_ruby(self) -> $crate::sys::VALUE {
                     self.helix
                 }

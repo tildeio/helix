@@ -103,16 +103,16 @@ declare_types! {
             self.value
         }
 
-        def plus(&mut self, other: &Duration) {
-            self.seconds = sum_part(self.seconds, other.seconds);
-            self.minutes = sum_part(self.minutes, other.minutes);
-            self.hours = sum_part(self.hours, other.hours);
-            self.days = sum_part(self.days, other.days);
-            self.weeks = sum_part(self.weeks, other.weeks);
-            self.months = sum_part(self.months, other.months);
-            self.years = sum_part(self.years, other.years);
-
-            self.value += other.value;
+        def plus(&mut self, other: &Duration) -> Duration {
+            Duration::new(
+                sum_part(self.seconds, other.seconds),
+                sum_part(self.minutes, other.minutes),
+                sum_part(self.hours, other.hours),
+                sum_part(self.days, other.days),
+                sum_part(self.weeks, other.weeks),
+                sum_part(self.months, other.months),
+                sum_part(self.years, other.years)
+            )
         }
 
         def negate(&mut self) {
