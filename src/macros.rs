@@ -23,6 +23,13 @@ macro_rules! declare_types {
     { } => { };
 }
 
+#[macro_export]
+macro_rules! throw {
+    ($msg:expr) => {
+        panic!($crate::Exception::with_message(String::from($msg)))
+    }
+}
+
 #[doc(hidden)]
 #[macro_export]
 macro_rules! define_struct {
@@ -84,6 +91,28 @@ macro_rules! define_class {
 
 #[doc(hidden)]
 #[macro_export]
+macro_rules! handle_exception {
+    { $($body:tt)* } => {
+        ::std::panic::set_hook(Box::new(|info| {
+            let exception = $crate::Exception::from_any(info.payload());
+            if std::env::var("HELIX_RUST_BACKTRACE").is_ok() {
+                println!("Exception: msg={}; location={:?}", exception.message(), info.location());
+            }
+            exception.raise()
+        }));
+
+        let res = {
+            $($body)*
+        };
+
+        let _ = ::std::panic::take_hook();
+
+        Ok(res)
+    }
+}
+
+#[doc(hidden)]
+#[macro_export]
 macro_rules! class_definition {
     { #![reopen($reopen:tt)] #![struct($has_struct:tt)] $cls:ident; ($($mimpl:tt)*) ; ($($mdef:tt)*) ; defi $name:ident ; { $($alt_mod:tt)* } ; { $($self_mod:tt)* } ; $self_arg:tt ; ($($arg:ident : $argty:ty),*) ; $body:block ; $ret:ty ; $($rest:tt)* } => {
         class_definition! {
@@ -116,7 +145,9 @@ macro_rules! class_definition {
                         let $arg = $crate::ToRust::to_rust($arg);
                     )*
 
-                    Ok(rust_self.$name($($arg),*))
+                    handle_exception! {
+                        rust_self.$name($($arg),*)
+                    }
                 }
 
                 let name = cstr!(stringify!($name));
@@ -156,7 +187,9 @@ macro_rules! class_definition {
                         let $arg = $crate::ToRust::to_rust($arg);
                     )*
 
-                    Ok($cls::$name($($arg),*))
+                    handle_exception! {
+                        rust_self.$name($($arg),*)
+                    }
                 }
 
                 let name = cstr!(stringify!($name));

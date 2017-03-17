@@ -66,6 +66,9 @@ extern "C" {
     #[link_name = "rb_cObject"]
     pub static rb_cObject: VALUE;
 
+    #[link_name = "rb_eRuntimeError"]
+    pub static rb_eRuntimeError: VALUE;
+
     #[link_name = "HELIX_RSTRING_LEN"]
     pub fn RSTRING_LEN(string: VALUE) -> isize;
 
@@ -158,6 +161,8 @@ extern "C" {
     pub fn rb_define_singleton_method(class: VALUE, name: c_string, func: c_func, arity: isize);
     pub fn rb_inspect(value: VALUE) -> VALUE;
     pub fn rb_intern(string: c_string) -> ID;
+    pub fn rb_raise(exc: VALUE, string: c_string, ...);
+
     pub fn rb_jump_tag(state: RubyException) -> !;
     pub fn rb_protect(try: extern "C" fn(v: *mut void) -> VALUE,
                       arg: *mut void,

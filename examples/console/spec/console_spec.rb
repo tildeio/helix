@@ -33,4 +33,8 @@ describe "Console" do
     expect(console.is_red("hello")).to eq(false)
     expect(console.is_red("hello".colorize(:red))).to eq(true)
   end
+
+  it "can handle panics" do
+    expect { console.freak_out }.to raise_error("Aaaaahhhhh!!!!!")
+  end
 end

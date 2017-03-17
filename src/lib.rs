@@ -79,3 +79,45 @@ pub fn inspect(val: VALUE) -> String {
 }
 
 pub type Metadata = ::sys::VALUE;
+
+#[derive(Clone)]
+pub struct Exception {
+    ruby_class: Class,
+    message: String
+}
+
+impl Exception {
+    pub fn with_message(string: String) -> Exception {
+        Exception {
+            ruby_class: Class(unsafe { sys::rb_eRuntimeError }),
+            message: string
+        }
+    }
+
+    pub fn from_any(any: &std::any::Any) -> Exception {
+        match any.downcast_ref::<Exception>() {
+            Some(e) => e.clone(),
+            None    => match any.downcast_ref::<&'static str>() {
+                Some(e) => Exception::with_message(format!("{}", e)),
+                None    => match any.downcast_ref::<String>() {
+                    Some(e) => Exception::with_message(e.clone()),
+                    None    => Exception::with_message(format!("Unknown Error; err={:?}", any))
+                }
+            }
+        }
+    }
+
+    pub fn message(&self) -> &String {
+        &self.message
+    }
+
+    pub fn raise(&self) {
+        let msg = std::ffi::CString::new(self.message.clone()).unwrap();
+        unsafe {
+            sys::rb_raise(self.ruby_class.0, msg.as_ptr());
+        }
+    }
+}
+
+unsafe impl Send for Exception {}
+unsafe impl Sync for Exception {}

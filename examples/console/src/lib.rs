@@ -30,6 +30,10 @@ declare_types! {
         def is_red(&self, string: String) -> bool {
             string.starts_with("\x1B[0;31;49m") && string.ends_with("\x1B[0m")
         }
+
+        def freak_out(&self) {
+            throw!("Aaaaahhhhh!!!!!");
+        }
     }
 }
 
