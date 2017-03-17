@@ -16,10 +16,42 @@ when "RUST"
     alias_method :<=>, :cmp
     alias_method :==, :eq
 
+    # We have to do this here since it's actually operating on the Time
+    def since(time = ::Time.current)
+      sum(1, time)
+    end
+    alias :from_now :since
+
+    # We have to do this here since it's actually operating on the Time
+    def ago(time = ::Time.current)
+      sum(-1, time)
+    end
+    alias :until :ago
+
     # FIXME: We don't handle default arguments in Rust yet
     def iso8601(precision: nil)
       iso8601_precise(precision)
     end
+
+    protected
+
+      def sum(sign, time = ::Time.current) #:nodoc:
+        parts.inject(time) do |t,(type,number)|
+          if t.acts_like?(:time) || t.acts_like?(:date)
+            if type == :seconds
+              t.since(sign * number)
+            elsif type == :minutes
+              t.since(sign * number * 60)
+            elsif type == :hours
+              t.since(sign * number * 3600)
+            else
+              t.advance(type => sign * number)
+            end
+          else
+            raise ::ArgumentError, "expected a time or date, got #{time.inspect}"
+          end
+        end
+      end
   end
 
   ActiveSupport::Duration = ::Duration

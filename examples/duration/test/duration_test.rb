@@ -191,14 +191,12 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_since_and_ago
-    skip_rust
     t = Time.local(2000)
     assert_equal t + 1, 1.second.since(t)
     assert_equal t - 1, 1.second.ago(t)
   end
 
   def test_since_and_ago_without_argument
-    skip_rust
     now = Time.now
     assert 1.second.since >= now + 1
     now = Time.now
@@ -206,7 +204,6 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_since_and_ago_with_fractional_days
-    skip_rust
     t = Time.local(2000)
     # since
     assert_equal 36.hours.since(t), 1.5.days.since(t)
@@ -217,7 +214,6 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_since_and_ago_with_fractional_weeks
-    skip_rust
     t = Time.local(2000)
     # since
     assert_equal((7 * 36).hours.since(t), 1.5.weeks.since(t))
@@ -228,7 +224,6 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_since_and_ago_anchored_to_time_now_when_time_zone_is_not_set
-    skip_rust
     Time.zone = nil
     with_env_tz "US/Eastern" do
       Time.stub(:now, Time.local(2000)) do
@@ -243,7 +238,6 @@ class DurationTest < ActiveSupport::TestCase
   end
 
   def test_since_and_ago_anchored_to_time_zone_now_when_time_zone_is_set
-    skip_rust
     skip_windows
     Time.zone = ActiveSupport::TimeZone["Eastern Time (US & Canada)"]
     with_env_tz "US/Eastern" do

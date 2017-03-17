@@ -3,6 +3,8 @@ extern crate helix_runtime as helix;
 
 use std::fmt::Write;
 use std::cmp::Ordering;
+use std::collections::HashMap;
+use helix::Symbol;
 
 const SECONDS_PER_MINUTE: i64 = 60;
 const SECONDS_PER_HOUR:   i64 = 3600;
@@ -43,6 +45,10 @@ declare_types! {
             duration
         }
 
+        def parse(string: String) -> Duration {
+            Duration::seconds(1_f64)
+        }
+
         def seconds(seconds: f64) -> Duration {
             Duration::new(Some(seconds), None, None, None, None, None, None)
         }
@@ -73,6 +79,19 @@ declare_types! {
 
         def value(&self) -> f64 {
             self.value
+        }
+
+        // FIXME: Having to convert to f64 isn't ideal
+        def parts(&self) -> HashMap<Symbol, f64> {
+            let mut map = HashMap::new();
+            if let Some(v) = self.seconds { map.insert(Symbol::new(String::from("seconds")), v); }
+            if let Some(v) = self.minutes { map.insert(Symbol::new(String::from("minutes")), v as f64); }
+            if let Some(v) = self.hours   { map.insert(Symbol::new(String::from("hours")), v as f64); }
+            if let Some(v) = self.days    { map.insert(Symbol::new(String::from("days")), v as f64); }
+            if let Some(v) = self.weeks   { map.insert(Symbol::new(String::from("weeks")), v as f64); }
+            if let Some(v) = self.months  { map.insert(Symbol::new(String::from("months")), v as f64); }
+            if let Some(v) = self.years   { map.insert(Symbol::new(String::from("years")), v as f64); }
+            map
         }
 
         def plus(&self, other: &Duration) -> Duration {
