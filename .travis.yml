@@ -14,7 +14,6 @@ cache:
   directories:
     - $HOME/.rvm/gems
     - $HOME/.cargo
-    - $TRAVIS_BUILD_DIR/target
 
 env:
   global:
