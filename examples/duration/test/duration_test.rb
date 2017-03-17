@@ -61,6 +61,11 @@ class DurationTest < ActiveSupport::TestCase
     skip "not supported in Rust yet" if ENV['IMPLEMENTATION'] == 'RUST'
   end
 
+  def skip_windows
+    # See https://github.com/rails/rails/issues/28463
+    skip "not expected to work on Windows" if RUBY_PLATFORM =~ /mingw/
+  end
+
   setup do
     I18n.available_locales = [:en, :de]
   end
@@ -239,6 +244,7 @@ class DurationTest < ActiveSupport::TestCase
 
   def test_since_and_ago_anchored_to_time_zone_now_when_time_zone_is_set
     skip_rust
+    skip_windows
     Time.zone = ActiveSupport::TimeZone["Eastern Time (US & Canada)"]
     with_env_tz "US/Eastern" do
       Time.stub(:now, Time.local(2000)) do
@@ -258,6 +264,7 @@ class DurationTest < ActiveSupport::TestCase
 
   def test_adding_hours_across_dst_boundary
     skip_rust
+    skip_windows
     with_env_tz "CET" do
       assert_equal Time.local(2009, 3, 29, 0, 0, 0) + 24.hours, Time.local(2009, 3, 30, 1, 0, 0)
     end
@@ -425,6 +432,7 @@ class DurationTest < ActiveSupport::TestCase
 
   def test_iso8601_output_and_reparsing
     skip_rust
+    skip_windows
     patterns = %w[
       P1Y P0.5Y P0,5Y P1Y1M P1Y0.5M P1Y0,5M P1Y1M1D P1Y1M0.5D P1Y1M0,5D P1Y1M1DT1H P1Y1M1DT0.5H P1Y1M1DT0,5H P1W +P1Y -P1Y
       P1Y1M1DT1H1M P1Y1M1DT1H0.5M P1Y1M1DT1H0,5M P1Y1M1DT1H1M1S P1Y1M1DT1H1M1.0S P1Y1M1DT1H1M1,0S P-1Y-2M3DT-4H-5M-6S
