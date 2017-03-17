@@ -7,6 +7,17 @@ HelixRuntime::BuildTask.new("duration") do |t|
   t.helix_lib_dir = File.expand_path("../../ruby/windows_build", __dir__)
 end
 
+task :build_helix_runtime do
+  Dir.chdir("../../ruby") do
+    puts "\n\nBuilding helix runtime\n\n"
+    Bundler.with_clean_env do
+      sh "bundle exec rake compile:native"
+    end
+    puts "\nRuntime built\n\n"
+  end
+end
+task :build => :build_helix_runtime
+
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
   t.libs << "lib"
