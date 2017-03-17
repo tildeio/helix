@@ -35,6 +35,10 @@ describe "Console" do
   end
 
   it "can handle panics" do
-    expect { console.freak_out }.to raise_error("Aaaaahhhhh!!!!!")
+    expect { console.freak_out }.to raise_error(RuntimeError, "Aaaaahhhhh!!!!!")
+  end
+
+  it "can handle invalid arguments" do
+    expect { console.log(123) }.to raise_error(TypeError, "No implicit conversion of 123 into String")
   end
 end

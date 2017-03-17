@@ -2,7 +2,6 @@ use libc;
 use std;
 use sys;
 use sys::{VALUE};
-use std::ffi::CString;
 
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
 
@@ -14,7 +13,7 @@ impl UncheckedValue<String> for VALUE {
             Ok(unsafe { CheckedValue::<String>::new(self) })
         } else {
             let val = unsafe { CheckedValue::<String>::new(sys::rb_inspect(self)) };
-            Err(CString::new(format!("No implicit conversion of {} into String", val.to_rust())).unwrap())
+            Err(format!("No implicit conversion of {} into String", val.to_rust()))
         }
     }
 }

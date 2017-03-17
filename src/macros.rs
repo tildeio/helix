@@ -93,21 +93,22 @@ macro_rules! define_class {
 #[macro_export]
 macro_rules! handle_exception {
     { $($body:tt)* } => {
-        ::std::panic::set_hook(Box::new(|info| {
-            let exception = $crate::Exception::from_any(info.payload());
-            if std::env::var("HELIX_RUST_BACKTRACE").is_ok() {
-                println!("Exception: msg={}; location={:?}", exception.message(), info.location());
-            }
-            exception.raise()
-        }));
+        let hide_err = std::env::var("RUST_BACKTRACE").is_err();
+        if hide_err {
+            ::std::panic::set_hook(Box::new(|_| {
+                // Silence
+            }));
+        }
 
-        let res = {
+        let res = ::std::panic::catch_unwind(|| {
             $($body)*
-        };
+        });
 
-        let _ = ::std::panic::take_hook();
+        if hide_err {
+            let _ = ::std::panic::take_hook();
+        }
 
-        Ok(res)
+        res.map_err(|e| $crate::Exception::from_any(e))
     }
 }
 
@@ -125,18 +126,24 @@ macro_rules! class_definition {
                     let checked = __checked_call__(rb_self, $($arg),*);
                     match checked {
                         Ok(val) => $crate::ToRuby::to_ruby(val),
-                        Err(err) => { println!("TYPE ERROR: {:?}", err); unsafe { $crate::sys::Qnil } }
+                        Err(err) => err.raise()
                     }
                 }
 
-                fn __checked_call__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$ret, ::std::ffi::CString> {
+                fn __checked_call__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$ret, $crate::Exception> {
                     #[allow(unused_imports)]
                     use $crate::{ToRust};
 
-                    let rust_self = try!($crate::UncheckedValue::<$($alt_mod)* $cls>::to_checked(rb_self));
+                    let rust_self = match $crate::UncheckedValue::<$($alt_mod)* $cls>::to_checked(rb_self) {
+                        Ok(v)  => v,
+                        Err(e) => return Err($crate::Exception::with_message(e))
+                    };
 
                     $(
-                        let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
+                        let $arg = match $crate::UncheckedValue::<$argty>::to_checked($arg) {
+                            Ok(v) => v,
+                            Err(e) => return Err($crate::Exception::type_error(e))
+                        };
                     )*
 
                     let rust_self = rust_self.to_rust();
@@ -171,16 +178,19 @@ macro_rules! class_definition {
                     let checked = __checked_call__($($arg),*);
                     match checked {
                         Ok(val) => $crate::ToRuby::to_ruby(val),
-                        Err(err) => { println!("TYPE ERROR: {:?}", err); unsafe { $crate::sys::Qnil } }
+                        Err(err) => err.raise()
                     }
                 }
 
-                fn __checked_call__($($arg : $crate::sys::VALUE),*) -> Result<$ret, ::std::ffi::CString> {
+                fn __checked_call__($($arg : $crate::sys::VALUE),*) -> Result<$ret, $crate::Exception> {
                     #[allow(unused_imports)]
                     use $crate::{ToRust};
 
                     $(
-                        let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
+                        let $arg = match $crate::UncheckedValue::<$argty>::to_checked($arg) {
+                            Ok(v) => v,
+                            Err(e) => return Err($crate::Exception::type_error(e));
+                        };
                     )*
 
                     $(
@@ -369,7 +379,7 @@ macro_rules! class_definition {
                     rb_self
                 }
 
-                fn __checked_initialize__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$cls, ::std::ffi::CString> {
+                fn __checked_initialize__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$cls, String> {
                     #[allow(unused_imports)]
                     use $crate::{ToRust};
 
@@ -437,17 +447,17 @@ macro_rules! impl_struct_to_rust {
             impl<'a> $crate::UncheckedValue<$cls> for $crate::sys::VALUE {
                 fn to_checked(self) -> $crate::CheckResult<$cls> {
                     use $crate::{CheckedValue, sys};
-                    use ::std::ffi::{CStr, CString};
+                    use ::std::ffi::{CStr};
 
                     if unsafe { __HELIX_ID == ::std::mem::transmute(sys::rb_obj_class(self)) } {
                         if unsafe { $crate::sys::Data_Get_Struct_Value(self) == ::std::ptr::null_mut() } {
-                            Err(CString::new(format!("Uninitialized {}", $crate::inspect(unsafe { sys::rb_obj_class(self) }))).unwrap())
+                            Err(format!("Uninitialized {}", $crate::inspect(unsafe { sys::rb_obj_class(self) })))
                         } else {
                             Ok(unsafe { CheckedValue::new(self) })
                         }
                     } else {
                         let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
-                        Err(CString::new(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(self) }))).unwrap())
+                        Err(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(self) })))
                     }
                 }
             }
@@ -469,13 +479,13 @@ macro_rules! impl_simple_class {
             impl $crate::UncheckedValue<$cls> for $crate::sys::VALUE {
                 fn to_checked(self) -> $crate::CheckResult<$cls> {
                     use $crate::{CheckedValue, sys};
-                    use ::std::ffi::{CStr, CString};
+                    use ::std::ffi::{CStr};
 
                     if unsafe { __HELIX_ID == ::std::mem::transmute(sys::rb_obj_class(self)) } {
                         Ok(unsafe { CheckedValue::new(self) })
                     } else {
                         let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
-                        Err(CString::new(format!("No implicit conversion of {} into {}", val, stringify!($cls))).unwrap())
+                        Err(format!("No implicit conversion of {} into {}", val, stringify!($cls)))
                     }
                 }
             }

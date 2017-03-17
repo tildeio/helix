@@ -1,5 +1,4 @@
 use sys::{self, VALUE, Qtrue, Qfalse};
-use std::ffi::CString;
 
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
 
@@ -8,7 +7,7 @@ impl UncheckedValue<bool> for VALUE {
         if unsafe { sys::RB_TYPE_P(self, sys::T_TRUE) || sys::RB_TYPE_P(self, sys::T_FALSE) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            Err(CString::new(format!("No implicit conversion of {} into Rust bool", "?")).unwrap())
+            Err(format!("No implicit conversion of {} into Rust bool", "?"))
         }
     }
 }

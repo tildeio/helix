@@ -115,7 +115,7 @@ impl UncheckedValue<String> for VALUE {
             // assert that we can guarantee that to_rust() can return a Rust String safely
             Ok(unsafe { CheckedValue::<String>::new(self) })
         } else {
-            Err(CString::new(format!("No implicit conversion of {} into Rust String", "?")).unwrap())
+            Err(format!("No implicit conversion of {} into Rust String", "?"))
         }
     }
 }

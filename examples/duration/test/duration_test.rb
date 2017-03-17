@@ -152,11 +152,11 @@ class DurationTest < ActiveSupport::TestCase
     end
   end
 
-  def test_argument_error
-    e = assert_raise ArgumentError do
+  def test_type_error
+    e = assert_raise TypeError do
       1.second.ago("")
     end
-    assert_equal 'expected a time or date, got ""', e.message, "ensure ArgumentError is not being raised by dependencies.rb"
+    assert_equal 'expected a time or date, got ""', e.message, "ensure TypeError is not being raised by dependencies.rb"
   end
 
   def test_fractional_weeks

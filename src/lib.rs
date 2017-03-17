@@ -94,7 +94,14 @@ impl Exception {
         }
     }
 
-    pub fn from_any(any: &std::any::Any) -> Exception {
+    pub fn type_error(string: String) -> Exception {
+        Exception {
+            ruby_class: Class(unsafe { sys::rb_eTypeError }),
+            message: string
+        }
+    }
+
+    pub fn from_any(any: Box<std::any::Any>) -> Exception {
         match any.downcast_ref::<Exception>() {
             Some(e) => e.clone(),
             None    => match any.downcast_ref::<&'static str>() {
@@ -111,10 +118,11 @@ impl Exception {
         &self.message
     }
 
-    pub fn raise(&self) {
-        let msg = std::ffi::CString::new(self.message.clone()).unwrap();
+    pub fn raise(&self) -> sys::VALUE {
         unsafe {
-            sys::rb_raise(self.ruby_class.0, msg.as_ptr());
+            // Hopefully this doesn't leak memory!
+            sys::rb_raise(self.ruby_class.0, sys::PRINT_VALUE_STR, self.message.clone().to_ruby());
+            sys::Qnil // Return a Ruby nil
         }
     }
 }

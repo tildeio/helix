@@ -1,7 +1,6 @@
 use std;
 use sys;
 use sys::{VALUE};
-use std::ffi::CString;
 
 use ::inspect;
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust};
@@ -11,7 +10,7 @@ impl<'a> UncheckedValue<&'a[usize]> for VALUE {
         if unsafe { sys::RB_TYPE_P(self, sys::T_ARRAY) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            Err(CString::new(format!("No implicit conversion of {} into Slice", inspect(self))).unwrap())
+            Err(format!("No implicit conversion of {} into Slice", inspect(self)))
         }
     }
 }

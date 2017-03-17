@@ -1,5 +1,4 @@
 use sys::{self, VALUE, T_FIXNUM, T_BIGNUM};
-use std::ffi::CString;
 
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
 
@@ -9,7 +8,7 @@ impl UncheckedValue<u64> for VALUE {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
             let val = unsafe { CheckedValue::<String>::new(sys::rb_inspect(self)) };
-            Err(CString::new(format!("No implicit conversion of {} into Rust u64", val.to_rust())).unwrap())
+            Err(format!("No implicit conversion of {} into Rust u64", val.to_rust()))
         }
     }
 }
@@ -32,7 +31,7 @@ impl UncheckedValue<i64> for VALUE {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
             let val = unsafe { CheckedValue::<String>::new(sys::rb_inspect(self)) };
-            Err(CString::new(format!("No implicit conversion of {} into Rust i64", val.to_rust())).unwrap())
+            Err(format!("No implicit conversion of {} into Rust i64", val.to_rust()))
         }
     }
 }
@@ -55,7 +54,7 @@ impl UncheckedValue<u32> for VALUE {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
             let val = unsafe { CheckedValue::<String>::new(sys::rb_inspect(self)) };
-            Err(CString::new(format!("No implicit conversion of {} into Rust u32", val.to_rust())).unwrap())
+            Err(format!("No implicit conversion of {} into Rust u32", val.to_rust()))
         }
     }
 }
@@ -78,7 +77,7 @@ impl UncheckedValue<i32> for VALUE {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
             let val = unsafe { CheckedValue::<String>::new(sys::rb_inspect(self)) };
-            Err(CString::new(format!("No implicit conversion of {} into Rust i32", val.to_rust())).unwrap())
+            Err(format!("No implicit conversion of {} into Rust i32", val.to_rust()))
         }
     }
 }

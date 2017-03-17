@@ -63,11 +63,17 @@ extern "C" {
     #[link_name = "HELIX_Qnil"]
     pub static Qnil: VALUE;
 
+    #[link_name = "HELIX_PRINT_VALUE_STR"]
+    pub static PRINT_VALUE_STR: c_string;
+
     #[link_name = "rb_cObject"]
     pub static rb_cObject: VALUE;
 
     #[link_name = "rb_eRuntimeError"]
     pub static rb_eRuntimeError: VALUE;
+
+    #[link_name = "rb_eTypeError"]
+    pub static rb_eTypeError: VALUE;
 
     #[link_name = "HELIX_RSTRING_LEN"]
     pub fn RSTRING_LEN(string: VALUE) -> isize;
