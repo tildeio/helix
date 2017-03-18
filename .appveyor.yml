@@ -12,16 +12,27 @@ environment:
     # 32-bit
     - RUBY_VERSION: 23
       RUST_HOST: i686-pc-windows-msvc
+      RUST_VERSION: stable
     # 64-bit
     - RUBY_VERSION: 23-x64
       RUST_HOST: x86_64-pc-windows-msvc
+      RUST_VERSION: stable
+    # 64-bit
+    - RUBY_VERSION: 23-x64
+      RUST_HOST: x86_64-pc-windows-msvc
+      RUST_VERSION: nightly
+
+matrix:
+  allow_failures:
+    - RUST_VERSION: nightly
+  fast_finish: true
 
 install:
   - set PATH=C:\Ruby%RUBY_VERSION%\bin;C:\Ruby%RUBY_VERSION%\DevKit\bin;C:\Ruby%RUBY_VERSION%\DevKit\mingw\bin;%HOMEDRIVE%%HOMEPATH%\.cargo\bin;%APPVEYOR_BUILD_FOLDER%\ruby\windows_build;%PATH%
   - echo %PATH%
   - set HELIX_ROOT=%APPVEYOR_BUILD_FOLDER%
-  - IF NOT EXIST %HOMEDRIVE%%HOMEPATH%\.cargo\bin (curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly --default-host %RUST_HOST% -y)
-  - rustup default nightly-%RUST_HOST%
+  - IF NOT EXIST %HOMEDRIVE%%HOMEPATH%\.cargo\bin (curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain %RUST_VERSION% --default-host %RUST_HOST% -y)
+  - rustup default %RUST_VERSION%-%RUST_HOST%
   - bash ./scripts/ci-install
 
 test_script:
