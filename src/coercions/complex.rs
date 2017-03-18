@@ -1,6 +1,6 @@
 use sys::{self, VALUE, T_COMPLEX};
 use std::ffi::CString;
-use num_complex::Complex64;
+use num::complex::Complex64;
 
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
 

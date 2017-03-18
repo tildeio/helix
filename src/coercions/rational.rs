@@ -1,6 +1,6 @@
 use sys::{self, VALUE, T_RATIONAL};
 use std::ffi::CString;
-use num_rational::Rational64;
+use num::rational::Rational64;
 
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
 

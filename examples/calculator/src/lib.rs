@@ -1,13 +1,18 @@
 #[macro_use]
 extern crate helix;
 
-use helix::num_complex::Complex64;
-use helix::num_rational::Rational64;
+use helix::Number;
+use helix::Complex64;
+use helix::Rational64;
 
 declare_types! {
     class Calculator {
         def multiply(&self, one: f64, two: f64) -> f64 {
             one * two
+        }
+
+        def add(&self, one: Number, two: Number) -> Number {
+            one + two
         }
 
         def add_complex(&self, one: Complex64, two: Complex64) -> Complex64 {
@@ -16,6 +21,18 @@ declare_types! {
 
         def add_rational(&self, one: Rational64, two: Rational64) -> Rational64 {
             one + two
+        }
+
+        def sub(&self, one: Number, two: Number) -> Number {
+            one - two
+        }
+
+        def mul(&self, one: Number, two: Number) -> Number {
+            one * two
+        }
+
+        def div(&self, one: Number, two: Number) -> Number {
+            one / two
         }
     }
 }

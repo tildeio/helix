@@ -17,4 +17,16 @@ describe "Calculator" do
     expect(calculator.add_rational(Rational(1,2), Rational(1,4))).to eq(Rational(3,4))
   end
 
+  it "can operate on generic numbers" do
+    expect(calculator.add(1, 2.4)).to eq(3.4)
+    expect(calculator.sub(1, 2.4)).to eq(-1.4)
+    # Round because floats
+    expect(calculator.mul(3, 2.4).round(1)).to eq(7.2)
+    expect(calculator.div(6, 2.4)).to eq(2.5)
+
+    rational = calculator.div(Rational(5, 2), 2)
+    expect(rational).to eq(Rational(5, 4))
+    expect(rational).to be_a(Rational)
+  end
+
 end

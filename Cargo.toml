@@ -14,8 +14,7 @@ members = ["crates/libcruby-sys", "examples/calculator", "examples/console", "ex
 
 [dependencies]
 libc = "0.2.0"
-num-complex = "0.1.36"
-num-rational = "0.1.36"
+num = "0.1.37"
 
 [dependencies.cslice]
 version = "0.2"
