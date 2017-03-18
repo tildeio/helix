@@ -19,6 +19,7 @@ env:
   global:
     - EXAMPLES="console membership turbo_blank"
     - VERBOSE=true
+    - RUST_BACKTRACE=1
     # This isn't expected to pass yet
     #- EXAMPLES="duration"
 
