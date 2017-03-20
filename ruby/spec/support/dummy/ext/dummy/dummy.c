@@ -80,6 +80,14 @@ static VALUE TEST_I322NUM(VALUE _self, VALUE val) {
   return HELIX_I322NUM(NUM2LL(val));
 }
 
+static VALUE TEST_NUM2F64(VALUE _self, VALUE val) {
+  return DBL2NUM(HELIX_NUM2F64(val));
+}
+
+static VALUE TEST_F642NUM(VALUE _self, VALUE val) {
+  return HELIX_F642NUM(NUM2DBL(val));
+}
+
 static VALUE TEST_STR2STR(VALUE _self, VALUE str, VALUE len) {
   return HELIX_rb_utf8_str_new(RSTRING_PTR(str), FIX2LONG(len));
 }
@@ -181,6 +189,8 @@ void Init_dummy() {
   EXPORT_FUNC(U322NUM, 1);
   EXPORT_FUNC(NUM2I32, 1);
   EXPORT_FUNC(I322NUM, 1);
+  EXPORT_FUNC(NUM2F64, 1);
+  EXPORT_FUNC(F642NUM, 1);
 
   EXPORT_FUNC(STR2STR, 2);
 

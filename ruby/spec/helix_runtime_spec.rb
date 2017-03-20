@@ -114,6 +114,18 @@ describe HelixRuntime do
       expect(Dummy.I322NUM(10)).to eq(10)
       expect(Dummy.I322NUM(-10)).to eq(-10)
     end
+
+    it "(NUM2F64)" do
+      expect(Dummy.NUM2F64(12.34)).to eq(12.34)
+      expect(Dummy.NUM2F64(-12.34)).to eq(-12.34)
+      expect(Dummy.NUM2F64(12)).to eq(12)
+      expect(Dummy.NUM2F64(-12)).to eq(-12)
+    end
+
+    it "(F642NUM)" do
+      expect(Dummy.F642NUM(12.34)).to eq(12.34)
+      expect(Dummy.F642NUM(-12.34)).to eq(-12.34)
+    end
   end
 
   describe "exports T_* constants:" do

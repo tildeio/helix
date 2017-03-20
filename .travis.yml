@@ -18,7 +18,7 @@ cache:
 
 env:
   global:
-    - EXAMPLES="console membership turbo_blank"
+    - EXAMPLES="calculator console membership turbo_blank"
     - VERBOSE=true
     - RUST_BACKTRACE=1
     - RUST_VERSION=stable
