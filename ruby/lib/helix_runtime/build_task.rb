@@ -13,6 +13,7 @@ module HelixRuntime
     attr_accessor :build_root
     attr_accessor :lib_path
     attr_accessor :helix_lib_dir
+    attr_accessor :pre_build
 
     def initialize(name = nil, gem_spec = nil)
       init(name, gem_spec)
@@ -38,6 +39,10 @@ module HelixRuntime
     def define
       fail "Extension name must be provided." if @name.nil?
       @name = @name.to_s
+
+      task "helix:pre_build" do
+        pre_build.call if pre_build
+      end
 
       task "helix:check_path" do
         if IS_WINDOWS
@@ -65,7 +70,7 @@ module HelixRuntime
       end
 
       # Checking the path isn't a real dependency, but this is a good time to do it
-      task "cargo:build" => "helix:check_path" do
+      task "cargo:build" => ["helix:pre_build", "helix:check_path"] do
         # We have to do this here since Cargo has no internal means of specifying `-C` flags
         link_args = if IS_WINDOWS
           # SAFESEH is added to i686 Rust hosts

@@ -127,10 +127,10 @@ RSpec::Core::RakeTask.new(:rspec) do |t|
   t.verbose = false
 end
 
-task :rspec => :compile
-task :default => :rspec
-
 # On Windows, also build native_lib_files to help with dev
 if RUBY_PLATFORM =~ /mingw/
-  task :default => :native_lib_files
+  task "compile:native" => :native_lib_files
 end
+
+task :rspec => :compile
+task :default => :rspec
