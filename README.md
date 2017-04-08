@@ -1,4 +1,4 @@
-Read the [*Introducting Helix*](http://blog.skylight.io/introducing-helix/) for a quick introduction to the project!
+Read the [*Introducing Helix*](http://blog.skylight.io/introducing-helix/) for a quick introduction to the project!
 
 * * *
 
