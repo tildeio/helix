@@ -407,7 +407,7 @@ macro_rules! impl_struct_to_rust {
                     use ::std::ffi::{CStr, CString};
 
                     if unsafe { __HELIX_ID == ::std::mem::transmute(sys::rb_obj_class(self)) } {
-                        if unsafe { $crate::sys::Data_Get_Struct_Value(self) == ::std::ptr::null() } {
+                        if unsafe { $crate::sys::Data_Get_Struct_Value(self) == ::std::ptr::null_mut() } {
                             Err(CString::new(format!("Uninitialized {}", $crate::inspect(unsafe { sys::rb_obj_class(self) }))).unwrap())
                         } else {
                             Ok(unsafe { CheckedValue::new(self) })

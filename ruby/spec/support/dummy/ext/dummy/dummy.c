@@ -31,6 +31,14 @@ static VALUE TEST_RARRAY_PTR(VALUE _self, VALUE val) {
   return SIZET2NUM((uintptr_t)HELIX_RARRAY_PTR(val));
 }
 
+static VALUE TEST_RB_RARRAY_CONST_PTR(VALUE _self, VALUE val) {
+  return SIZET2NUM((uintptr_t)RARRAY_CONST_PTR(val));
+}
+
+static VALUE TEST_RARRAY_CONST_PTR(VALUE _self, VALUE val) {
+  return SIZET2NUM((uintptr_t)HELIX_RARRAY_CONST_PTR(val));
+}
+
 static VALUE TEST_RB_TYPE_P(VALUE _self, VALUE val, VALUE type) {
   int result = HELIX_RB_TYPE_P(val, FIX2INT(type));
   return result ? Qtrue : Qfalse;
@@ -69,7 +77,7 @@ static VALUE TEST_NUM2U32(VALUE _self, VALUE val) {
 }
 
 static VALUE TEST_U322NUM(VALUE _self, VALUE val) {
-  return HELIX_U322NUM(NUM2ULL(val));
+  return HELIX_U322NUM(NUM2UINT(val));
 }
 
 static VALUE TEST_NUM2I32(VALUE _self, VALUE val) {
@@ -77,7 +85,7 @@ static VALUE TEST_NUM2I32(VALUE _self, VALUE val) {
 }
 
 static VALUE TEST_I322NUM(VALUE _self, VALUE val) {
-  return HELIX_I322NUM(NUM2LL(val));
+  return HELIX_I322NUM(NUM2INT(val));
 }
 
 static VALUE TEST_NUM2F64(VALUE _self, VALUE val) {
@@ -176,6 +184,8 @@ void Init_dummy() {
   EXPORT_FUNC(RARRAY_LEN, 1);
   EXPORT_FUNC(RARRAY_PTR, 1);
   EXPORT_RUBY_FUNC(RARRAY_PTR, 1);
+  EXPORT_FUNC(RARRAY_CONST_PTR, 1);
+  EXPORT_RUBY_FUNC(RARRAY_CONST_PTR, 1);
   EXPORT_FUNC(RB_TYPE_P, 2);
   EXPORT_FUNC(TYPE, 1);
   EXPORT_FUNC(INT2FIX, 1);
