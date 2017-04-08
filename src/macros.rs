@@ -119,7 +119,7 @@ macro_rules! class_definition {
                     Ok(rust_self.$name($($arg),*))
                 }
 
-                let name = stringify!($name);
+                let name = cstr!(stringify!($name));
                 let arity = method_arity!($($arg),*);
                 let method = __ruby_method__ as *const $crate::libc::c_void;
 
@@ -159,7 +159,7 @@ macro_rules! class_definition {
                     Ok($cls::$name($($arg),*))
                 }
 
-                let name = stringify!($name);
+                let name = cstr!(stringify!($name));
                 let arity = method_arity!($($arg),*);
                 let method = __ruby_method__ as *const $crate::libc::c_void;
 
@@ -354,10 +354,10 @@ macro_rules! class_definition {
                 let arity = method_arity!($($arg),*);
                 let method = __initialize__ as *const $crate::libc::c_void;
 
-                $crate::MethodDefinition::instance("initialize", method, arity)
+                $crate::MethodDefinition::instance(cstr!("initialize"), method, arity)
             };
 
-            let def = $crate::ClassDefinition::wrapped(stringify!($cls), __alloc__)
+            let def = $crate::ClassDefinition::wrapped(cstr!(stringify!($cls)), __alloc__)
                 .define_method(def_initialize)
                 $(.define_method($mdef))*;
 
@@ -371,7 +371,7 @@ macro_rules! class_definition {
         static mut __HELIX_ID: usize = 0;
 
         init! {
-            let def = $crate::ClassDefinition::new(stringify!($cls))$(.define_method($mdef))*;
+            let def = $crate::ClassDefinition::new(cstr!(stringify!($cls)))$(.define_method($mdef))*;
             unsafe { __HELIX_ID = ::std::mem::transmute(def.class) };
         }
     };
@@ -382,7 +382,7 @@ macro_rules! class_definition {
         static mut __HELIX_ID: usize = 0;
 
         init! {
-            let def = $crate::ClassDefinition::reopen(stringify!($cls))$(.define_method($mdef))*;
+            let def = $crate::ClassDefinition::reopen(cstr!(stringify!($cls)))$(.define_method($mdef))*;
             unsafe { __HELIX_ID = ::std::mem::transmute(def.class) };
         }
     };
@@ -518,3 +518,14 @@ macro_rules! method_arity {
     { 0isize $(+ replace_expr!($id 1isize))* }
   }
 }
+
+// This macro is copied instead of depended upon because of https://github.com/rust-lang/rust/issues/29638
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! cstr {
+    ($s:expr) => (
+        concat!($s, "\0") as *const str as *const [::std::os::raw::c_char] as *const ::std::os::raw::c_char
+    )
+}
+
