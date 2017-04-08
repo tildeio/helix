@@ -1,8 +1,10 @@
 use libc;
-use std::ffi::CString;
 use { Class, sys };
 
+#[allow(non_camel_case_types)]
 type c_string = *const libc::c_char;
+
+#[allow(non_camel_case_types)]
 type void_ptr = *const libc::c_void;
 
 pub struct MethodSpecification {

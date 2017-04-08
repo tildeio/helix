@@ -69,7 +69,7 @@ static VALUE TEST_NUM2U32(VALUE _self, VALUE val) {
 }
 
 static VALUE TEST_U322NUM(VALUE _self, VALUE val) {
-  return HELIX_U322NUM(NUM2ULL(val));
+  return HELIX_U322NUM(NUM2UINT(val));
 }
 
 static VALUE TEST_NUM2I32(VALUE _self, VALUE val) {
@@ -77,7 +77,7 @@ static VALUE TEST_NUM2I32(VALUE _self, VALUE val) {
 }
 
 static VALUE TEST_I322NUM(VALUE _self, VALUE val) {
-  return HELIX_I322NUM(NUM2LL(val));
+  return HELIX_I322NUM(NUM2INT(val));
 }
 
 static VALUE TEST_NUM2F64(VALUE _self, VALUE val) {
