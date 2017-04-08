@@ -1,15 +1,9 @@
-use libc;
-use { Class, sys };
-
-#[allow(non_camel_case_types)]
-type c_string = *const libc::c_char;
-
-#[allow(non_camel_case_types)]
-type void_ptr = *const libc::c_void;
+use { Class };
+use sys::{self, c_string, c_func};
 
 pub struct MethodSpecification {
     name: c_string,
-    function: void_ptr,
+    function: c_func,
     arity: isize,
 }
 
@@ -19,11 +13,11 @@ pub enum MethodDefinition {
 }
 
 impl MethodDefinition {
-    pub fn class(name: c_string, function: void_ptr, arity: isize) -> MethodDefinition {
+    pub fn class(name: c_string, function: c_func, arity: isize) -> MethodDefinition {
         MethodDefinition::Class(MethodSpecification { name: name, function: function, arity: arity })
     }
 
-    pub fn instance(name: c_string, function: void_ptr, arity: isize) -> MethodDefinition {
+    pub fn instance(name: c_string, function: c_func, arity: isize) -> MethodDefinition {
         MethodDefinition::Instance(MethodSpecification { name: name, function: function, arity: arity })
     }
 }

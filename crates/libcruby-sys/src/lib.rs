@@ -16,17 +16,18 @@ pub fn check_version() {
     }
 }
 
-pub type void_ptr = *const libc::c_void;
+pub type void = libc::c_void;
+pub type c_func = *const void;
 pub type c_string = *const libc::c_char;
 // pub type c_func = extern "C" fn(...);
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
-pub struct ID(void_ptr);
+pub struct ID(*mut void);
 
 #[repr(C)]
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
-pub struct VALUE(void_ptr);
+pub struct VALUE(*mut void);
 
 #[repr(C)]
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -78,7 +79,10 @@ extern "C" {
     pub fn RARRAY_LEN(array: VALUE) -> isize;
 
     #[link_name = "HELIX_RARRAY_PTR"]
-    pub fn RARRAY_PTR(array: VALUE) -> void_ptr;
+    pub fn RARRAY_PTR(array: VALUE) -> *mut VALUE;
+
+    #[link_name = "HELIX_RARRAY_CONST_PTR"]
+    pub fn RARRAY_CONST_PTR(array: VALUE) -> *const VALUE;
 
     #[link_name = "HELIX_RB_TYPE_P"]
     pub fn RB_TYPE_P(val: VALUE, rb_type: isize) -> bool;
@@ -150,22 +154,22 @@ extern "C" {
     pub fn rb_define_class(name: c_string, superclass: VALUE) -> VALUE;
     pub fn rb_define_class_under(namespace: VALUE, name: c_string, superclass: VALUE) -> VALUE;
     pub fn rb_define_alloc_func(klass: VALUE, func: extern "C" fn(klass: VALUE) -> VALUE);
-    pub fn rb_define_method(class: VALUE, name: c_string, func: void_ptr, arity: isize);
-    pub fn rb_define_singleton_method(class: VALUE, name: c_string, func: void_ptr, arity: isize);
+    pub fn rb_define_method(class: VALUE, name: c_string, func: c_func, arity: isize);
+    pub fn rb_define_singleton_method(class: VALUE, name: c_string, func: c_func, arity: isize);
     pub fn rb_inspect(value: VALUE) -> VALUE;
     pub fn rb_intern(string: c_string) -> ID;
     pub fn rb_jump_tag(state: RubyException) -> !;
-    pub fn rb_protect(try: extern "C" fn(v: void_ptr) -> VALUE,
-                      arg: void_ptr,
+    pub fn rb_protect(try: extern "C" fn(v: *mut void) -> VALUE,
+                      arg: *mut void,
                       state: *mut RubyException)
                       -> VALUE;
 
     #[link_name = "HELIX_Data_Wrap_Struct"]
-    pub fn Data_Wrap_Struct(klass: VALUE, mark: extern "C" fn(void_ptr), free: extern "C" fn(void_ptr), data: void_ptr) -> VALUE;
+    pub fn Data_Wrap_Struct(klass: VALUE, mark: extern "C" fn(*mut void), free: extern "C" fn(*mut void), data: *mut void) -> VALUE;
 
     #[link_name = "HELIX_Data_Get_Struct_Value"]
-    pub fn Data_Get_Struct_Value(obj: VALUE) -> void_ptr;
+    pub fn Data_Get_Struct_Value(obj: VALUE) -> *mut void;
 
     #[link_name = "HELIX_Data_Set_Struct_Value"]
-    pub fn Data_Set_Struct_Value(obj: VALUE, data: void_ptr);
+    pub fn Data_Set_Struct_Value(obj: VALUE, data: *mut void);
 }

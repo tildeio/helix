@@ -70,6 +70,12 @@ describe HelixRuntime do
     expect(Dummy.RARRAY_PTR(arr)).to eq(Dummy::RARRAY_PTR(arr))
   end
 
+  it 'exports the RARRAY_CONST_PTR macro' do
+    arr = [1,2,3,4,5]
+    expect(Dummy.RARRAY_CONST_PTR([1,2,3,4,5])).to_not eq(Dummy::RARRAY_CONST_PTR([1,2,3,4,5]))
+    expect(Dummy.RARRAY_CONST_PTR(arr)).to eq(Dummy::RARRAY_CONST_PTR(arr))
+  end
+
   describe 'coercions' do
     it "(INT2FIX)" do
       expect(Dummy.INT2FIX(10)).to eq(10)
