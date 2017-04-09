@@ -127,7 +127,7 @@ module HelixRuntime
 
       desc "Launch an IRB console for #{name}"
       task :irb => :build do
-        exec "bundle exec irb -r#{name}"
+        exec "bundle exec irb -r#{name} -Ilib"
       end
     end
 
