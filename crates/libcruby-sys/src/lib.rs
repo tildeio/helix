@@ -63,8 +63,14 @@ extern "C" {
     #[link_name = "HELIX_Qnil"]
     pub static Qnil: VALUE;
 
-    #[link_name = "HELIX_PRINT_VALUE_STR"]
-    pub static PRINT_VALUE_STR: c_string;
+    #[link_name = "HELIX_PRIsVALUE"]
+    pub static PRIsVALUE: c_string;
+
+    #[link_name = "HELIX_SPRINTF_TO_S"]
+    pub static SPRINTF_TO_S: c_string;
+
+    #[link_name = "HELIX_SPRINTF_INSPECT"]
+    pub static SPRINTF_INSPECT: c_string;
 
     #[link_name = "rb_cObject"]
     pub static rb_cObject: VALUE;
@@ -165,6 +171,7 @@ extern "C" {
     pub fn rb_define_alloc_func(klass: VALUE, func: extern "C" fn(klass: VALUE) -> VALUE);
     pub fn rb_define_method(class: VALUE, name: c_string, func: c_func, arity: isize);
     pub fn rb_define_singleton_method(class: VALUE, name: c_string, func: c_func, arity: isize);
+    pub fn rb_sprintf(specifier: c_string, ...) -> VALUE;
     pub fn rb_inspect(value: VALUE) -> VALUE;
     pub fn rb_intern(string: c_string) -> ID;
     pub fn rb_raise(exc: VALUE, string: c_string, ...);

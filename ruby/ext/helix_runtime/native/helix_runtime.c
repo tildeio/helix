@@ -8,7 +8,9 @@
 // Update with version.rb
 const char* HELIX_RUNTIME_VERSION = "0.5.0";
 
-const char* HELIX_PRINT_VALUE_STR = "%"PRIsVALUE;
+const char* HELIX_PRIsVALUE = PRIsVALUE;
+const char* HELIX_SPRINTF_TO_S = "%" PRIsVALUE;
+const char* HELIX_SPRINTF_INSPECT = "%+" PRIsVALUE;
 
 VALUE HELIX_Qtrue = Qtrue;
 VALUE HELIX_Qfalse = Qfalse;

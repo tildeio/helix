@@ -121,7 +121,7 @@ impl Exception {
     pub fn raise(&self) -> sys::VALUE {
         unsafe {
             // Hopefully this doesn't leak memory!
-            sys::rb_raise(self.ruby_class.0, sys::PRINT_VALUE_STR, self.message.clone().to_ruby());
+            sys::rb_raise(self.ruby_class.0, sys::SPRINTF_TO_S, self.message.clone().to_ruby());
             sys::Qnil // Return a Ruby nil
         }
     }

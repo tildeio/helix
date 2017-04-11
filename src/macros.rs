@@ -572,3 +572,63 @@ macro_rules! cstr {
     )
 }
 
+#[doc(hidden)]
+#[macro_export]
+macro_rules! bytestring {
+    ($s:expr) => (
+        s as *const str as *const [::std::os::raw::c_char] as *const ::std::os::raw::c_char
+    )
+}
+
+#[macro_export]
+macro_rules! rb_sprintf {
+    ($s:tt , $($params:expr),+) => {
+        $crate::sys::rb_sprintf(rb_sprintf_specifier!($s).as_ptr(), $($params),*)
+    };
+
+    ($s:tt) => {
+        $crate::sys::rb_sprintf(rb_sprintf_specifier!($s).as_ptr())
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! rb_sprintf_specifier {
+    ({ $s:tt $($sep:ident $s2:tt)+ $sep2:ident }) => {
+        {
+            let s = format!(
+                concat!("{}", $("{}{}"),*),
+                $s,
+                $(
+                    unsafe { CStr::from_ptr( $crate::sys:: $sep ).to_string_lossy() },
+                    $s2
+                ),* ,
+                unsafe { CStr::from_ptr( $crate::sys:: $sep2 ).to_string_lossy() }
+            );
+            CString::new(s).unwrap()
+        }
+    };
+
+    ({ $s:tt $($sep:ident $s2:tt)* }) => {
+        {
+            use ::std::ffi::CStr;
+            let s = format!(
+                concat!("{}", $("{}{}"),*),
+                $s,
+                $(
+                    unsafe { CStr::from_ptr( $crate::sys:: $sep ).to_string_lossy() },
+                    $s2
+                ),*
+            );
+            CString::new(s).unwrap()
+        }
+    };
+
+    ({ $s:tt $sep:ident }) => {
+        {
+            use ::std::ffi::CStr;
+            let s = format!( "{}{}", $s, unsafe { CStr::from_ptr( $crate::sys:: $sep ).to_string_lossy() });
+            CString::new(s).unwrap()
+        }
+    };
+}
