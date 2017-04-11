@@ -36,6 +36,8 @@ describe "Console" do
 
   it "can handle panics" do
     expect { console.freak_out }.to raise_error(RuntimeError, "Aaaaahhhhh!!!!!")
+    # Do it twice to make sure we cleaned up correctly the first time
+    expect { console.freak_out }.to raise_error(RuntimeError, "Aaaaahhhhh!!!!!")
   end
 
   it "can handle invalid arguments" do
