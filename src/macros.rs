@@ -93,7 +93,7 @@ macro_rules! define_class {
 #[macro_export]
 macro_rules! handle_exception {
     { $($body:tt)* } => {
-        let hide_err = std::env::var("RUST_BACKTRACE").is_err();
+        let hide_err = ::std::env::var("RUST_BACKTRACE").is_err();
         if hide_err {
             ::std::panic::set_hook(Box::new(|_| {
                 // Silence
