@@ -19,8 +19,8 @@ pub use coercions::*;
 pub use class_definition::{ClassDefinition, MethodDefinition};
 
 #[repr(C)]
-#[derive(Copy, Clone)]
-pub struct Class(sys::VALUE);
+#[derive(Copy, Clone, Debug)]
+pub struct Class(VALUE);
 
 pub trait RubyMethod {
     fn install(self, class: VALUE, name: &str);
@@ -78,54 +78,58 @@ pub fn inspect(val: VALUE) -> String {
     unsafe { CheckedValue::<String>::new(sys::rb_inspect(val)).to_rust() }
 }
 
-pub type Metadata = ::sys::VALUE;
+pub type Metadata = ::VALUE;
 
-#[derive(Clone)]
-pub struct Exception {
-    ruby_class: Class,
-    message: String
+#[derive(Copy, Clone, Debug)]
+pub struct ExceptionInfo {
+    exception: Class,
+    message: VALUE
 }
 
-impl Exception {
-    pub fn with_message(string: String) -> Exception {
-        Exception {
-            ruby_class: Class(unsafe { sys::rb_eRuntimeError }),
-            message: string
+impl ExceptionInfo {
+    pub fn with_message<T: ToRuby>(string: T) -> ExceptionInfo {
+        ExceptionInfo {
+            exception: Class(unsafe { sys::rb_eRuntimeError }),
+            message: string.to_ruby(),
         }
     }
 
-    pub fn type_error(string: String) -> Exception {
-        Exception {
-            ruby_class: Class(unsafe { sys::rb_eTypeError }),
-            message: string
+    pub fn type_error<T: ToRuby>(string: T) -> ExceptionInfo {
+        ExceptionInfo {
+            exception: Class(unsafe { sys::rb_eTypeError }),
+            message: string.to_ruby(),
         }
     }
 
-    pub fn from_any(any: Box<std::any::Any>) -> Exception {
-        match any.downcast_ref::<Exception>() {
-            Some(e) => e.clone(),
-            None    => match any.downcast_ref::<&'static str>() {
-                Some(e) => Exception::with_message(format!("{}", e)),
-                None    => match any.downcast_ref::<String>() {
-                    Some(e) => Exception::with_message(e.clone()),
-                    None    => Exception::with_message(format!("Unknown Error; err={:?}", any))
+    pub fn from_any(any: Box<std::any::Any>) -> ExceptionInfo {
+        match any.downcast_ref::<ExceptionInfo>() {
+            Some(e) => *e,
+            None => {
+                match any.downcast_ref::<&'static str>() {
+                    Some(e) => ExceptionInfo::with_message(e.to_string()),
+                    None => {
+                        match any.downcast_ref::<String>() {
+                            Some(e) => ExceptionInfo::with_message(e.as_str()),
+                            None => ExceptionInfo::with_message(format!("Unknown Error; err={:?}", any)),
+                        }
+                    }
                 }
             }
         }
     }
 
-    pub fn message(&self) -> &String {
-        &self.message
+    pub fn message(&self) -> VALUE {
+        self.message
     }
 
-    pub fn raise(&self) -> sys::VALUE {
+    pub fn raise(&self) -> ! {
         unsafe {
-            // Hopefully this doesn't leak memory!
-            sys::rb_raise(self.ruby_class.0, sys::SPRINTF_TO_S, self.message.clone().to_ruby());
-            sys::Qnil // Return a Ruby nil
+            sys::rb_raise(self.exception.0,
+                          sys::SPRINTF_TO_S,
+                          self.message);
         }
     }
 }
 
-unsafe impl Send for Exception {}
-unsafe impl Sync for Exception {}
+unsafe impl Send for ExceptionInfo {}
+unsafe impl Sync for ExceptionInfo {}

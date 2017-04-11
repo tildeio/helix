@@ -26,7 +26,7 @@ macro_rules! declare_types {
 #[macro_export]
 macro_rules! throw {
     ($msg:expr) => {
-        panic!($crate::Exception::with_message(String::from($msg)))
+        panic!($crate::ExceptionInfo::with_message(String::from($msg)))
     }
 }
 
@@ -108,7 +108,7 @@ macro_rules! handle_exception {
             let _ = ::std::panic::take_hook();
         }
 
-        res.map_err(|e| $crate::Exception::from_any(e))
+        res.map_err(|e| $crate::ExceptionInfo::from_any(e))
     }
 }
 
@@ -130,19 +130,19 @@ macro_rules! class_definition {
                     }
                 }
 
-                fn __checked_call__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$ret, $crate::Exception> {
+                fn __checked_call__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$ret, $crate::ExceptionInfo> {
                     #[allow(unused_imports)]
                     use $crate::{ToRust};
 
                     let rust_self = match $crate::UncheckedValue::<$($alt_mod)* $cls>::to_checked(rb_self) {
                         Ok(v)  => v,
-                        Err(e) => return Err($crate::Exception::with_message(e))
+                        Err(e) => return Err($crate::ExceptionInfo::with_message(e))
                     };
 
                     $(
                         let $arg = match $crate::UncheckedValue::<$argty>::to_checked($arg) {
                             Ok(v) => v,
-                            Err(e) => return Err($crate::Exception::type_error(e))
+                            Err(e) => return Err($crate::ExceptionInfo::type_error(e))
                         };
                     )*
 
@@ -182,14 +182,14 @@ macro_rules! class_definition {
                     }
                 }
 
-                fn __checked_call__($($arg : $crate::sys::VALUE),*) -> Result<$ret, $crate::Exception> {
+                fn __checked_call__($($arg : $crate::sys::VALUE),*) -> Result<$ret, $crate::ExceptionInfo> {
                     #[allow(unused_imports)]
                     use $crate::{ToRust};
 
                     $(
                         let $arg = match $crate::UncheckedValue::<$argty>::to_checked($arg) {
                             Ok(v) => v,
-                            Err(e) => return Err($crate::Exception::type_error(e));
+                            Err(e) => return Err($crate::ExceptionInfo::type_error(e));
                         };
                     )*
 

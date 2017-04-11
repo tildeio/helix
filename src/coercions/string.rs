@@ -34,3 +34,11 @@ impl ToRuby for String {
         unsafe { sys::rb_utf8_str_new(ptr as *const libc::c_char, len as libc::c_long) }
     }
 }
+
+impl<'a> ToRuby for &'a str {
+    fn to_ruby(self) -> VALUE {
+        let ptr = self.as_ptr();
+        let len = self.len();
+        unsafe { sys::rb_utf8_str_new(ptr as *const libc::c_char, len as libc::c_long) }
+    }
+}
