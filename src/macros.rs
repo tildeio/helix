@@ -203,8 +203,8 @@ macro_rules! class_definition {
                     value: VALUE
                 }
 
-                extern "C" fn __ruby_method__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
-                    let result = __rust_method__(rb_self, $($arg),*);
+                extern "C" fn __ruby_method__(_: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
+                    let result = __rust_method__($($arg),*);
 
                     if result.error_klass == unsafe { Qnil } {
                         result.value
@@ -214,8 +214,8 @@ macro_rules! class_definition {
                 }
 
                 #[inline]
-                fn __rust_method__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> CallResult {
-                    let checked = __checked_call__(rb_self, $($arg),*);
+                fn __rust_method__($($arg : $crate::sys::VALUE),*) -> CallResult {
+                    let checked = __checked_call__($($arg),*);
 
                     match checked {
                         Ok(val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
@@ -231,7 +231,7 @@ macro_rules! class_definition {
                     $(
                         let $arg = match $crate::UncheckedValue::<$argty>::to_checked($arg) {
                             Ok(v) => v,
-                            Err(e) => return Err($crate::ExceptionInfo::type_error(e));
+                            Err(e) => return Err($crate::ExceptionInfo::type_error(e))
                         };
                     )*
 
@@ -240,7 +240,7 @@ macro_rules! class_definition {
                     )*
 
                     handle_exception! {
-                        rust_self.$name($($arg),*)
+                        $cls::$name($($arg),*)
                     }
                 }
 
