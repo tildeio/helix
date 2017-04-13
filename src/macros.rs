@@ -614,14 +614,6 @@ macro_rules! cstr {
     )
 }
 
-#[doc(hidden)]
-#[macro_export]
-macro_rules! bytestring {
-    ($s:expr) => (
-        s as *const str as *const [::std::os::raw::c_char] as *const ::std::os::raw::c_char
-    )
-}
-
 #[macro_export]
 macro_rules! rb_sprintf {
     ($s:tt , $($params:expr),+) => {
