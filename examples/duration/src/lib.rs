@@ -240,6 +240,7 @@ fn to_sentence(mut parts: Vec<String>) -> String {
     match parts.len() {
         0 => "".to_string(),
         1 => parts.pop().unwrap(),
+        2 => format!("{} and {}", parts[0], parts[1]),
         _ => {
             let last = parts.pop().unwrap();
             format!("{}, and {}", parts.join(", "), last)
