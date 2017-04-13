@@ -7,7 +7,6 @@ mod float;
 mod option;
 
 use sys::{VALUE};
-use std::ffi::CString;
 use std::marker::PhantomData;
 
 pub struct CheckedValue<T> {
@@ -21,7 +20,7 @@ impl<T> CheckedValue<T> {
     }
 }
 
-pub type CheckResult<T> = Result<CheckedValue<T>, CString>;
+pub type CheckResult<T> = Result<CheckedValue<T>, String>;
 
 pub trait UncheckedValue<T> {
     fn to_checked(self) -> CheckResult<T>;
@@ -33,4 +32,10 @@ pub trait ToRust<T> {
 
 pub trait ToRuby {
     fn to_ruby(self) -> VALUE;
+}
+
+impl ToRuby for VALUE {
+    fn to_ruby(self) -> VALUE {
+        self
+    }
 }

@@ -2,6 +2,9 @@ require 'bundler/setup'
 require 'helix_runtime/build_task'
 require 'rspec/core/rake_task'
 
+# For Windows
+$stdout.sync = true
+
 HelixRuntime::BuildTask.new("calculator") do |t|
   t.build_root = File.expand_path("../..", __dir__)
   t.helix_lib_dir = File.expand_path("../../ruby/windows_build", __dir__)

@@ -25,6 +25,8 @@ environment:
 matrix:
   allow_failures:
     - RUST_VERSION: nightly
+    - RUST_HOST: i686-pc-windows-msvc
+
   fast_finish: true
 
 install:
@@ -36,7 +38,7 @@ install:
   - bash ./scripts/ci-install
 
 test_script:
-  - bash ./scripts/ci-test
+  - rake
 
 notifications:
   - provider: Slack

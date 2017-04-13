@@ -19,8 +19,14 @@ pub use coercions::*;
 pub use class_definition::{ClassDefinition, MethodDefinition};
 
 #[repr(C)]
-#[derive(Copy, Clone)]
-pub struct Class(sys::VALUE);
+#[derive(Copy, Clone, Debug)]
+pub struct Class(VALUE);
+
+impl Class {
+    pub fn inner(&self) -> VALUE {
+        self.0
+    }
+}
 
 pub trait RubyMethod {
     fn install(self, class: VALUE, name: &str);
@@ -78,4 +84,58 @@ pub fn inspect(val: VALUE) -> String {
     unsafe { CheckedValue::<String>::new(sys::rb_inspect(val)).to_rust() }
 }
 
-pub type Metadata = ::sys::VALUE;
+pub type Metadata = ::VALUE;
+
+#[derive(Copy, Clone, Debug)]
+pub struct ExceptionInfo {
+    pub exception: Class,
+    pub message: VALUE
+}
+
+impl ExceptionInfo {
+    pub fn with_message<T: ToRuby>(string: T) -> ExceptionInfo {
+        ExceptionInfo {
+            exception: Class(unsafe { sys::rb_eRuntimeError }),
+            message: string.to_ruby(),
+        }
+    }
+
+    pub fn type_error<T: ToRuby>(string: T) -> ExceptionInfo {
+        ExceptionInfo {
+            exception: Class(unsafe { sys::rb_eTypeError }),
+            message: string.to_ruby(),
+        }
+    }
+
+    pub fn from_any(any: Box<std::any::Any>) -> ExceptionInfo {
+        match any.downcast_ref::<ExceptionInfo>() {
+            Some(e) => *e,
+            None => {
+                match any.downcast_ref::<&'static str>() {
+                    Some(e) => ExceptionInfo::with_message(e.to_string()),
+                    None => {
+                        match any.downcast_ref::<String>() {
+                            Some(e) => ExceptionInfo::with_message(e.as_str()),
+                            None => ExceptionInfo::with_message(format!("Unknown Error; err={:?}", any)),
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn message(&self) -> VALUE {
+        self.message
+    }
+
+    pub fn raise(&self) -> ! {
+        unsafe {
+            sys::rb_raise(self.exception.0,
+                          sys::SPRINTF_TO_S,
+                          self.message);
+        }
+    }
+}
+
+unsafe impl Send for ExceptionInfo {}
+unsafe impl Sync for ExceptionInfo {}
