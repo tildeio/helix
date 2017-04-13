@@ -22,6 +22,12 @@ pub use class_definition::{ClassDefinition, MethodDefinition};
 #[derive(Copy, Clone, Debug)]
 pub struct Class(VALUE);
 
+impl Class {
+    pub fn inner(&self) -> VALUE {
+        self.0
+    }
+}
+
 pub trait RubyMethod {
     fn install(self, class: VALUE, name: &str);
 }
@@ -82,8 +88,8 @@ pub type Metadata = ::VALUE;
 
 #[derive(Copy, Clone, Debug)]
 pub struct ExceptionInfo {
-    exception: Class,
-    message: VALUE
+    pub exception: Class,
+    pub message: VALUE
 }
 
 impl ExceptionInfo {

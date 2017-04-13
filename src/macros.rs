@@ -122,14 +122,35 @@ macro_rules! class_definition {
             $cls ;
             ($($mimpl)* pub fn $name($($self_mod)* $self_arg, $($arg : $argty),*) -> $ret $body) ;
             ($($mdef)* {
+                use $crate::sys::{VALUE, SPRINTF_TO_S, Qnil, rb_raise};
+
+                #[repr(C)]
+                struct CallResult {
+                    error_klass: VALUE,
+                    value: VALUE
+                }
+
                 extern "C" fn __ruby_method__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
-                    let checked = __checked_call__(rb_self, $($arg),*);
-                    match checked {
-                        Ok(val) => $crate::ToRuby::to_ruby(val),
-                        Err(err) => err.raise()
+                    let result = __rust_method__(rb_self, $($arg),*);
+
+                    if result.error_klass == unsafe { Qnil } {
+                        result.value
+                    } else {
+                        unsafe { rb_raise(result.error_klass, SPRINTF_TO_S, result.value) }
                     }
                 }
 
+                #[inline]
+                fn __rust_method__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> CallResult {
+                    let checked = __checked_call__(rb_self, $($arg),*);
+
+                    match checked {
+                        Ok(val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
+                        Err(err) => CallResult { error_klass: err.exception.inner(), value: err.message }
+                    }
+                }
+
+                #[inline]
                 fn __checked_call__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$ret, $crate::ExceptionInfo> {
                     #[allow(unused_imports)]
                     use $crate::{ToRust};
@@ -174,14 +195,35 @@ macro_rules! class_definition {
             $cls ;
             ($($mimpl)* pub fn $name($($arg : $argty),*) -> $ret $body) ;
             ($($mdef)* {
-                extern "C" fn __ruby_method__(_rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
-                    let checked = __checked_call__($($arg),*);
-                    match checked {
-                        Ok(val) => $crate::ToRuby::to_ruby(val),
-                        Err(err) => err.raise()
+                use $crate::sys::{VALUE, SPRINTF_TO_S, Qnil, rb_raise};
+
+                #[repr(C)]
+                struct CallResult {
+                    error_klass: VALUE,
+                    value: VALUE
+                }
+
+                extern "C" fn __ruby_method__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
+                    let result = __rust_method__(rb_self, $($arg),*);
+
+                    if result.error_klass == unsafe { Qnil } {
+                        result.value
+                    } else {
+                        unsafe { rb_raise(result.error_klass, SPRINTF_TO_S, result.value) }
                     }
                 }
 
+                #[inline]
+                fn __rust_method__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> CallResult {
+                    let checked = __checked_call__(rb_self, $($arg),*);
+
+                    match checked {
+                        Ok(val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
+                        Err(err) => CallResult { error_klass: err.exception.inner(), value: err.message }
+                    }
+                }
+
+                #[inline]
                 fn __checked_call__($($arg : $crate::sys::VALUE),*) -> Result<$ret, $crate::ExceptionInfo> {
                     #[allow(unused_imports)]
                     use $crate::{ToRust};
