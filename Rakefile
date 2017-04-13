@@ -5,7 +5,7 @@ task :test do
 
   examples = ENV["EXAMPLES"] || "calculator console membership turbo_blank"
 
-  sh "./examples/runner default #{examples}"
+  sh "bash ./examples/runner default #{examples}"
 end
 
 task :default => :test
