@@ -12,11 +12,11 @@ environment:
     # 32-bit
     - RUBY_VERSION: 23
       RUST_HOST: i686-pc-windows-msvc
-      RUST_VERSION: nightly
+      RUST_VERSION: nightly-2017-04-11
     # 64-bit
     - RUBY_VERSION: 23-x64
       RUST_HOST: x86_64-pc-windows-msvc
-      RUST_VERSION: nightly
+      RUST_VERSION: nightly-2017-04-11
 
 matrix:
   allow_failures:
