@@ -41,7 +41,7 @@ install:
   - ./scripts/ci-install
 
 script:
-  - ./scripts/ci-test
+  - rake
 
 notifications:
   slack:
