@@ -6,7 +6,7 @@ fn main() {
   // TODO: Clean this all up. There has to be a prettier way.
   let target = env::var("TARGET").expect("TARGET required");
   let manifest_dir_str = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR required");
-  let version = env::var("CARGO_PKG_VERSION").expect("CARGO_PKG_VERSION required");
+  let version_str = env::var("CARGO_PKG_VERSION").expect("CARGO_PKG_VERSION required").replace(".", "-");
 
   let root = Path::new(manifest_dir_str.as_str());
 
@@ -15,8 +15,8 @@ fn main() {
 
   // Best way I could find to tell if we're packaging vs just building
   let is_packaging = root.parent().expect("root has no parent").ends_with("target/package");
-  let libname32 = format!("helix-runtime-{}.i386", version.replace(".", "-"));
-  let libname64 = format!("helix-runtime-{}.x86_64", version.replace(".", "-"));
+  let libname32 = format!("helix-runtime-{}.i386", version_str);
+  let libname64 = format!("helix-runtime-{}.x86_64", version_str);
   let libname = if target.starts_with("x86_64") { libname64.clone() } else { libname32.clone() };
 
   // Not required for non-Windows, but it needs to be part of the package

@@ -5,7 +5,7 @@ require 'helix_runtime/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "helix_runtime"
-  spec.version       = HelixRuntime::VERSION
+  spec.version       = HelixRuntime::GEM_VERSION
   spec.authors       = ["Yehuda Katz", "Godfrey Chan"]
   spec.email         = ["wycats@gmail.com", "godfreykfc@gmail.com"]
 
