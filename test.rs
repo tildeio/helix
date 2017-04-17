@@ -1,50 +1,40 @@
-/**
-  rest={ <next> ...rest }
-  init={}
-*/
-
-#[macro_export]
-macro_rules! assert_valid_self_arg {
-    (self) => {}
-}
-
 #[macro_export]
 macro_rules! declare_types {
     { $($rest:tt)* } => {
-        declare_types_internal! {
+        parse! {
             state: top_level,
-            program: {
-                rest: { $($rest)* },
-                init: {}
-            }
+            buffer: { $($rest)* },
+            stack: { ast: [] }
         }
     }
 }
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! declare_types_internal {
+macro_rules! parse {
     // STATE: top_level
 
     {
         state: top_level,
-        program: {
-            rest: { },
-            init: $init: tt
-        }
+        buffer: {},
+        stack: { ast: $ast:tt }
     } => {
-        println!("DONE {}", stringify!($init));
+        codegen!($ast);
     };
 
     {
         state: top_level,
-        program: $program:tt
+        buffer: $buffer:tt,
+        stack: { $($stack: tt)* }
     } => {
-        declare_types_internal! {
+        parse! {
             state: parse_class,
-            pub: false,
-            reopen: false,
-            program: $program
+            buffer: $buffer,
+            stack: {
+                pub: false,
+                reopen: false,
+                $($stack)*
+            }
         }
     };
 
@@ -52,119 +42,161 @@ macro_rules! declare_types_internal {
 
     {
         state: parse_class,
-        pub: false,
-        reopen: false,
-        program: {
-          rest: { pub $($rest:tt)* },
-          init: $init:tt
-        }
-    } => {
-        declare_types_internal! {
-            state: parse_class,
-            pub: true,
+        buffer: { pub $($rest:tt)* },
+        stack: {
+            pub: false,
             reopen: false,
-            program: {
-              rest: { $($rest)* },
-              init: $init
-            }
-        }
-    };
-
-    {
-        state: parse_class,
-        pub: $pub:tt,
-        reopen: false,
-        program: {
-          rest: { reopen $($rest:tt)* },
-          init: $init:tt
+            $($stack:tt)*
         }
     } => {
-        declare_types_internal! {
+        parse! {
             state: parse_class,
-            pub: $pub,
-            reopen: true,
-            program: {
-              rest: { $($rest)* },
-              init: $init
+            buffer: { $($rest)* },
+            stack: {
+                pub: true,
+                reopen: false,
+                $($stack)*
             }
         }
     };
 
     {
         state: parse_class,
-        pub: $pub:tt,
-        reopen: $reopen:tt,
-        program: {
-          rest: { class $name:ident { $($body:tt)* } $($rest:tt)* },
-          init: $init:tt
+        buffer: { reopen $($rest:tt)* },
+        stack: {
+            pub: $pub:tt,
+            reopen: false,
+            $($stack:tt)*
         }
     } => {
-        declare_types_internal! {
-            state: class,
-            class: {
-                meta: { pub: $pub, reopen: $reopen, name: $name },
-                body: { $($body)* }
-            },
-            program: {
-              rest: { $($rest)* },
-              init: $init
+        parse! {
+            state: parse_class,
+            buffer: { $($rest)* },
+            stack: {
+                pub: $pub,
+                reopen: true,
+                $($stack)*
             }
         }
     };
 
-    // STATE: class
+    {
+        state: parse_class,
+        buffer: { class $name:ident { $($body:tt)* } $($rest:tt)* },
+        stack: {
+            pub: $pub:tt,
+            reopen: $reopen:tt,
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_class_body,
+            buffer: { $($body)* },
+            stack: {
+                class: {
+                    type: class,
+                    name: $name,
+                    meta: { pub: $pub, reopen: $reopen },
+                    struct: uninitialized,
+                    methods: []
+                },
+                program: { $($rest)* },
+                $($stack)*
+            }
+        }
+    };
+
+    // STATE: parse_class_body
 
     {
-        state: class,
-        class: {
-            meta: $meta:tt,
-            body: { def $($rest:tt)* }
-        },
-        program: $program:tt
+        state: parse_class_body,
+        buffer: { struct { $($struct:tt)* } $($rest:tt)* },
+        stack: {
+            class: {
+                type: class,
+                name: $name:ident,
+                meta: $meta:tt,
+                struct: uninitialized,
+                methods : []
+            },
+            $($stack:tt)*
+        }
     } => {
-        declare_types_internal! {
+        parse! {
+            state: parse_methods,
+            buffer: { $($rest)* },
+            stack: {
+                class: {
+                    type: class,
+                    name: $name,
+                    meta: $meta,
+                    struct: { $($struct)* },
+                    methods: []
+                },
+                $($stack)*
+            }
+        }
+    };
+
+    {
+        state: parse_class_body,
+        buffer: $buffer:tt,
+        stack: {
+            class: {
+                type: class,
+                name: $name:ident,
+                meta: $meta:tt,
+                struct: uninitialized,
+                methods : []
+            },
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_methods,
+            buffer: $buffer,
+            stack: {
+                class: {
+                    type: class,
+                    name: $name,
+                    meta: $meta,
+                    struct: (),
+                    methods: []
+                },
+                $($stack)*
+            }
+        }
+    };
+
+    // STATE: parse_methods
+
+    {
+        state: parse_methods,
+        buffer: { def $($rest:tt)* },
+        stack: $stack:tt
+    } => {
+        parse! {
             state: parse_method,
-            class: {
-                meta: $meta,
-                body: { $($rest)* }
-            },
-            program: $program
+            buffer: { $($rest)* },
+            stack: $stack
         }
     };
 
     {
-        state: class,
-        class: {
-            meta: $meta:tt,
-            body: { struct $($rest:tt)* }
-        },
-        program: $program:tt
-    } => {
-        declare_types_internal! {
-            state: parse_struct,
-            class: {
-                meta: $meta,
-                body: { $($rest)* }
-            },
-            program: $program
+        state: parse_methods,
+        buffer: {},
+        stack: {
+            class: $class:tt,
+            program: $program:tt,
+            ast: [ $($ast:tt),* ]
         }
-    };
-
-    {
-        state: class,
-        class: {
-            meta: $meta:tt,
-            body: { }
-        },
-        program: $program:tt
     } => {
-        println!("{}", stringify!(class: {
-            meta: $meta
-        }));
-
-        declare_types_internal! {
+        parse! {
             state: top_level,
-            program: $program
+            buffer: $program,
+            stack: {
+                ast: [ $($ast,)* $class ]
+            }
         }
     };
 
@@ -172,45 +204,65 @@ macro_rules! declare_types_internal {
 
     {
         state: parse_method,
-        class: {
-            meta: $meta:tt,
-            body: { initialize $($rest:tt)* }
-        },
-        program: $program:tt
+        buffer: { initialize ( $($args:tt)* ) $($rest:tt)* },
+        stack: {
+            class: $class:tt,
+            $($stack:tt)*
+        }
     } => {
-        declare_types_internal! {
-            state: parse_initialize,
-            class: {
-                meta: $meta,
-                body: { $($rest)* }
-            },
-            method: {
-                type: initializer,
-                name: initialize,
-            },
-            program: $program
+        assert_struct!(true, $class);
+
+        parse! {
+            state: parse_arguments_helix,
+            buffer: { $($args)* },
+            stack: {
+                class_body: { $($rest)* },
+                class: $class,
+                $($stack)*
+            }
         }
     };
 
     {
         state: parse_method,
-        class: {
-            meta: $meta:tt,
-            body: { $name:ident ( $($args:tt)* ) $($rest:tt)* }
-        },
-        program: $program:tt
+        buffer: { $name:ident ( $($args:tt)* ) $($rest:tt)* },
+        stack: { $($stack:tt)* }
     } => {
-        declare_types_internal! {
+        parse! {
             state: parse_arguments_self,
-            class: {
-                meta: $meta,
-                body: { $($rest)* }
-            },
-            method: {
+            buffer: { $($args)* },
+            stack: {
                 name: $name,
-            },
-            args: { $($args)* },
-            program: $program
+                class_body: { $($rest)* },
+                $($stack)*
+            }
+        }
+    };
+
+    // STATE: parse_arguments_helix
+
+    {
+        state: parse_arguments_helix,
+        buffer: { $helix_arg:ident $($rest:tt)* },
+        stack: { $($stack:tt)* }
+    } => {
+        parse! {
+            state: parse_arguments_consume_possible_comma,
+            buffer: { $($rest)* },
+            stack: {
+                method: {
+                    type: initializer,
+                    name: initialize,
+                    self: {
+                        ownership: { },
+                        name: $helix_arg
+                    },
+                    args: uninitialized,
+                    ret: uninitialized,
+                    body: uninitialized
+                },
+                $($stack)*
+            }
         }
     };
 
@@ -218,77 +270,86 @@ macro_rules! declare_types_internal {
 
     {
         state: parse_arguments_self,
-        class: $class:tt,
-        method: {
-            name: $name:tt,
-        },
-        args: { & mut $self_arg:ident $($rest:tt)* },
-        program: $program:tt
+        buffer: { &mut $self_arg:ident $($rest:tt)* },
+        stack: {
+            name: $name:ident,
+            $($stack:tt)*
+        }
     } => {
         assert_valid_self_arg!($self_arg);
 
-        declare_types_internal! {
+        parse! {
             state: parse_arguments_consume_possible_comma,
-            class: $class,
-            method: {
-                type: instance,
-                name: $name,
-                self: {
-                    ownership: { & mut },
-                    name: $self_arg
-                }
-            },
-            args: { $($rest)* },
-            program: $program
+            buffer: { $($rest)* },
+            stack: {
+                method: {
+                    type: instance_method,
+                    name: $name,
+                    self: {
+                        ownership: { &mut },
+                        name: $self_arg
+                    },
+                    args: uninitialized,
+                    ret: uninitialized,
+                    body: uninitialized
+                },
+                $($stack)*
+            }
         }
     };
 
     {
         state: parse_arguments_self,
-        class: $class:tt,
-        method: {
-            name: $name:tt,
-        },
-        args: { & $self_arg:ident $($rest:tt)* },
-        program: $program:tt
+        buffer: { & $self_arg:ident $($rest:tt)* },
+        stack: {
+            name: $name:ident,
+            $($stack:tt)*
+        }
     } => {
         assert_valid_self_arg!($self_arg);
 
-        declare_types_internal! {
+        parse! {
             state: parse_arguments_consume_possible_comma,
-            class: $class,
-            method: {
-                type: instance,
-                name: $name,
-                self: {
-                    ownership: { & },
-                    name: $self_arg
-                }
-            },
-            args: { $($rest)* },
-            program: $program
+            buffer: { $($rest)* },
+            stack: {
+                method: {
+                    type: instance_method,
+                    name: $name,
+                    self: {
+                        ownership: { & },
+                        name: $self_arg
+                    },
+                    args: uninitialized,
+                    ret: uninitialized,
+                    body: uninitialized
+                },
+                $($stack)*
+            }
         }
     };
 
     {
         state: parse_arguments_self,
-        class: $class:tt,
-        method: {
-            name: $name:tt,
-        },
-        args: { $($rest:tt)* },
-        program: $program:tt
+        buffer: $buffer:tt,
+        stack: {
+            name: $name:ident,
+            $($stack:tt)*
+        }
     } => {
-        declare_types_internal! {
+        parse! {
             state: parse_arguments,
-            class: $class,
-            method: {
-                type: class,
-                name: $name,
-                self: ()
-            },
-            args: { $($rest)* },
-            program: $program
+            buffer: $buffer,
+            stack: {
+                method: {
+                    type: class_method,
+                    name: $name,
+                    self: (),
+                    args: uninitialized,
+                    ret: uninitialized,
+                    body: uninitialized
+                },
+                $($stack)*
+            }
         }
     };
 
@@ -296,33 +357,25 @@ macro_rules! declare_types_internal {
 
     {
         state: parse_arguments_consume_possible_comma,
-        class: $class:tt,
-        method: $method:tt,
-        args: { , $($rest:tt)+ },
-        program: $program:tt
+        buffer: { , $($rest:tt)+ },
+        stack: $stack:tt
     } => {
-        declare_types_internal! {
+        parse! {
             state: parse_arguments,
-            class: $class,
-            method: $method,
-            args: { $($rest)+ },
-            program: $program
+            buffer: { $($rest)+ },
+            stack: $stack
         }
     };
 
     {
         state: parse_arguments_consume_possible_comma,
-        class: $class:tt,
-        method: $method:tt,
-        args: { },
-        program: $program:tt
+        buffer: { },
+        stack: $stack:tt
     } => {
-        declare_types_internal! {
+        parse! {
             state: parse_arguments,
-            class: $class,
-            method: $method,
-            args: { },
-            program: $program
+            buffer: $buffer,
+            stack: $stack
         }
     };
 
@@ -330,25 +383,34 @@ macro_rules! declare_types_internal {
 
     {
         state: parse_arguments,
-        class: $class:tt,
-        method: {
-            type: $type:ident,
-            name: $name:tt,
-            self: $self:tt
-        },
-        args: { $($args:tt)* },
-        program: $program:tt
-    } => {
-        declare_types_internal! {
-            state: parse_return_type,
-            class: $class,
+        buffer: { $($args:tt)* },
+        stack: {
             method: {
-                type: $type,
-                name: $name,
-                self: $self,
-                args: { $($args)* }
+                type: $type:tt,
+                name: $name:ident,
+                self: $self:tt,
+                args: uninitialized,
+                ret: uninitialized,
+                body: uninitialized
             },
-            program: $program
+            class_body: $class_body:tt,
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_return_type,
+            buffer: $class_body,
+            stack: {
+                method: {
+                    type: $type,
+                    name: $name,
+                    self: $self,
+                    args: [ $($args)* ],
+                    ret: uninitialized,
+                    body: uninitialized
+                },
+                $($stack)*
+            }
         }
     };
 
@@ -356,185 +418,236 @@ macro_rules! declare_types_internal {
 
     {
         state: parse_return_type,
-        class: {
-            meta: $meta:tt,
-            body: { -> $ret:ty $body:block $($rest:tt)* }
-        },
-        method: {
-            type: $type:ident,
-            name: $name:tt,
-            self: $self:tt,
-            args: $args:tt
-        },
-        program: $program:tt
-    } => {
-        println!("{}", stringify!(method: {
-            type: $type,
-            name: $name,
-            self: $self,
-            args: $args,
-            ret: $ret
-        }));
-
-        declare_types_internal! {
-            state: class,
-            class: {
-                meta: $meta,
-                body: { $($rest)* }
+        buffer: { -> $ret:ty $body:block $($rest:tt)* },
+        stack: {
+            method: {
+                type: $type:tt,
+                name: $name:ident,
+                self: $self:tt,
+                args: $args:tt,
+                ret: uninitialized,
+                body: uninitialized
             },
-            program: $program
+            $($stack:tt)*
+        }
+    } => {
+        assert_no_explict_return_for_initializer!($type, ->);
+
+        parse! {
+            state: finish_method,
+            buffer: { $($rest)* },
+            stack: {
+                method: {
+                    type: $type,
+                    name: $name,
+                    self: $self,
+                    args: $args,
+                    ret: $ret,
+                    body: $body
+                },
+                $($stack)*
+            }
         }
     };
 
     {
         state: parse_return_type,
-        class: {
-            meta: $meta:tt,
-            body: { $body:block $($rest:tt)* }
-        },
-        method: {
-            type: $type:ident,
-            name: $name:tt,
-            self: $self:tt,
-            args: $args:tt
-        },
-        program: $program:tt
-    } => {
-        println!("{}", stringify!(method: {
-            type: $type,
-            name: $name,
-            self: $self,
-            args: $args,
-            ret: ()
-        }));
-
-        declare_types_internal! {
-            state: class,
-            class: {
-                meta: $meta,
-                body: { $($rest)* }
+        buffer: { $body:block $($rest:tt)* },
+        stack: {
+            method: {
+                type: initializer,
+                name: initialize,
+                self: $self:tt,
+                args: $args:tt,
+                ret: uninitialized,
+                body: uninitialized
             },
-            program: $program
+            class: {
+                type: class,
+                name: $name:ident,
+                meta: $meta:tt,
+                struct: $struct:tt,
+                methods: $methods:tt
+            },
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: finish_method,
+            buffer: { $($rest)* },
+            stack: {
+                method: {
+                    type: initializer,
+                    name: initialize,
+                    self: $self,
+                    args: $args,
+                    ret: $name,
+                    body: $body
+                },
+                class: {
+                    type: class,
+                    name: $name,
+                    meta: $meta,
+                    struct: $struct,
+                    methods: $methods
+                },
+                $($stack)*
+            }
         }
     };
 
-    // // STATE: class_signature
+    {
+        state: parse_return_type,
+        buffer: { $body:block $($rest:tt)* },
+        stack: {
+            method: {
+                type: $type:tt,
+                name: $name:ident,
+                self: $self:tt,
+                args: $args:tt,
+                ret: uninitialized,
+                body: uninitialized
+            },
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: finish_method,
+            buffer: { $($rest)* },
+            stack: {
+                method: {
+                    type: $type,
+                    name: $name,
+                    self: $self,
+                    args: $args,
+                    ret: (),
+                    body: $body
+                },
+                $($stack)*
+            }
+        }
+    };
 
-    // {
-    //     state: class_signature,
-    //     class_tokens: { }
-    //     program: {
-    //         rest: {
-    //             $($signature:ident)* class $name:ident { $($body:tt)* }
-    //             $($rest:tt)*
-    //         },
-    //         init: $init:tt
-    //     }
-    // } => {
-    //     declare_types_internal! {
-    //         class_signature: {
-    //           rest: { $($signature)* },
-    //           body: { $(body)* },
-    //           accum: { pub: false, reopen: false }
-    //         },
-    //         accum: { rest: { $($rest)* }, init: $init }
-    //     }
-    // };
+    // STATE: finish_method
 
-    // // Step 2: parse the class signature
+    {
+        state: finish_method,
+        buffer: $buffer:tt,
+        stack: {
+            method: $method:tt,
+            class: {
+                type: class,
+                name: $name:ident,
+                meta: $meta:tt,
+                struct: $struct:tt,
+                methods: [ $($methods:tt),* ]
+            },
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_methods,
+            buffer: $buffer,
+            stack: {
+                class: {
+                    type: class,
+                    name: $name,
+                    meta: $meta,
+                    struct: $struct,
+                    methods: [ $($methods,)* $method ]
+                },
+                $($stack)*
+            }
+        }
+    };
+}
 
-    // {
-    //     class_signature: {
-    //         rest: { pub $($rest:ident)* },
-    //         body: $body:tt,
-    //         accum: { pub: $pub:tt, reopen: false }
-    //     },
-    //     accum: $accum:tt
-    // } => {
-    //     declare_types_internal! {
-    //         class_signature: {
-    //           rest: { $($rest)* },
-    //           body: $body,
-    //           accum: { pub: true, reopen: false }
-    //         },
-    //         accum: $accum
-    //     }
-    // };
+#[doc(hidden)]
+#[macro_export]
+macro_rules! codegen {
+    ($($ast:tt)*) => {
+        println!("TODO: codegen; AST = {}", stringify!($($ast)*));
+    }
+}
 
-    // {
-    //     class_signature: {
-    //         rest: { reopen $($rest:ident)* },
-    //         body: $body:tt,
-    //         accum: { pub: $pub:tt, reopen: false }
-    //     },
-    //     accum: $accum:tt
-    // } => {
-    //     declare_types_internal! {
-    //         class_signature: {
-    //           rest: { $($rest)* },
-    //           body: $body,
-    //           accum: { pub: $pub, reopen: true }
-    //         },
-    //         accum: $accum
-    //     }
-    // };
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_struct {
+    (true, {
+        type: class,
+        name: $name:ident,
+        meta: $meta:tt,
+        struct: { $($struct:tt)+ },
+        methods: $methods:tt
+    }) => {};
 
-    // {
-    //     class_signature: {
-    //         rest: { class $name:ident },
-    //         body: $body:tt
-    //         accum: { pub: $pub:tt, reopen: $reopen:tt }
-    //     },
-    //     accum: $accum:tt
-    // } => {
-    //     declare_types_internal! {
-    //         class: {
-    //           meta: { name: $name, pub: $pub, reopen: $reopen }
-    //           rest: { $(body)* },
-    //           accum: { }
-    //         },
-    //         accum: $accum
-    //     }
-    // };
+    (false, {
+        type: class,
+        name: $name:ident,
+        meta: $meta:tt,
+        struct: (),
+        methods: $methods:tt
+    }) => {};
+}
 
-    // // Step 3: take a method out of rest
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_valid_self_arg {
+    (self) => {}
+}
 
-    // {
-    //     class: {
-    //         meta: $meta:tt,
-    //         rest: {
-    //             def $name:ident($($args:tt)*) $(-> $ret:ty)* { $($body:tt)* }
-    //             $($rest:tt)*
-    //         },
-    //         accum: $class_accum:tt
-    //     },
-    //     accum: $accum:tt
-    // } => {
-    //     declare_types_internal! {
-    //         method: {
-    //             def $name:ident($($args)*) $(-> $ret)* { $($body)* }
-    //         },
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_valid_arg {
+    ($arg:ident) => {};
+    (_) => {};
+}
 
-    //         class: {
-    //             meta:     $meta,
-    //             rest:     { $($rest)* },
-    //             elements: $elements
-    //         },
-
-    //         accum: $class_accum
-    //     }
-    // };
-
-    // { $($all:tt)* } => {
-    //     println!("ERROR: {}", stringify!($($all)*));
-    // };
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_no_explict_return_for_initializer {
+    (instance_method, $($rest:tt)*) => {};
+    (class_method, $($rest:tt)*) => {};
+    (initializer, ) => {};
 }
 
 fn main() {
     declare_types! {
-        class Foo {
-            def multiply(&self, one: f64, two: f64) -> f64 {
-                one * two
+        class Calculator {
+            def add(lhs: f64, rhs: f64) -> f64 {
+                Adder::new(lhs).call(rhs)
+            }
+
+            def multiply(lhs: f64, rhs: f64) -> f64 {
+                Multiplier::new(lhs).call(rhs)
+            }
+        }
+
+        class Adder {
+            struct {
+                lhs: f64
+            }
+
+            def initialize(helix, value: f64) {
+                Adder { helix, value }
+            }
+
+            def call(&self, rhs: f64) -> f64 {
+                self.lhs + rhs
+            }
+        }
+
+        class Multiplier {
+            struct {
+                lhs: f64
+            }
+
+            def initialize(helix, value: f64) {
+                Multiplier { helix, value }
+            }
+
+            def call(&self, rhs: f64) -> f64 {
+                self.lhs * rhs
             }
         }
     }
