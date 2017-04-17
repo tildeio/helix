@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate helix;
+extern crate helix_runtime;
 
 declare_types! {
     class Console {

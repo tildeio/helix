@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate helix;
+extern crate helix_runtime as helix;
 
 declare_types! {
     reopen class Array {

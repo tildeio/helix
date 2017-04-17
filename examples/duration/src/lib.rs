@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate helix;
+extern crate helix_runtime as helix;
 
 use std::fmt::Write;
 use std::cmp::Ordering;
