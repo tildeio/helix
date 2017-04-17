@@ -2,6 +2,7 @@
 name = "helix"
 version = "0.1.0"
 authors = ["Godhuda <engineering+godhuda@tilde.io>"]
+description = "Embed Rust in your Ruby"
 license = "MIT/Apache-2.0"
 include = [
   "src/**/*.rs",
