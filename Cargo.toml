@@ -24,3 +24,4 @@ version = "0.5.0-alpha-1"
 
 [dependencies.cstr-macro]
 path = "crates/cstr-macro"
+version = "0.1.0"
