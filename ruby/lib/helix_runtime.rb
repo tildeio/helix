@@ -2,6 +2,7 @@ require "helix_runtime/version"
 require "helix_runtime/native"
 require "helix_runtime/platform"
 require 'helix_runtime/project'
+require 'helix_runtime/parent_project'
 
 module HelixRuntime
   IS_WINDOWS = RUBY_PLATFORM =~ /mingw/
