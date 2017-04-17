@@ -20,9 +20,9 @@ fn main() {
   let libname = if target.starts_with("x86_64") { libname64.clone() } else { libname32.clone() };
 
   // Not required for non-Windows, but it needs to be part of the package
-  if is_packaging && (!root.join(format!("{}.lib", libname32)).exists() ||
-                      !root.join(format!("{}.lib", libname64)).exists()) {
-    panic!("{}.lib and {}.lib must exist when packaging. Please run ./prepackage.sh", libname32, libname64);
+  if is_packaging && (!lib_root.join(format!("{}.lib", libname32)).exists() ||
+                      !lib_root.join(format!("{}.lib", libname64)).exists()) {
+    panic!("{}.lib and {}.lib must exist when packaging. Please run ./prepackage.sh and set HELIX_LIB_DIR.", libname32, libname64);
   }
 
   if target.contains("windows") && !lib_root.join(format!("{}.lib", libname)).exists() {
