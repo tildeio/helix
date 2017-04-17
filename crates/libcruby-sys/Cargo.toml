@@ -16,4 +16,4 @@ include = [
 
 [dependencies]
 
-libc = "*"
+libc = ">= 0.1.0"
