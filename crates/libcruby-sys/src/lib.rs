@@ -11,7 +11,8 @@ pub fn check_version() {
     let raw_version = unsafe { CStr::from_ptr(HELIX_RUNTIME_VERSION) };
     let version = raw_version.to_str().expect("HELIX_RUNTIME_VERSION must be defined");
 
-    if PKG_VERSION != version {
+    // Cargo versions use dashes, Ruby versions use all periods
+    if PKG_VERSION.replace("-", ".") != version {
         panic!("libcsys-ruby version ({}) doesn't match helix_runtime version ({}).", PKG_VERSION, version);
     }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "libcruby-sys"
-version = "0.5.0"
+version = "0.5.0-alpha-1"
 authors = ["Godhuda <engineering+godhuda@tilde.io>"]
 build = "build.rs"
 include = [
@@ -8,8 +8,8 @@ include = [
     "Cargo.toml",
     "ruby_info.rb",
     # Keep in sync with version
-    "helix-runtime-0-5-0.i386.lib",
-    "helix-runtime-0-5-0.x86_64.lib"
+    "helix-runtime-0-5-0-alpha-1.i386.lib",
+    "helix-runtime-0-5-0-alpha-1.x86_64.lib"
 ]
 
 [dependencies]
