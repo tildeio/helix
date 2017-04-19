@@ -10,6 +10,7 @@ module HelixRuntime
     end
 
     def define
+      desc "Build Helix projects in crates"
       task :build do
         project.projects.each do |p|
           puts "Building #{p.name}"
@@ -17,6 +18,7 @@ module HelixRuntime
         end
       end
 
+      desc "Clobber Helix builds in crates"
       task :clobber do
         project.projects.each do |p|
           puts "Clobbering #{p.name}"
