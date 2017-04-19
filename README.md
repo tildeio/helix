@@ -9,18 +9,6 @@ WARNING: This repository is still in active development. **The vast majority of 
 APIs are not yet supported**, because we are still in the process of formulating the rules for
 binding Ruby APIs (so that we can make things ergonomic and provide **safety guarantees**).
 
-Short-term TODOs:
-
-- [x] Rust return types coerce into Ruby values
-- [ ] Defined coercions for all of the main Ruby types
-- [ ] Calling Ruby methods on Ruby objects
-- [ ] Propagating Ruby exceptions through Rust
-- [ ] Converting type check errors into exceptions (currently they're just logged)
-- [ ] `struct { }` fields inside of wrapped classes (not-reopened), using `Data_Wrap_Struct` under the hood
-- [ ] Dynamically enforced ownership for wrapped classes
-- [ ] `self` types in reopened classes to simple coercsions into Rust types (Ruby String -> &str)
-- [ ] Locking against re-entering Ruby when coercing String/Array into &str / &[T]
-
 What follows is an aspirational README :wink:
 
 # Helix
