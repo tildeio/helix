@@ -1,0 +1,9 @@
+[package]
+name = "<%= app_name %>"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+helix_runtime = "<%= HelixRuntime::VERSION %>"

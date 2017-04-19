@@ -2,7 +2,8 @@ PATH
   remote: ../../ruby
   specs:
     helix_runtime (0.5.0.alpha.1)
-      rake (~> 10.0)
+      rake (>= 10.0)
+      thor (~> 0.19.4)
 
 PATH
   remote: .
@@ -15,6 +16,7 @@ GEM
   specs:
     minitest (5.8.3)
     rake (10.5.0)
+    thor (0.19.4)
 
 PLATFORMS
   ruby
