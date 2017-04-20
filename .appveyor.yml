@@ -3,7 +3,7 @@ cache:
   - '%HOMEDRIVE%%HOMEPATH%\.multirust -> .appveyor.yml'
 
 environment:
-  EXAMPLES: duration calculator console membership turbo_blank
+  EXAMPLES: duration calculator console membership text_transform turbo_blank
   VERBOSE: true
   RUST_BACKTRACE: 1
   matrix:

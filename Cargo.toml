@@ -11,7 +11,7 @@ include = [
 
 [workspace]
 
-members = ["examples/calculator", "examples/console", "examples/duration", "examples/membership", "examples/turbo_blank"]
+members = ["examples/calculator", "examples/console", "examples/duration", "examples/membership", "examples/text_transform", "examples/turbo_blank"]
 
 [dependencies]
 libc = "0.2.0"
