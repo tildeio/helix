@@ -1,0 +1,27 @@
+require 'bundler/setup'
+require 'helix_runtime/build_task'
+require 'rspec/core/rake_task'
+
+# For Windows
+$stdout.sync = true
+
+HelixRuntime::BuildTask.new("text_transform") do |t|
+  t.build_root = File.expand_path("../..", __dir__)
+  t.helix_lib_dir = File.expand_path("../../ruby/windows_build", __dir__)
+  t.pre_build = -> {
+    Dir.chdir("../../ruby") do
+      puts "\n\nBuilding helix runtime\n\n"
+      Bundler.with_clean_env do
+        sh "bundle exec rake compile:native"
+      end
+      puts "\nRuntime built\n\n"
+    end
+  }
+end
+
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.verbose = false
+end
+
+task :spec => :build
+task :default => :spec
