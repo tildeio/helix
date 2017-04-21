@@ -35,6 +35,23 @@ macro_rules! codegen_class_binding {
 
     { $class:tt, {
         type: class,
+        name: $name:tt,
+        meta: { pub: $pub:tt, reopen: true },
+        struct: (),
+        methods: [ $($method:tt)* ]
+    } } => ({
+        use ::std::mem::transmute;
+        let def = $crate::ClassDefinition::reopen(cstr!(stringify!($name)));
+
+        $(
+            codegen_define_method!(def, $class, $method);
+        )*
+
+        unsafe { $name = transmute(def.class) };
+    });
+
+    { $class:tt, {
+        type: class,
         name: $cls:tt,
         meta: { pub: $pub:tt, reopen: $reopen:tt },
         struct: { $($struct:tt)* },
@@ -49,6 +66,13 @@ macro_rules! codegen_class_binding {
             __alloc_with__(None)
         }
 
+        impl $cls {
+            fn __alloc_with__(rust_self: Option<Box<$cls>>) -> $crate::sys::VALUE {
+                __alloc_with__(rust_self)
+            }
+        }
+
+        #[inline]
         fn __alloc_with__(rust_self: Option<Box<$cls>>) -> $crate::sys::VALUE {
             unsafe {
                 let instance = $crate::sys::Data_Wrap_Struct(
@@ -90,6 +114,7 @@ macro_rules! codegen_define_method {
         use $crate::sys::{VALUE, SPRINTF_TO_S, Qnil, rb_raise};
 
         #[repr(C)]
+        #[derive(Debug)]
         struct CallResult {
             error_klass: VALUE,
             value: VALUE
@@ -281,7 +306,7 @@ macro_rules! codegen_class_coercions {
     ({
         type: class,
         name: $cls:tt,
-        meta: { pub: $pub:tt, reopen: false },
+        meta: { pub: $pub:tt, reopen: $reopen:tt },
         struct: (),
         methods: $methods:tt
     }) => (
@@ -305,7 +330,6 @@ macro_rules! codegen_class_coercions {
             }
         }
 
-        impl_to_ruby!($cls);
         impl_to_ruby!(&'a $cls);
         impl_to_ruby!(&'a mut $cls);
     );
@@ -319,6 +343,12 @@ macro_rules! codegen_class_coercions {
     }) => (
         impl_struct_to_rust!(&'a $cls, $cls);
         impl_struct_to_rust!(&'a mut $cls, $cls);
+
+        impl $crate::ToRuby for $cls {
+            fn to_ruby(self) -> $crate::sys::VALUE {
+                $cls::__alloc_with__(Some(Box::new(self)))
+            }
+        }
 
         impl_to_ruby!(&'a $cls);
         impl_to_ruby!(&'a mut $cls);
