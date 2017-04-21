@@ -92,6 +92,8 @@ macro_rules! codegen_struct {
         name: $name:tt,
         struct: { $($struct:tt)* }
     } => {
+        #[derive(Clone, Debug)]
+        #[repr(C)]
         $($pub)* struct $name {
             helix: $crate::Metadata,
             $($struct)*

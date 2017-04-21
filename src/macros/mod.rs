@@ -63,3 +63,11 @@ macro_rules! assert_no_explict_return_for_initializer {
     (class_method, $($rest:tt)*) => {};
     (initializer, ) => {};
 }
+
+
+#[macro_export]
+macro_rules! throw {
+    ($msg:expr) => {
+        panic!($crate::ExceptionInfo::with_message(String::from($msg)))
+    }
+}

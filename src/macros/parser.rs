@@ -431,7 +431,7 @@ macro_rules! parse {
     } => {
         parse! {
             state: parse_arguments,
-            buffer: $buffer,
+            buffer: { },
             stack: $stack
         }
     };
@@ -623,7 +623,7 @@ macro_rules! parse {
                     name: $name,
                     self: $self,
                     args: $args,
-                    ret: (),
+                    ret: { () },
                     body: $body
                 },
                 $($stack)*
