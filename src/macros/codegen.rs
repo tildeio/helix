@@ -1,11 +1,19 @@
 #[macro_export]
 macro_rules! codegen {
     { [ $($ast:tt)* ] } => {
-        codegen! {
-            type: top,
-            classes: [],
-            buffer: [ $($ast)* ]
+        mod init_native {
+            codegen! {
+                type: top,
+                classes: [],
+                buffer: [ $($ast)* ]
+            }
+
+            codegen_init! { [ $($ast)* ] }
         }
+
+        codegen_pub_classes!($($ast)*);
+
+        pub use self::init_native::Init_native;
     };
 
     {
@@ -47,6 +55,14 @@ macro_rules! codegen {
             ],
             buffer: [ $($rest)* ]
         }
+
+        codegen_extra_impls!({
+            type: class,
+            name: $name,
+            meta: { pub: $pub, reopen: $reopen },
+            struct: $struct,
+            methods: [ $($method)* ]
+        });
     };
 
     {
@@ -66,6 +82,41 @@ macro_rules! codegen {
                 $($method)*
             }
         )*
+    };
+}
+
+#[macro_export]
+macro_rules! codegen_pub_classes {
+    {
+            $({
+                type: class,
+                name: $name:tt,
+                meta: { pub: $pub:tt, reopen: $reopen:tt },
+                struct: $struct:tt,
+                methods: [ $($method:tt)* ]
+            })*
+    } => {
+        $(
+            codegen_pub_classes! {
+                type: class,
+                name: $name,
+                pub: $pub
+            }
+        )*
+    };
+
+    {
+        type: class,
+        name: $name:tt,
+        pub: false
+    } => {};
+
+    {
+        type: class,
+        name: $name:tt,
+        pub: true
+    } => {
+        pub use self::init_native::$name;
     };
 }
 
@@ -150,4 +201,12 @@ macro_rules! codegen_method {
     } => {
         pub fn $name($($ownership)* $self, $($args)*) -> $($ret)* $body
     };
+}
+
+#[macro_export]
+macro_rules! codegen_extra_impls {
+    ($class:tt) => (
+        codegen_allocator!($class);
+        codegen_coercions!($class);
+    )
 }

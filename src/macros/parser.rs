@@ -76,7 +76,6 @@ macro_rules! parse {
         stack: { ast: $ast:tt }
     } => {
         codegen! { $ast }
-        codegen_init! { $ast }
     };
 
     {
