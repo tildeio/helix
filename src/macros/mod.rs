@@ -1,0 +1,65 @@
+#[macro_use]
+mod parser;
+#[macro_use]
+mod codegen;
+#[macro_use]
+mod init;
+
+#[macro_export]
+macro_rules! declare_types {
+    { $($rest:tt)* } => {
+        parse! {
+            state: top_level,
+            buffer: { $($rest)* },
+            stack: { ast: [] }
+        }
+    }
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! item {
+    ($it: item) => { $it }
+}
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_struct {
+    (true, {
+        type: class,
+        name: $name:ident,
+        meta: $meta:tt,
+        struct: { $($struct:tt)+ },
+        methods: $methods:tt
+    }) => {};
+
+    (false, {
+        type: class,
+        name: $name:ident,
+        meta: $meta:tt,
+        struct: (),
+        methods: $methods:tt
+    }) => {};
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_valid_self_arg {
+    (self) => {}
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_valid_arg {
+    ($arg:ident) => {};
+    (_) => {};
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_no_explict_return_for_initializer {
+    (instance_method, $($rest:tt)*) => {};
+    (class_method, $($rest:tt)*) => {};
+    (initializer, ) => {};
+}

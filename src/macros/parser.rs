@@ -1,7 +1,3 @@
-#![recursion_limit="1024"]
-
-type Metadata = *mut std::os::raw::c_void;
-
 /**
   # AST DEFINITION
 
@@ -27,16 +23,16 @@ type Metadata = *mut std::os::raw::c_void;
   Class :
     {
         type: class,
+        name: «ident»,
         meta: «Meta»,
-        struct: ‹() | { «Field»,+ }›
-        methods: [ «Method»,+ ]
+        struct: ‹() | { «Field»,* }›
+        methods: [ «Method»,* ]
     }
 
   Meta :
     {
         pub: «bool»,
         reopen: «bool»,
-        name: «ident»,
     }
 
   Field :
@@ -48,7 +44,7 @@ type Metadata = *mut std::os::raw::c_void;
         name: «ident»,
         self: ‹() | «MethodSelf»›,
         args: «MethodArgs»,
-        ret: «ty»,
+        ret: { «ty» },
         body: «block»
     }
 
@@ -69,17 +65,6 @@ type Metadata = *mut std::os::raw::c_void;
   Name : ‹_ | «ident»›
 */
 
-#[macro_export]
-macro_rules! declare_types {
-    { $($rest:tt)* } => {
-        parse! {
-            state: top_level,
-            buffer: { $($rest)* },
-            stack: { ast: [] }
-        }
-    }
-}
-
 #[doc(hidden)]
 #[macro_export]
 macro_rules! parse {
@@ -90,7 +75,8 @@ macro_rules! parse {
         buffer: {},
         stack: { ast: $ast:tt }
     } => {
-        codegen! { $ast };
+        codegen! { $ast }
+        codegen_init! { $ast }
     };
 
     {
@@ -259,14 +245,14 @@ macro_rules! parse {
         stack: {
             class: $class:tt,
             program: $program:tt,
-            ast: [ $($ast:tt),* ]
+            ast: [ $($ast:tt)* ]
         }
     } => {
         parse! {
             state: top_level,
             buffer: $program,
             stack: {
-                ast: [ $($ast,)* $class ]
+                ast: [ $($ast)* $class ]
             }
         }
     };
@@ -513,7 +499,7 @@ macro_rules! parse {
                     name: $name,
                     self: $self,
                     args: $args,
-                    ret: $ret,
+                    ret: { $ret },
                     body: $body
                 },
                 $($stack)*
@@ -552,7 +538,7 @@ macro_rules! parse {
                     name: initialize,
                     self: $self,
                     args: $args,
-                    ret: $name,
+                    ret: { $name },
                     body: $body
                 },
                 class: {
@@ -657,7 +643,7 @@ macro_rules! parse {
                 name: $name:ident,
                 meta: $meta:tt,
                 struct: $struct:tt,
-                methods: [ $($methods:tt),* ]
+                methods: [ $($methods:tt)* ]
             },
             $($stack:tt)*
         }
@@ -671,425 +657,10 @@ macro_rules! parse {
                     name: $name,
                     meta: $meta,
                     struct: $struct,
-                    methods: [ $($methods,)* $method ]
+                    methods: [ $($methods)* $method ]
                 },
                 $($stack)*
             }
         }
     };
-}
-
-#[doc(hidden)]
-#[macro_use]
-mod codegen_ast {
-    #[macro_export]
-    macro_rules! codegen {
-        { [ $($ast:tt)* ] } => {
-            // println!("{}\n\n======\n\n", stringify!($($ast)*));
-            codegen! {
-                type: top,
-                classes: [],
-                buffer: [ $($ast)* ]
-            }
-        };
-
-        {
-            type: top,
-            classes: [ $($class:tt)* ],
-            buffer: []
-        } => {
-            codegen! {
-                type: done,
-                classes: [ $($class)* ]
-            }
-        };
-
-        {
-            type: top,
-            classes: [
-                $($classes:tt)*
-            ],
-            buffer: [
-                {
-                    type: class,
-                    meta: { pub: $pub:tt, reopen: $reopen:tt, name: $name:tt  },
-                    struct: $struct:tt,
-                    methods: $methods:tt
-                }
-                $(, $rest:tt)*
-            ]
-        } => {
-            codegen! {
-                type: class,
-                classes: [
-                    {
-                        name: $name,
-                        struct: { codegen_struct! { pub: $pub, name: $name, struct: $struct } },
-                        methods: []
-                    }
-                    $($classes)*
-                ],
-                buffer: [ $methods $($rest),* ]
-            }
-        };
-
-        {
-            type: top,
-            classes: $classes:tt,
-            buffer: [ $next:tt $(, $rest:tt)* ]
-        } => {
-            println!("UNIMPLEMENTED IN BUFFER: {}", stringify!($next));
-        };
-
-        {
-            type: class,
-            classes: [
-                {
-                    name: $name:tt,
-                    struct: $struct:tt,
-                    methods: []
-                }
-                $($classes:tt)*
-            ],
-            buffer: [ [ $($method:tt),* ] $($rest:tt),* ]
-        } => {
-            codegen! {
-                type: top,
-                classes: [
-                    {
-                        name: $name,
-                        struct: $struct,
-                        methods: [ $( codegen_method! { $method } )* ]
-                    }
-                    $($classes)*
-                ],
-                buffer: [ $($rest),* ]
-            }
-        };
-
-        {
-            type: done,
-            classes: [ $(
-                {
-                    name: $name:tt,
-                    struct: { $($struct:tt)* },
-                    methods: [ $($method:tt)* ]
-                }
-            )* ]
-        } => {
-            $(
-                $($struct)*
-
-                impl $name {
-                    $($method)*
-                }
-            )*
-        };
-
-        { $($any:tt)* } => {
-            println!("unimplemented; AST = {}", stringify!($($any)*));
-        };
-    }
-
-    macro_rules! codegen_struct {
-        { pub: false, name: $name:tt, struct: () } => {
-            codegen_struct! { pub: {}, name: $name, struct: {} }
-        };
-
-        { pub: true, name: $name:tt, struct: () } => {
-            codegen_struct! { pub: { pub }, name: $name, struct: {} }
-        };
-
-        { pub: false, name: $name:tt, struct: { $($rest:tt)* } } => {
-            codegen_struct! { pub: {}, name: $name, struct: { $($rest)* } }
-        };
-
-        { pub: true, name: $name:tt, struct: { $($rest:tt)* } } => {
-            codegen_struct! { pub: { pub }, name: $name, struct: { $($rest)* } }
-        };
-
-        {
-            pub: { $($pub:tt)* },
-            name: $name:tt,
-            struct: { $($struct:tt)* }
-        } => {
-            $($pub)* struct $name {
-                helix: $crate::Metadata,
-                $($struct)*
-            }
-        }
-    }
-
-    macro_rules! codegen_method {
-        {
-            {
-                type: initializer,
-                name: $name:tt,
-                self: {
-                    ownership: { $($ownership:tt)* },
-                    name: $self:tt
-                },
-                args: [ $($args:tt)* ],
-                ret: { $($ret:tt)* },
-                body: $body:block
-            }
-        } => {
-            pub fn $name($($ownership)* $self : $crate::Metadata, $($args)*) -> $($ret)* $body
-        };
-
-        {
-            $($any:tt)*
-        } => {}
-    }
-}
-
-/**
-[
-    {
-        type : class ,
-        meta : { pub : false , reopen : false , name : Multiplier } ,
-        struct : { lhs : f64 } ,
-        methods : [
-            {
-                type : initializer ,
-                name : initialize ,
-                self : {
-                    ownership : {  } ,
-                    name : helix
-                } ,
-                args : [ value : f64 ] ,
-                ret : Multiplier ,
-                body : { Multiplier{helix, value,} }
-            } ,
-            {
-                type : instance_method ,
-                name : call ,
-                self : {
-                    ownership : { & } ,
-                    name : self
-                } ,
-                args : [ rhs : f64 ] ,
-                ret : f64 ,
-                body : { self.lhs * rhs }
-            }
-        ]
-    }
-]
-*/
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! item {
-    ($it: item) => { $it }
-}
-
-mod print {
-    macro_rules! print_ast {
-        ([ $($ast:tt),* ]) => {
-            $(
-                print_ast!($ast);
-            )*
-        };
-
-        ({
-            type: class,
-            meta: { pub: $pub:tt, reopen: $reopen:tt, name: $name:tt },
-            struct: $struct:tt,
-            methods: $methods:tt
-        }) => {
-            println!("\nCLASS\n=====\nclass {} (pub:{} reopen:{})", stringify!($name), stringify!($pub), stringify!($reopen));
-            println!("{}", format_ast_class_struct!({ name: $name, tuple: $struct }));
-            println!("\nMETHODS\n=======\n{}\n\n", format_ast_methods!($methods));
-        };
-
-        ($($ast:tt)*) => {
-            println!("Unimplemented: {}", stringify!($($ast)*));
-        };
-    }
-
-    macro_rules! format_ast_class_struct {
-        ({
-            name: $name:tt,
-            tuple: { $( $field:tt : $fieldty:ty ),* }
-        }) => {
-            {
-                let mut s = String::new();
-                $(
-                    s.push_str(&format!("struct {} {{ {}: {} }}", stringify!($name), stringify!($field), stringify!($fieldty)));
-                )*
-                s
-            }
-        };
-
-        ({
-            name: $name:tt,
-            tuple: ()
-        }) => {
-            "No Struct"
-        };
-    }
-
-    macro_rules! format_ast_methods {
-        ([
-            $($ast:tt),*
-        ]) => {
-            {
-                let mut v = Vec::new();
-                $(
-                    v.push(format_ast_methods!($ast));
-                )*
-                v.join("\n")
-            }
-        };
-
-        ({
-            type: instance_method,
-            name: $name:tt,
-            self: $self:tt,
-            args: $args:tt,
-            ret: $ret:tt,
-            body: $body:tt
-        }) => {
-            {
-                let mut s = String::new();
-                s.push_str(&format!("def {}", stringify!($name)));
-                s.push_str(&format!("({})", format_ast_args!($args)));
-                s.push_str(&format_ret!($ret));
-                s.push_str(" ");
-                s.push_str(&stringify!($body));
-                s
-            }
-        };
-
-        ({
-            type: class_method,
-            name: $name:tt,
-            self: $self:tt,
-            args: $args:tt,
-            ret: $ret:ty,
-            body: $body:tt
-        }) => {
-            {
-                let mut s = String::new();
-                s.push_str(&format!("def self.{}", stringify!($name)));
-                s.push_str(&format!("({})", format_ast_args!($args)));
-                s.push_str(&format_ret!($ret));
-                s.push_str(" ");
-                s.push_str(&stringify!($body));
-                s
-            }
-        };
-
-
-        ({
-            type: initializer,
-            name: $name:tt,
-            self: $self:tt,
-            args: $args:tt,
-            ret: $ret:ty,
-            body: $body:tt
-        }) => {
-            {
-                let mut s = String::new();
-                s.push_str(&format!("def initialize({})", format_ast_args!($args)));
-                s.push_str(&format_ret!($ret));
-                s.push_str(" ");
-                s.push_str(&stringify!($body));
-                s
-            }
-        };
-    }
-
-    macro_rules! format_ret {
-        ($ret:ty) => { format!(" -> {}", stringify!($ret)) };
-    }
-
-    macro_rules! format_ast_args {
-        ([ $($args:tt)* ]) => {
-            format!("{}", stringify!($($args)*))
-        }
-    }
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! assert_struct {
-    (true, {
-        type: class,
-        name: $name:ident,
-        meta: $meta:tt,
-        struct: { $($struct:tt)+ },
-        methods: $methods:tt
-    }) => {};
-
-    (false, {
-        type: class,
-        name: $name:ident,
-        meta: $meta:tt,
-        struct: (),
-        methods: $methods:tt
-    }) => {};
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! assert_valid_self_arg {
-    (self) => {}
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! assert_valid_arg {
-    ($arg:ident) => {};
-    (_) => {};
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! assert_no_explict_return_for_initializer {
-    (instance_method, $($rest:tt)*) => {};
-    (class_method, $($rest:tt)*) => {};
-    (initializer, ) => {};
-}
-
-fn main() {
-    declare_types! {
-        class Calculator {
-            def add(lhs: f64, rhs: f64) -> f64 {
-                Adder::new(lhs).call(rhs)
-            }
-
-            def multiply(lhs: f64, rhs: f64) -> f64 {
-                Multiplier::new(lhs).call(rhs)
-            }
-        }
-
-        class Adder {
-            struct {
-                lhs: f64
-            }
-
-            def initialize(helix, value: f64) {
-                Adder { helix, lhs: value }
-            }
-
-            def call(&self, rhs: f64) -> f64 {
-                self.lhs + rhs
-            }
-        }
-
-        class Multiplier {
-            struct {
-                lhs: f64
-            }
-
-            def initialize(helix, value: f64) {
-                Multiplier { helix, lhs: value }
-            }
-
-            def call(&self, rhs: f64) -> f64 {
-                self.lhs * rhs
-            }
-        }
-    }
 }
