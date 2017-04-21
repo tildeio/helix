@@ -34,6 +34,39 @@ LOG: I'm in your Rust
 
 > STATUS: The main thing missing from the current implementation is coercing Rust return types in Ruby. Today, you would need to add `Qnil` to the bottom of `def log`, which we hope to eliminate soon.
 
+## Getting Started with Helix Examples
+If you'd like to experiment with Helix, you can start with some of the examples in this repository.
+
+Clone and download the Helix repository:
+```shell
+$ git clone https://github.com/tildeio/helix
+```
+
+Navigate to the console example folder and bundle your `Gemfile`:
+```shell
+$ cd examples/console
+$ bundle install
+```
+
+Run `rake`, followed by `rake irb`:
+```shell
+$ rake
+$ rake irb
+```
+
+Try running some of the methods defined in `examples/console/src/lib.rs`:
+```shell
+> c = Console.new
+Console { helix: VALUE(0x7fdacc19a6a0) }
+=>
+> c.hello
+hello
+=> nil
+> c.loglog('hello', 'world')
+hello world
+=> nil
+```
+
 ## Coercions
 
 When you define a method in Helix using `def`, you can specify any Rust type in its type signature.
