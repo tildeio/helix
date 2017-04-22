@@ -76,6 +76,7 @@ declare_types! {
             self.value
         }
 
+        #[ruby_name = "+"]
         def plus(&self, other: &Duration) -> Duration {
             Duration::new(
                 sum_part(self.seconds, other.seconds),
@@ -88,10 +89,12 @@ declare_types! {
             )
         }
 
+        #[ruby_name = "-"]
         def minus(&self, other: &Duration) -> Duration {
             self.plus(&other.negate())
         }
 
+        #[ruby_name = "-@"]
         def negate(&self) -> Duration {
             Duration::new(
                 negate_part(self.seconds),
@@ -104,10 +107,12 @@ declare_types! {
             )
         }
 
+        #[ruby_name = "=="]
         def eq(&self, other: &Duration) -> bool {
             self.value == other.value
         }
 
+        #[ruby_name = "<=>"]
         def cmp(&self, other: &Duration) -> i32 {
             match self.value.cmp(&other.value) {
                 Ordering::Less => -1,

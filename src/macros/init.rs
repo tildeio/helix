@@ -82,7 +82,8 @@ macro_rules! codegen_define_method {
         $($rest:tt)*
     }, {
         type: class_method,
-        name: $name:tt,
+        rust_name: $rust_name:tt,
+        ruby_name: { $($ruby_name:tt)* },
         self: (),
         args: [ $($arg:tt : $argty:ty),* ],
         ret: { $($ret:tt)* },
@@ -134,11 +135,11 @@ macro_rules! codegen_define_method {
             )*
 
             handle_exception! {
-                $cls::$name($($arg),*)
+                $cls::$rust_name($($arg),*)
             }
         }
 
-        let name = cstr!(stringify!($name));
+        let name = cstr!($($ruby_name)*);
         let method = __ruby_method__ as *const $crate::libc::c_void;
         let arity = method_arity!($($arg)*);
 
@@ -153,7 +154,8 @@ macro_rules! codegen_define_method {
         $($rest:tt)*
     }, {
         type: instance_method,
-        name: $name:tt,
+        rust_name: $rust_name:tt,
+        ruby_name: { $($ruby_name:tt)* },
         self: { ownership: { $($ownership:tt)* }, name: $self:tt },
         args: [ $($arg:tt : $argty:ty),* ],
         ret: { $($ret:tt)* },
@@ -211,11 +213,11 @@ macro_rules! codegen_define_method {
             )*
 
             handle_exception! {
-                rust_self.$name($($arg),*)
+                rust_self.$rust_name($($arg),*)
             }
         }
 
-        let name = cstr!(stringify!($name));
+        let name = cstr!($($ruby_name)*);
         let method = __ruby_method__ as *const $crate::libc::c_void;
         let arity = method_arity!($($arg)*);
 
@@ -230,7 +232,8 @@ macro_rules! codegen_define_method {
         $($rest:tt)*
     }, {
         type: initializer,
-        name: $name:tt,
+        rust_name: $rust_name:tt,
+        ruby_name: { $($ruby_name:tt)* },
         self: { ownership: {}, name: $self:tt },
         args: [ $($arg:tt : $argty:ty),* ],
         ret: { $($ret:tt)* },
@@ -238,7 +241,7 @@ macro_rules! codegen_define_method {
     }) => ({
         impl $cls {
             pub fn new($($arg : $argty),*) -> $($ret)* {
-                $cls::$name(unsafe { $crate::sys::Qnil } , $($arg),*)
+                $cls::$rust_name(unsafe { $crate::sys::Qnil } , $($arg),*)
             }
         }
 
@@ -274,7 +277,7 @@ macro_rules! codegen_define_method {
         let arity = method_arity!($($arg)*);
         let method = __initialize__ as *const $crate::libc::c_void;
 
-        $def.define_method($crate::MethodDefinition::instance(cstr!("initialize"), method, arity));
+        $def.define_method($crate::MethodDefinition::instance(cstr!($($ruby_name)*), method, arity));
     });
 }
 

@@ -228,13 +228,33 @@ macro_rules! parse {
 
     {
         state: parse_methods,
-        buffer: { def $($rest:tt)* },
-        stack: $stack:tt
+        buffer: { #[ruby_name = $ruby_name:tt] def $name:tt $($rest:tt)* },
+        stack: { $($stack:tt)* }
     } => {
         parse! {
             state: parse_method,
             buffer: { $($rest)* },
-            stack: $stack
+            stack: {
+                rust_name: $name,
+                ruby_name: { $ruby_name },
+                $($stack)*
+            }
+        }
+    };
+
+    {
+        state: parse_methods,
+        buffer: { def $name:tt $($rest:tt)* },
+        stack: { $($stack:tt)* }
+    } => {
+        parse! {
+            state: parse_method,
+            buffer: { $($rest)* },
+            stack: {
+                rust_name: $name,
+                ruby_name: { stringify!($name) },
+                $($stack)*
+            }
         }
     };
 
@@ -260,8 +280,10 @@ macro_rules! parse {
 
     {
         state: parse_method,
-        buffer: { initialize ( $($args:tt)* ) $($rest:tt)* },
+        buffer: { ( $($args:tt)* ) $($rest:tt)* },
         stack: {
+            rust_name: initialize,
+            ruby_name: $ruby_name:tt,
             class: $class:tt,
             $($stack:tt)*
         }
@@ -281,14 +303,19 @@ macro_rules! parse {
 
     {
         state: parse_method,
-        buffer: { $name:tt ( $($args:tt)* ) $($rest:tt)* },
-        stack: { $($stack:tt)* }
+        buffer: { ( $($args:tt)* ) $($rest:tt)* },
+        stack: {
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
+            $($stack:tt)*
+        }
     } => {
         parse! {
             state: parse_arguments_self,
             buffer: { $($args)* },
             stack: {
-                name: $name,
+                rust_name: $rust_name,
+                ruby_name: $ruby_name,
                 class_body: { $($rest)* },
                 $($stack)*
             }
@@ -308,7 +335,8 @@ macro_rules! parse {
             stack: {
                 method: {
                     type: initializer,
-                    name: initialize,
+                    rust_name: initialize,
+                    ruby_name: { "initialize" },
                     self: {
                         ownership: { },
                         name: $helix_arg
@@ -328,7 +356,8 @@ macro_rules! parse {
         state: parse_arguments_self,
         buffer: { &mut $self_arg:tt $($rest:tt)* },
         stack: {
-            name: $name:tt,
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
             $($stack:tt)*
         }
     } => {
@@ -340,7 +369,8 @@ macro_rules! parse {
             stack: {
                 method: {
                     type: instance_method,
-                    name: $name,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
                     self: {
                         ownership: { &mut },
                         name: $self_arg
@@ -358,7 +388,8 @@ macro_rules! parse {
         state: parse_arguments_self,
         buffer: { & $self_arg:tt $($rest:tt)* },
         stack: {
-            name: $name:tt,
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
             $($stack:tt)*
         }
     } => {
@@ -370,7 +401,8 @@ macro_rules! parse {
             stack: {
                 method: {
                     type: instance_method,
-                    name: $name,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
                     self: {
                         ownership: { & },
                         name: $self_arg
@@ -388,7 +420,8 @@ macro_rules! parse {
         state: parse_arguments_self,
         buffer: $buffer:tt,
         stack: {
-            name: $name:tt,
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
             $($stack:tt)*
         }
     } => {
@@ -398,7 +431,8 @@ macro_rules! parse {
             stack: {
                 method: {
                     type: class_method,
-                    name: $name,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
                     self: (),
                     args: uninitialized,
                     ret: uninitialized,
@@ -443,7 +477,8 @@ macro_rules! parse {
         stack: {
             method: {
                 type: $type:tt,
-                name: $name:tt,
+                rust_name: $rust_name:tt,
+                ruby_name: $ruby_name:tt,
                 self: $self:tt,
                 args: uninitialized,
                 ret: uninitialized,
@@ -459,7 +494,8 @@ macro_rules! parse {
             stack: {
                 method: {
                     type: $type,
-                    name: $name,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
                     self: $self,
                     args: [ $($args)* ],
                     ret: uninitialized,
@@ -478,7 +514,8 @@ macro_rules! parse {
         stack: {
             method: {
                 type: $type:tt,
-                name: $name:tt,
+                rust_name: $rust_name:tt,
+                ruby_name: $ruby_name:tt,
                 self: $self:tt,
                 args: $args:tt,
                 ret: uninitialized,
@@ -495,7 +532,8 @@ macro_rules! parse {
             stack: {
                 method: {
                     type: $type,
-                    name: $name,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
                     self: $self,
                     args: $args,
                     ret: { $ret },
@@ -512,7 +550,8 @@ macro_rules! parse {
         stack: {
             method: {
                 type: initializer,
-                name: initialize,
+                rust_name: $rust_name:tt,
+                ruby_name: $ruby_name:tt,
                 self: $self:tt,
                 args: $args:tt,
                 ret: uninitialized,
@@ -534,7 +573,8 @@ macro_rules! parse {
             stack: {
                 method: {
                     type: initializer,
-                    name: initialize,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
                     self: $self,
                     args: $args,
                     ret: { $name },
@@ -559,7 +599,8 @@ macro_rules! parse {
         stack: {
             method: {
                 type: initializer,
-                name: $name:tt,
+                rust_name: $rust_name:tt,
+                ruby_name: $ruby_name:tt,
                 self: $self:tt,
                 args: $args:tt,
                 ret: uninitialized,
@@ -580,7 +621,8 @@ macro_rules! parse {
             stack: {
                 method: {
                     type: initializer,
-                    name: $name,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
                     self: $self,
                     args: $args,
                     ret: { $class_name },
@@ -604,7 +646,8 @@ macro_rules! parse {
         stack: {
             method: {
                 type: $type:tt,
-                name: $name:tt,
+                rust_name: $rust_name:tt,
+                ruby_name: $ruby_name:tt,
                 self: $self:tt,
                 args: $args:tt,
                 ret: uninitialized,
@@ -619,7 +662,8 @@ macro_rules! parse {
             stack: {
                 method: {
                     type: $type,
-                    name: $name,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
                     self: $self,
                     args: $args,
                     ret: { () },

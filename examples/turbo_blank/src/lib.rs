@@ -3,6 +3,7 @@ extern crate helix_runtime as helix;
 
 declare_types! {
     reopen class RubyString {
+        #[ruby_name = "blank?"]
         def is_blank(&self) -> bool {
           // self.chars().all(|c| c.is_whitespace())
           self.to_string().chars().all(|c| c.is_whitespace())

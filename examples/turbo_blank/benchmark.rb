@@ -30,7 +30,7 @@ def scenario(title, str, expected)
       raise "Expected " + str.inspect + ".rails_5_blank? to be #{expected}"
     end
 
-    unless str.is_blank == #{expected}
+    unless str.blank? == #{expected}
       raise "Expected " + str.inspect + ".is_blank to be #{expected}"
     end
 

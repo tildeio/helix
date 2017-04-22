@@ -9,14 +9,6 @@ case ENV["IMPLEMENTATION"]
 when "RUST"
   require "duration/native"
 
-  ::Duration.class_eval do
-    alias_method :+, :plus
-    alias_method :-, :minus
-    alias_method :-@, :negate
-    alias_method :<=>, :cmp
-    alias_method :==, :eq
-  end
-
   ActiveSupport::Duration = ::Duration
 when "RAILS"
   require "active_support/duration"

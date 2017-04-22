@@ -1,19 +1,13 @@
 #[macro_export]
 macro_rules! codegen {
     { [ $($ast:tt)* ] } => {
-        mod init_native {
-            codegen! {
-                type: top,
-                classes: [],
-                buffer: [ $($ast)* ]
-            }
-
-            codegen_init! { [ $($ast)* ] }
+        codegen! {
+            type: top,
+            classes: [],
+            buffer: [ $($ast)* ]
         }
 
-        codegen_pub_classes!($($ast)*);
-
-        pub use self::init_native::Init_native;
+        codegen_init! { [ $($ast)* ] }
     };
 
     {
@@ -160,7 +154,8 @@ macro_rules! codegen_method {
     {
         {
             type: initializer,
-            name: $name:tt,
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
             self: {
                 ownership: {},
                 name: $self:tt
@@ -170,26 +165,28 @@ macro_rules! codegen_method {
             body: $body:block
         }
     } => {
-        pub fn $name($self : $crate::Metadata, $($arg : $argty),*) -> $($ret)* $body
+        pub fn $rust_name($self : $crate::Metadata, $($arg : $argty),*) -> $($ret)* $body
     };
 
     {
         {
             type: class_method,
-            name: $name:tt,
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
             self: (),
             args: [ $($args:tt)* ],
             ret: { $($ret:tt)* },
             body: $body:block
         }
     } => {
-        pub fn $name($($args)*) -> $($ret)* $body
+        pub fn $rust_name($($args)*) -> $($ret)* $body
     };
 
     {
         {
             type: instance_method,
-            name: $name:tt,
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
             self: {
                 ownership: { $($ownership:tt)* },
                 name: $self:tt
@@ -199,7 +196,7 @@ macro_rules! codegen_method {
             body: $body:block
         }
     } => {
-        pub fn $name($($ownership)* $self, $($args)*) -> $($ret)* $body
+        pub fn $rust_name($($ownership)* $self, $($args)*) -> $($ret)* $body
     };
 }
 

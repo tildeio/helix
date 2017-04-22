@@ -1,9 +1,17 @@
 #[macro_use]
 mod parser;
+
 #[macro_use]
 mod codegen;
+
 #[macro_use]
 mod init;
+
+#[macro_use]
+mod coercions;
+
+#[macro_use]
+mod alloc;
 
 #[macro_export]
 macro_rules! declare_types {
@@ -71,3 +79,4 @@ macro_rules! throw {
         panic!($crate::ExceptionInfo::with_message(String::from($msg)))
     }
 }
+

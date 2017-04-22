@@ -17,7 +17,6 @@ class String
 
   case ENV["IMPLEMENTATION"]
   when "RUST"
-    alias blank? is_blank
   when "RAILS_4_2"
     alias blank? rails_4_2_blank?
   when "RAILS_5"
