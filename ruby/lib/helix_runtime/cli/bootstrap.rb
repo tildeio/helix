@@ -68,6 +68,10 @@ module HelixRuntime
         def app_name
           name || File.basename(base_path)
         end
+
+        def class_name
+          app_name.split("_").map(&:capitalize).join
+        end
     end
   end
 end
