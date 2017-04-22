@@ -13,7 +13,7 @@ const SECONDS_PER_WEEK:   i64 = 604800;
 const SECONDS_PER_MONTH:  i64 = 2629746; // 1/12 of a gregorian year
 const SECONDS_PER_YEAR:   i64 = 31556952; // length of a gregorian year (365.2425 days)
 
-declare_types! {
+ruby! {
     class Duration {
         struct {
             seconds: Option<i32>,

@@ -3,7 +3,7 @@
 #[macro_use]
 extern crate helix_runtime;
 
-declare_types! {
+ruby! {
     class Console {
         def log(&self, string: String) {
             println!("{}", string);

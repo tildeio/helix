@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate helix_runtime as helix;
 
-declare_types! {
+ruby! {
     reopen class RubyString {
         #[ruby_name = "blank?"]
         def is_blank(&self) -> bool {

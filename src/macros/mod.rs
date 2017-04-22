@@ -14,7 +14,7 @@ mod coercions;
 mod alloc;
 
 #[macro_export]
-macro_rules! declare_types {
+macro_rules! ruby {
     { $($rest:tt)* } => {
         parse! {
             state: top_level,

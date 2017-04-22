@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate helix_runtime;
 
-declare_types! {
+ruby! {
     class Calculator {
         def add(lhs: f64, rhs: f64) -> f64 {
             Adder::new(lhs).call(rhs)
