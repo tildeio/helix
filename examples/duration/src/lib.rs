@@ -1,3 +1,5 @@
+#![recursion_limit="1024"]
+
 #[macro_use]
 extern crate helix_runtime as helix;
 
@@ -11,7 +13,7 @@ const SECONDS_PER_WEEK:   i64 = 604800;
 const SECONDS_PER_MONTH:  i64 = 2629746; // 1/12 of a gregorian year
 const SECONDS_PER_YEAR:   i64 = 31556952; // length of a gregorian year (365.2425 days)
 
-declare_types! {
+ruby! {
     class Duration {
         struct {
             seconds: Option<i32>,
@@ -74,6 +76,7 @@ declare_types! {
             self.value
         }
 
+        #[ruby_name = "+"]
         def plus(&self, other: &Duration) -> Duration {
             Duration::new(
                 sum_part(self.seconds, other.seconds),
@@ -86,10 +89,12 @@ declare_types! {
             )
         }
 
+        #[ruby_name = "-"]
         def minus(&self, other: &Duration) -> Duration {
             self.plus(&other.negate())
         }
 
+        #[ruby_name = "-@"]
         def negate(&self) -> Duration {
             Duration::new(
                 negate_part(self.seconds),
@@ -102,10 +107,12 @@ declare_types! {
             )
         }
 
+        #[ruby_name = "=="]
         def eq(&self, other: &Duration) -> bool {
             self.value == other.value
         }
 
+        #[ruby_name = "<=>"]
         def cmp(&self, other: &Duration) -> i32 {
             match self.value.cmp(&other.value) {
                 Ordering::Less => -1,

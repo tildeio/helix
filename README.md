@@ -16,7 +16,7 @@ What follows is an aspirational README :wink:
 Helix allows you to write Ruby classes in Rust without having to write the glue code yourself.
 
 ```rust
-declare_types! {
+ruby! {
     class Console {
         def log(self, string: &str) {
             println!("LOG: {}", string);
@@ -41,7 +41,7 @@ When you define a method in Helix using `def`, you can specify any Rust type in 
 Under the hood, Helix will automatically coerce the Ruby type to the specified Rust type, doing appropriate type checks before passing the values into Rust.
 
 ```rust
-declare_types! {
+ruby! {
     class Console {
         def log(string: &str) {
             println!("LOG: {}", string);

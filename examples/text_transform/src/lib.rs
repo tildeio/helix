@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate helix_runtime;
 
-declare_types! {
+ruby! {
     class TextTransform {
         def widen(text: String) -> String {
             text.chars().map(|char| {

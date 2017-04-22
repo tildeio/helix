@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate helix_runtime as helix;
 
-declare_types! {
+ruby! {
     reopen class Array {
         def is_superset_of(&self, needle: &[usize]) -> bool {
             if needle.is_empty() { return true }

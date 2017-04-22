@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate helix_runtime as helix;
 
-// declare_types! {
+// ruby! {
 //     class MyClass {
 //         def hello(&self) {
 //             println!("Hello!");

@@ -46,7 +46,7 @@ impl ClassDefinition {
         ClassDefinition { class: Class(raw_class) }
     }
 
-    pub fn define_method(self, def: MethodDefinition) -> ClassDefinition {
+    pub fn define_method(&self, def: MethodDefinition) {
         match def {
             MethodDefinition::Instance(def) => {
                 unsafe {
@@ -69,7 +69,5 @@ impl ClassDefinition {
                 };
             }
         }
-
-        self
     }
 }
