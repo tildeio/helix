@@ -4,7 +4,7 @@ extern crate helix;
 ruby! {
     class <%= class_name %> {
         def hello() {
-            println!("Hello form <%= app_name %>!");
+            println!("Hello from <%= app_name %>!");
         }
     }
 }

@@ -20,7 +20,7 @@ module HelixRuntime
       end
 
       def add_rust_lib_file
-        copy_file "lib.rs", "#{base_path}/src/lib.rs"
+        template "lib.rs", "#{base_path}/src/lib.rs"
       end
 
       def create_gemspec
