@@ -12,8 +12,12 @@ gem build helix_runtime.gemspec
 popd
 
 pushd  "$DIR/crates/libcruby-sys"
-vagrant up
-vagrant ssh -c "cd /vagrant/crates/libcruby-sys && ./prepackage.sh"
+if [ -z "$USE_VAGRANT" ]; then
+  ./prepackage.sh
+else
+  vagrant up
+  vagrant ssh -c "cd /vagrant/crates/libcruby-sys && ./prepackage.sh"
+fi
 cargo update
 HELIX_LIB_DIR=$PWD cargo package --allow-dirty
 popd
