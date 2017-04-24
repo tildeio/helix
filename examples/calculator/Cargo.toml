@@ -7,5 +7,5 @@ authors = ["Peter Wagenet <peter@tilde.io>"]
 
 crate-type = ["cdylib"]
 
-[dependencies.helix_runtime]
+[dependencies.helix]
 path = "../.."

@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate helix_runtime;
+extern crate helix;
 
 ruby! {
     class TextTransform {

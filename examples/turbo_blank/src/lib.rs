@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate helix_runtime as helix;
+extern crate helix;
 
 ruby! {
     reopen class RubyString {

@@ -1,7 +1,7 @@
 #![recursion_limit="1024"]
 
 #[macro_use]
-extern crate helix_runtime;
+extern crate helix;
 
 ruby! {
     class Console {

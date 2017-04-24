@@ -1,6 +1,6 @@
 [package]
-name = "helix_runtime"
-version = "0.5.0-alpha-3"
+name = "helix"
+version = "0.5.0-alpha-4"
 authors = ["Godhuda <engineering+godhuda@tilde.io>"]
 description = "Embed Rust in your Ruby"
 license = "MIT/Apache-2.0"
@@ -21,7 +21,7 @@ version = "0.2"
 
 [dependencies.libcruby-sys]
 path = "crates/libcruby-sys"
-version = "0.5.0-alpha-3"
+version = "0.5.0-alpha-4"
 
 [dependencies.cstr-macro]
 path = "crates/cstr-macro"

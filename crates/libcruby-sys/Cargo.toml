@@ -1,6 +1,6 @@
 [package]
 name = "libcruby-sys"
-version = "0.5.0-alpha-3"
+version = "0.5.0-alpha-4"
 authors = ["Godhuda <engineering+godhuda@tilde.io>"]
 description = "Ruby bindings"
 license = "MIT/Apache-2.0"
@@ -10,8 +10,8 @@ include = [
     "Cargo.toml",
     "ruby_info.rb",
     # Keep in sync with version
-    "helix-runtime-0-5-0-alpha-3.i386.lib",
-    "helix-runtime-0-5-0-alpha-3.x86_64.lib"
+    "helix-runtime-0-5-0-alpha-4.i386.lib",
+    "helix-runtime-0-5-0-alpha-4.x86_64.lib"
 ]
 
 [dependencies]

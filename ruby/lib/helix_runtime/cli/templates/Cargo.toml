@@ -6,4 +6,4 @@ version = "0.1.0"
 crate-type = ["cdylib"]
 
 [dependencies]
-helix_runtime = "<%= HelixRuntime::VERSION %>"
+helix = "<%= HelixRuntime::VERSION %>"
