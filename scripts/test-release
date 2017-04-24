@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -x
+set -e
+
+DIR=$(dirname "${BASH_SOURCE[0]}")/..
+
+pushd "$DIR/ruby"
+bundle install
+bundle exec rake
+gem build helix_runtime.gemspec
+popd
+
+pushd  "$DIR/crates/libcruby-sys"
+vagrant up
+vagrant ssh -c "cd /vagrant/crates/libcruby-sys && ./prepackage.sh"
+cargo update
+HELIX_LIB_DIR=$PWD cargo package --allow-dirty
+popd
+
+pushd $DIR
+cargo update
+# NOTE: We can't actually verify that we can publish the helix crate
+#   here since the libcruby-sys crate hasn't been released yet
+# cargo package --allow-dirty
+popd
+
+pushd $DIR
+./scripts/ci-install
+rake
+popd
+
+echo -e "\n\nReady for Release!"
