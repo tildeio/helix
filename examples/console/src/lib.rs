@@ -2,7 +2,9 @@
 extern crate helix_runtime;
 
 declare_types! {
-    class Console {
+    class RustConsole {
+        def noop(&self) { }
+
         def log(&self, string: String) {
             println!("{}", string);
         }
@@ -13,6 +15,10 @@ declare_types! {
 
         def hello(&self) {
             self.log(String::from("hello"));
+        }
+
+        def hello_str(&self) -> &'static str {
+            "hello_str"
         }
 
         def loglog(&self, string1: String, string2: String) {

@@ -41,6 +41,11 @@ describe "Console" do
   end
 
   it "can handle invalid arguments" do
+    skip_ruby
     expect { console.log(123) }.to raise_error(TypeError, "No implicit conversion of 123 into String")
+  end
+
+  def skip_ruby
+    skip("Not testable on Ruby") if ENV['IMPLEMENTATION'] == "RUBY"
   end
 end

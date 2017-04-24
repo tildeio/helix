@@ -19,6 +19,7 @@ HelixRuntime::BuildTask.new("turbo_blank") do |t|
   }
 end
 
+desc "Run benchmarks"
 task :benchmark => :build do
   exec "ruby -Ilib benchmark.rb"
 end

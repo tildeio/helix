@@ -19,9 +19,21 @@ HelixRuntime::BuildTask.new("console") do |t|
   }
 end
 
+desc "Run benchmarks"
+task :benchmark => :build do
+  exec "ruby -Ilib benchmark.rb"
+end
+
 RSpec::Core::RakeTask.new(:spec) do |t|
   t.verbose = false
 end
 
 task :spec => :build
-task :default => :spec
+
+task "spec:all" do
+  ['RUST', 'RUBY'].each do |impl|
+    sh({ 'IMPLEMENTATION' => impl }, 'rake spec')
+  end
+end
+
+task :default => "spec:all"
