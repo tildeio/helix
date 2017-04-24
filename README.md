@@ -5,11 +5,11 @@ Read the [*Introducing Helix*](http://blog.skylight.io/introducing-helix/) blog 
 [![Travis Build Status](https://travis-ci.org/tildeio/helix.svg?branch=master)](https://travis-ci.org/tildeio/helix)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/tildeio/helix?branch=master&svg=true)](https://ci.appveyor.com/project/wagenet/helix)
 
-WARNING: This repository is still in active development. **The vast majority of important Ruby
+NOTE: Currently Helix requires fixes that have not yet landed in a stable Rust release. To use the Rust beta release run `rustup override set beta` in your project directory.
+
+WARNING: This repository is still in active development. **Many important Ruby
 APIs are not yet supported**, because we are still in the process of formulating the rules for
 binding Ruby APIs (so that we can make things ergonomic and provide **safety guarantees**).
-
-What follows is an aspirational README :wink:
 
 # Helix
 
@@ -18,7 +18,7 @@ Helix allows you to write Ruby classes in Rust without having to write the glue 
 ```rust
 ruby! {
     class Console {
-        def log(self, string: &str) {
+        def log(&self, string: String) {
             println!("LOG: {}", string);
         }
     }
@@ -26,13 +26,13 @@ ruby! {
 ```
 
 ```shell
-$ irb
->> require "console/native"
+$ rake build
+$ bundle exec irb
+>> require "console"
 >> Console.new.log("I'm in your Rust")
 LOG: I'm in your Rust
+ => nil
 ```
-
-> STATUS: The main thing missing from the current implementation is coercing Rust return types in Ruby. Today, you would need to add `Qnil` to the bottom of `def log`, which we hope to eliminate soon.
 
 ## Getting Started with Helix Examples
 If you'd like to experiment with Helix, you can start with some of the examples in this repository.
@@ -48,23 +48,22 @@ $ cd examples/console
 $ bundle install
 ```
 
-Run `rake`, followed by `rake irb`:
+Run `rake irb` to build and start irb:
 ```shell
-$ rake
-$ rake irb
+$ bundle exec rake irb
 ```
 
 Try running some of the methods defined in `examples/console/src/lib.rs`:
 ```shell
 > c = Console.new
 Console { helix: VALUE(0x7fdacc19a6a0) }
-=>
+ =>
 > c.hello
 hello
-=> nil
+ => nil
 > c.loglog('hello', 'world')
 hello world
-=> nil
+ => nil
 ```
 
 ## Coercions
@@ -76,7 +75,7 @@ Under the hood, Helix will automatically coerce the Ruby type to the specified R
 ```rust
 ruby! {
     class Console {
-        def log(string: &str) {
+        def log(&self, string: &str) {
             println!("LOG: {}", string);
         }
     }
@@ -85,15 +84,13 @@ ruby! {
 
 ```shell
 $ irb
->> require "console/native"
+>> require "console"
 >> Console.new.log({})
-TypeError: no implicit coercion of Hash into Rust &str
+TypeError: No implicit coercion of {} into String
 	from (irb):2:in `log'
 	from (irb):2
 	from /Users/ykatz/.rvm/rubies/ruby-2.3.0/bin/irb:11:in `<main>'
 ```
-
-> STATUS: This protocol already works now and is implemented for `String` and `&[u8]`
 
 ### The Helix Coercion Protocol
 
@@ -104,7 +101,7 @@ pub trait UncheckedValue<T> {
     fn to_checked(self) -> CheckResult<T>;
 }
 
-pub trait ToRust<U, T: CheckedValue<U>> {
+pub trait ToRust<T> {
     fn to_rust(self) -> T;
 }
 ```
@@ -112,7 +109,7 @@ pub trait ToRust<U, T: CheckedValue<U>> {
 Implementations of these traits use these concrete types:
 
 ```rust
-pub type CheckResult<T> = Result<CheckedValue<T>, CString /* error */>;
+pub type CheckResult<T> = Result<CheckedValue<T>, String /* error */>;
 
 pub struct CheckedValue<T> {
     pub inner: VALUE;
@@ -136,7 +133,8 @@ impl UncheckedValue<String> for VALUE {
             // assert that we can guarantee that to_rust() can return a Rust String safely
             Ok(unsafe { CheckedValue::<String>::new(self) })
         } else {
-            Err(format!("No implicit conversion of {} into Rust String", "?"))
+            let val = unsafe { CheckedValue::<String>::new(sys::rb_inspect(self)) };
+            Err(format!("No implicit conversion of {} into String", val.to_rust()))
         }
     }
 }
