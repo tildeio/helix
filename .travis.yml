@@ -64,8 +64,8 @@ script: |
         chmod 600 ~/.gem/credentials
 
         pushd ruby
-        gem build helix-runtime.gemspec
-        gem push helix-runtime-*.gem
+        gem build helix_runtime.gemspec
+        gem push helix_runtime-*.gem
         popd
 
         pushd crates/libcruby-sys
