@@ -57,6 +57,12 @@ script: |
 
       # Release if we're also tagged
       if [ ! -z "$TRAVIS_TAG" ]; then
+        # Set up Cargo and Rubygems credentials
+        cargo login $CARGO_TOKEN
+        mkdir -p ~/.gem;
+        echo \"---\n:rubygems_api_key: ${RUBYGEMS_TOKEN}\" > ~/.gem/credentials
+        chmod 600 ~/.gem/credentials
+
         pushd ruby
         gem build helix-runtime.gemspec
         gem push helix-runtime-*.gem
