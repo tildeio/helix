@@ -59,19 +59,23 @@ script: |
       if [ ! -z "$TRAVIS_TAG" ]; then
         # Set up Cargo and Rubygems credentials
         cargo login $CARGO_TOKEN
-        mkdir -p ~/.gem;
-        echo "---\n:rubygems_api_key: ${RUBYGEMS_TOKEN}" > ~/.gem/credentials
-        chmod 600 ~/.gem/credentials
 
+        mkdir -p ~/.gem;
+        echo $RUBYGEMS_TOKEN > ~/.gem/credentials
+        chmod 0600 ~/.gem/credentials
+
+        echo -e "Publishing helix_runtime gem...\n"
         pushd ruby
         gem build helix_runtime.gemspec
         gem push helix_runtime-*.gem
         popd
 
+        echo -e "Publishing libcruby-sys crate...\n"
         pushd crates/libcruby-sys
         HELIX_LIB_DIR=$PWD cargo publish
         popd
 
+        echo -e "Publishing helix crate...\n"
         cargo publish
       fi
     fi
