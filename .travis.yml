@@ -49,7 +49,7 @@ install:
 script: |
     export RUBYGEM_TOKEN=123456abcdef
     mkdir -p ~/.gem
-    echo "---\n:rubygems_api_key: $RUBYGEMS_TOKEN" > ~/.gem/credentials
+    echo -e "---\n:rubygems_api_key: $RUBYGEMS_TOKEN" > ~/.gem/credentials
     chmod 0600 ~/.gem/credentials
     cat ~/.gem/credentials
     gem owner helix_runtime
