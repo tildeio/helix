@@ -3,6 +3,7 @@ name = "cstr-macro"
 version = "0.1.0"
 authors = ["Godfrey Chan <godfreykfc@gmail.com>"]
 description = "Macros for creating CStrings without allocations"
-license = "MIT/Apache-2.0"
+repository = "https://github.com/tildeio/helix"
+license = "ISC"
 
 [dependencies]

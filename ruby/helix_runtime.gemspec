@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["wycats@gmail.com", "godfreykfc@gmail.com"]
 
   spec.summary       = %q{The Helix Runtime}
-  spec.homepage      = "https://github.com/tildeio/helix"
+  spec.homepage      = "https://usehelix.com"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "bin"
