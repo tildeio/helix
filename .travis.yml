@@ -4,7 +4,10 @@ os:
 
 dist: trusty # For linux
 
-sudo: false
+addons:
+  apt:
+    packages:
+    - g++-mingw-w64 # For dlltool
 
 language: ruby
 rvm:
@@ -31,6 +34,11 @@ matrix:
     - env: RUST_VERSION=nightly
 
 before_install:
+  # If we've got a tag, we also want to test the release
+  - if [ ! -z "$TRAVIS_TAG" ]; then export TEST_RELEASE=1; fi
+  # This only works on Linux
+  - if [[ "$TRAVIS_OS_NAME" != "linux" ]]; then unset TEST_RELEASE; fi
+  # Install Rust
   - if [ ! -e "$HOME/.cargo/bin" ]; then curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain $RUST_VERSION -y; fi
   - export PATH="$HOME/.cargo/bin:$PATH"
   - rustup default $RUST_VERSION
@@ -38,8 +46,35 @@ before_install:
 install:
   - ./scripts/ci-install
 
-script:
-  - rake
+script: |
+    if [ -z "$TEST_RELEASE" ]; then
+      # Run regular tests if we're not testing the release
+      rake
+    else
+      set -e
+
+      ./scripts/test-release
+
+      # Release if we're also tagged
+      if [ ! -z "$TRAVIS_TAG" ]; then
+        # Set up Cargo and Rubygems credentials
+        cargo login $CARGO_TOKEN
+        mkdir -p ~/.gem;
+        echo \"---\n:rubygems_api_key: ${RUBYGEMS_TOKEN}\" > ~/.gem/credentials
+        chmod 600 ~/.gem/credentials
+
+        pushd ruby
+        gem build helix-runtime.gemspec
+        gem push helix-runtime-*.gem
+        popd
+
+        pushd crates/libcruby-sys
+        HELIX_LIB_DIR=$PWD cargo publish
+        popd
+
+        cargo publish
+      fi
+    fi
 
 notifications:
   slack:
