@@ -60,8 +60,8 @@ script: |
         # Set up Cargo and Rubygems credentials
         cargo login $CARGO_TOKEN
 
-        mkdir -p ~/.gem;
-        echo $RUBYGEMS_TOKEN > ~/.gem/credentials
+        mkdir -p ~/.gem
+        echo "---\n:rubygems_api_key: $RUBYGEMS_TOKEN" > ~/.gem/credentials
         chmod 0600 ~/.gem/credentials
 
         echo -e "Publishing helix_runtime gem...\n"
