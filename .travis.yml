@@ -60,7 +60,7 @@ script: |
         # Set up Cargo and Rubygems credentials
         cargo login $CARGO_TOKEN
         mkdir -p ~/.gem;
-        echo \"---\n:rubygems_api_key: ${RUBYGEMS_TOKEN}\" > ~/.gem/credentials
+        echo "---\n:rubygems_api_key: ${RUBYGEMS_TOKEN}" > ~/.gem/credentials
         chmod 600 ~/.gem/credentials
 
         pushd ruby
