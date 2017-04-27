@@ -6,10 +6,8 @@ impl<T> UncheckedValue<Option<T>> for VALUE where VALUE: UncheckedValue<T> {
         if unsafe { self == Qnil } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            match UncheckedValue::<T>::to_checked(self) {
-                Ok(_) => Ok(unsafe { CheckedValue::new(self) }),
-                Err(e) => Err(e)
-            }
+            UncheckedValue::<T>::to_checked(self)
+                .map(|_| unsafe { CheckedValue::new(self) })
         }
     }
 }
