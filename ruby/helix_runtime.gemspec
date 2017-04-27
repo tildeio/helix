@@ -12,6 +12,12 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{The Helix Runtime}
   spec.homepage      = "https://usehelix.com"
 
+  spec.metadata      = {
+    "bug_tracker_uri" => "https://github.com/tildeio/helix/issues",
+    "changelog_uri"   => "https://github.com/tildeio/helix/blob/master/CHANGELOG.md",
+    "source_code_uri" => "https://github.com/tildeio/helix",
+  }
+
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "bin"
   spec.extensions    = ["ext/helix_runtime/native/extconf.rb"]
