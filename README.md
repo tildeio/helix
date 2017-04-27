@@ -1,8 +1,6 @@
 [![Travis Build Status](https://travis-ci.org/tildeio/helix.svg?branch=master)](https://travis-ci.org/tildeio/helix)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/tildeio/helix?branch=master&svg=true)](https://ci.appveyor.com/project/wagenet/helix)
 
-NOTE: Currently Helix requires fixes that have not yet landed in a stable Rust release. To use the Rust beta release run `rustup override set beta` in your project directory.
-
 # Helix
 
 Helix allows you to write Ruby classes in Rust without having to write the glue code yourself.
