@@ -25,12 +25,12 @@ module HelixRuntime
     return nil unless IS_WINDOWS
     return @@dll_path if @@dll_path_searched
 
-    dir = ENV['PATH'].split(';').find do |dir|
+    dll_dir = ENV['PATH'].split(';').find do |dir|
       File.exist?(File.expand_path("#{dir}/#{dll_filename}", __FILE__))
     end
 
     @@dll_path_searched = true
-    @@dll_path = dir ? File.join(dir, dll_filename) : nil
+    @@dll_path = dll_dir ? File.join(dll_dir, dll_filename) : nil
   end
 
   def self.ensure_dll!
