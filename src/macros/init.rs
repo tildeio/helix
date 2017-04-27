@@ -253,7 +253,7 @@ macro_rules! codegen_define_method {
                     let data = Box::new(rust_self);
                     unsafe { $crate::sys::Data_Set_Struct_Value(rb_self, ::std::mem::transmute(data)) };
                 }
-                Err(err) => { println!("TYPE ERROR: {:?}", err); }
+                Err(e) => $crate::ExceptionInfo::type_error(e).raise()
             }
 
             rb_self
