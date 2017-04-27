@@ -1,8 +1,13 @@
 require "helix_runtime/version"
-require "helix_runtime/native"
 require "helix_runtime/platform"
 require 'helix_runtime/project'
 require 'helix_runtime/parent_project'
+
+begin
+  require "helix_runtime/native"
+rescue LoadError
+  warn "Unable to load helix_runtime/native. Please run `rake compile` in #{File.expand_path("../..", __FILE__)}."
+end
 
 module HelixRuntime
   IS_WINDOWS = RUBY_PLATFORM =~ /mingw/
