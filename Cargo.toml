@@ -27,7 +27,7 @@ members = ["examples/calculator", "examples/console", "examples/duration", "exam
 libc = "0.2.0"
 
 [dependencies.cslice]
-version = "0.2"
+version = "0.3"
 
 [dependencies.libcruby-sys]
 path = "crates/libcruby-sys"
