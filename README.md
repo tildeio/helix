@@ -40,6 +40,7 @@ If you'd like to experiment with Helix, you can start with some of the examples 
 Clone and download the Helix repository:
 ```shell
 $ git clone https://github.com/tildeio/helix
+$ cd helix
 ```
 
 Navigate to the console example folder and bundle your `Gemfile`:
