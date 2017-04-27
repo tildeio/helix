@@ -125,7 +125,7 @@ module HelixRuntime
 
       def run(*args)
         Dir.chdir(root) do
-          puts *args
+          puts(*args)
           system(*args)
         end
       end
