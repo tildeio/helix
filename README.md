@@ -1,15 +1,7 @@
-Read the [*Introducing Helix*](http://blog.skylight.io/introducing-helix/) blog post for a quick introduction to the project!
-
-* * *
-
 [![Travis Build Status](https://travis-ci.org/tildeio/helix.svg?branch=master)](https://travis-ci.org/tildeio/helix)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/tildeio/helix?branch=master&svg=true)](https://ci.appveyor.com/project/wagenet/helix)
 
 NOTE: Currently Helix requires fixes that have not yet landed in a stable Rust release. To use the Rust beta release run `rustup override set beta` in your project directory.
-
-WARNING: This repository is still in active development. **Many important Ruby
-APIs are not yet supported**, because we are still in the process of formulating the rules for
-binding Ruby APIs (so that we can make things ergonomic and provide **safety guarantees**).
 
 # Helix
 
@@ -18,7 +10,7 @@ Helix allows you to write Ruby classes in Rust without having to write the glue 
 ```rust
 ruby! {
     class Console {
-        def log(&self, string: String) {
+        def log(string: String) {
             println!("LOG: {}", string);
         }
     }
@@ -29,12 +21,30 @@ ruby! {
 $ rake build
 $ bundle exec irb
 >> require "console"
->> Console.new.log("I'm in your Rust")
+>> Console.log("I'm in your Rust")
 LOG: I'm in your Rust
  => nil
 ```
 
-## Getting Started with Helix Examples
+## Why Helix?
+
+Read the [*Introducing Helix*](http://blog.skylight.io/introducing-helix/) blog post for a quick introduction to the project!
+
+## Getting Started
+
+https://usehelix.com/getting_started
+
+## Demos
+
+https://usehelix.com/demos
+
+## Roadmap
+
+https://usehelix.com/roadmap
+
+
+## Contributing
+
 If you'd like to experiment with Helix, you can start with some of the examples in this repository.
 
 Clone and download the Helix repository:
