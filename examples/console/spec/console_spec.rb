@@ -41,6 +41,6 @@ describe "Console" do
   end
 
   it "can handle invalid arguments" do
-    expect { console.log(123) }.to raise_error(TypeError, "No implicit conversion of 123 into String")
+    expect { console.log(123) }.to raise_error(TypeError, "Expected a UTF-8 String, got 123")
   end
 end
