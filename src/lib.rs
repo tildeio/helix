@@ -7,7 +7,7 @@ pub extern crate libc;
 pub extern crate libcruby_sys as sys;
 // pub use rb;
 
-use std::ffi::CString;
+use std::ffi::CStr;
 use sys::VALUE;
 
 mod macros;
@@ -29,15 +29,15 @@ impl Class {
 }
 
 pub trait RubyMethod {
-    fn install(self, class: VALUE, name: &str);
+    fn install(self, class: VALUE, name: &CStr);
 }
 
 impl RubyMethod for extern "C" fn(VALUE) -> VALUE {
-    fn install(self, class: VALUE, name: &str) {
+    fn install(self, class: VALUE, name: &CStr) {
         unsafe {
             sys::rb_define_method(
                 class,
-                CString::new(name).unwrap().as_ptr(),
+                name.as_ptr(),
                 self as *const libc::c_void,
                 0
             );
@@ -46,11 +46,11 @@ impl RubyMethod for extern "C" fn(VALUE) -> VALUE {
 }
 
 impl RubyMethod for extern "C" fn(VALUE, VALUE) -> VALUE {
-    fn install(self, class: VALUE, name: &str) {
+    fn install(self, class: VALUE, name: &CStr) {
         unsafe {
             sys::rb_define_method(
                 class,
-                CString::new(name).unwrap().as_ptr(),
+                name.as_ptr(),
                 self as *const libc::c_void,
                 1
             );
@@ -65,17 +65,17 @@ fn ObjectClass() -> Class {
 }
 
 impl Class {
-    pub fn new(name: &str) -> Class {
+    pub fn new(name: &CStr) -> Class {
         ObjectClass().subclass(name)
     }
 
-    pub fn subclass(&self, name: &str) -> Class {
+    pub fn subclass(&self, name: &CStr) -> Class {
         unsafe {
-            Class(sys::rb_define_class(CString::new(name).unwrap().as_ptr(), self.0))
+            Class(sys::rb_define_class(name.as_ptr(), self.0))
         }
     }
 
-    pub fn define_method<T: RubyMethod>(&self, name: &str, method: T) {
+    pub fn define_method<T: RubyMethod>(&self, name: &CStr, method: T) {
         method.install(self.0, name);
     }
 }
