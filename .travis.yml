@@ -24,7 +24,7 @@ env:
     - EXAMPLES="calculator console membership turbo_blank duration"
     - VERBOSE=true
     - RUST_BACKTRACE=1
-    - RUST_VERSION=beta
+    - RUST_VERSION=stable
 
 matrix:
   include:
