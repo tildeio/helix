@@ -28,7 +28,7 @@ impl ToRust<String> for CheckedValue<String> {
 }
 
 impl ToRuby for String {
-    fn to_ruby(self) -> VALUE {
+    fn to_ruby(&self) -> VALUE {
         let ptr = self.as_ptr();
         let len = self.len();
         unsafe { sys::rb_utf8_str_new(ptr as *const libc::c_char, len as libc::c_long) }
@@ -36,7 +36,7 @@ impl ToRuby for String {
 }
 
 impl<'a> ToRuby for &'a str {
-    fn to_ruby(self) -> VALUE {
+    fn to_ruby(&self) -> VALUE {
         let ptr = self.as_ptr();
         let len = self.len();
         unsafe { sys::rb_utf8_str_new(ptr as *const libc::c_char, len as libc::c_long) }

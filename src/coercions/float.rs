@@ -20,7 +20,7 @@ impl ToRust<f64> for CheckedValue<f64> {
 }
 
 impl ToRuby for f64 {
-    fn to_ruby(self) -> VALUE {
-        unsafe { sys::F642NUM(self) }
+    fn to_ruby(&self) -> VALUE {
+        unsafe { sys::F642NUM(*self) }
     }
 }

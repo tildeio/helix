@@ -20,8 +20,8 @@ impl ToRust<u64> for CheckedValue<u64> {
 }
 
 impl ToRuby for u64 {
-    fn to_ruby(self) -> VALUE {
-        unsafe { sys::U642NUM(self) }
+    fn to_ruby(&self) -> VALUE {
+        unsafe { sys::U642NUM(*self) }
     }
 }
 
@@ -43,8 +43,8 @@ impl ToRust<i64> for CheckedValue<i64> {
 }
 
 impl ToRuby for i64 {
-    fn to_ruby(self) -> VALUE {
-        unsafe { sys::I642NUM(self) }
+    fn to_ruby(&self) -> VALUE {
+        unsafe { sys::I642NUM(*self) }
     }
 }
 
@@ -66,8 +66,8 @@ impl ToRust<u32> for CheckedValue<u32> {
 }
 
 impl ToRuby for u32 {
-    fn to_ruby(self) -> VALUE {
-        unsafe { sys::U322NUM(self) }
+    fn to_ruby(&self) -> VALUE {
+        unsafe { sys::U322NUM(*self) }
     }
 }
 
@@ -89,7 +89,7 @@ impl ToRust<i32> for CheckedValue<i32> {
 }
 
 impl ToRuby for i32 {
-    fn to_ruby(self) -> VALUE {
-        unsafe { sys::I322NUM(self) }
+    fn to_ruby(&self) -> VALUE {
+        unsafe { sys::I322NUM(*self) }
     }
 }

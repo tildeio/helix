@@ -26,9 +26,9 @@ impl<T> ToRust<Option<T>> for CheckedValue<Option<T>> where CheckedValue<T>: ToR
 }
 
 impl<T> ToRuby for Option<T> where T: ToRuby {
-    fn to_ruby(self) -> VALUE {
-        match self {
-            Some(value) => value.to_ruby(),
+    fn to_ruby(&self) -> VALUE {
+        match *self {
+            Some(ref value) => value.to_ruby(),
             None => unsafe { Qnil }
         }
     }

@@ -23,8 +23,8 @@ impl ToRust<bool> for CheckedValue<bool> {
 }
 
 impl ToRuby for bool {
-    fn to_ruby(self) -> VALUE {
-        if self {
+    fn to_ruby(&self) -> VALUE {
+        if *self {
             unsafe { Qtrue }
         } else {
             unsafe { Qfalse }

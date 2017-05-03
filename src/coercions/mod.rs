@@ -15,6 +15,8 @@ pub struct CheckedValue<T> {
 }
 
 impl<T> CheckedValue<T> {
+    // This is unsafe because it's the primary way that the coercion
+    // protocol asserts that subsequent operations are safe
     pub unsafe fn new(inner: VALUE) -> CheckedValue<T> {
         CheckedValue { inner: inner, marker: PhantomData }
     }
@@ -31,11 +33,11 @@ pub trait ToRust<T> {
 }
 
 pub trait ToRuby {
-    fn to_ruby(self) -> VALUE;
+    fn to_ruby(&self) -> VALUE;
 }
 
 impl ToRuby for VALUE {
-    fn to_ruby(self) -> VALUE {
-        self
+    fn to_ruby(&self) -> VALUE {
+        *self
     }
 }

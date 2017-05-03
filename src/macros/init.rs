@@ -113,7 +113,7 @@ macro_rules! codegen_define_method {
             let checked = __checked_call__($($arg),*);
 
             match checked {
-                Ok(val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
+                Ok(ref val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
                 Err(err) => CallResult { error_klass: err.exception.inner(), value: err.message }
             }
         }
@@ -184,7 +184,7 @@ macro_rules! codegen_define_method {
             let checked = __checked_call__(rb_self, $($arg),*);
 
             match checked {
-                Ok(val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
+                Ok(ref val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
                 Err(err) => CallResult { error_klass: err.exception.inner(), value: err.message }
             }
         }

@@ -59,7 +59,7 @@ macro_rules! impl_to_ruby {
     ($cls:ty) => {
         item! {
             impl<'a> $crate::ToRuby for $cls {
-                fn to_ruby(self) -> $crate::sys::VALUE {
+                fn to_ruby(&self) -> $crate::sys::VALUE {
                     self.helix
                 }
             }

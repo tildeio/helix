@@ -13,6 +13,7 @@ use sys::VALUE;
 mod macros;
 mod class_definition;
 mod coercions;
+pub mod ruby;
 
 pub use coercions::*;
 
