@@ -38,6 +38,9 @@ before_install:
   - if [ ! -z "$TRAVIS_TAG" ]; then export TEST_RELEASE=1; fi
   # This only works on Linux
   - if [[ "$TRAVIS_OS_NAME" != "linux" ]]; then unset TEST_RELEASE; fi
+  # Only try to release on stable
+  # FIXME: There should be a better way of doing this
+  - if [[ "$RUST_VERSION" != "stable" ]]; then unset TEST_RELEASE; fi
   # Install Rust
   - if [ ! -e "$HOME/.cargo/bin" ]; then curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain $RUST_VERSION -y; fi
   - export PATH="$HOME/.cargo/bin:$PATH"
