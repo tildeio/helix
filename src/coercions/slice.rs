@@ -4,12 +4,13 @@ use sys::{VALUE};
 
 use ::inspect;
 use coercions::*;
+use ruby::Value;
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust};
 
-impl<'a> UncheckedValue<&'a[usize]> for VALUE {
-    type ToRust = CheckedValue<&'a[usize]>;
+impl<'a> UncheckedValue<&'a[usize]> for Value<'a> {
+    type ToRust = CheckedValue<'a, &'a[usize]>;
 
-    fn to_checked<'b>(self, frame: CallFrame<'b>) -> CheckResult<&'a[usize]> {
+    fn to_checked(self) -> CheckResult<&'a[usize]> {
         if unsafe { sys::RB_TYPE_P(self, sys::T_ARRAY) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
@@ -18,7 +19,7 @@ impl<'a> UncheckedValue<&'a[usize]> for VALUE {
     }
 }
 
-impl<'a> ToRust<&'a[usize]> for CheckedValue<&'a[usize]> {
+impl<'a> ToRust<&'a[usize]> for CheckedValue<'a, &'a[usize]> {
     fn to_rust(self) -> &'a[usize] {
         let size = unsafe { sys::RARRAY_LEN(self.inner) };
         let ptr = unsafe { sys::RARRAY_PTR(self.inner) };

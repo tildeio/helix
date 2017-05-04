@@ -1,12 +1,13 @@
 use sys::{self, VALUE, T_FIXNUM, T_BIGNUM};
 
 use coercions::*;
+use ruby::Value;
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
 
-impl UncheckedValue<u64> for VALUE {
-    type ToRust = CheckedValue<u64>;
+impl<'a> UncheckedValue<u64> for Value<'a> {
+    type ToRust = CheckedValue<'a, u64>;
 
-    fn to_checked<'a>(self, frame: CallFrame<'a>) -> CheckResult<u64> {
+    fn to_checked(self) -> CheckResult<u64> {
         if unsafe { sys::RB_TYPE_P(self, T_FIXNUM) || sys::RB_TYPE_P(self, T_BIGNUM) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
@@ -16,7 +17,7 @@ impl UncheckedValue<u64> for VALUE {
     }
 }
 
-impl<'a> ToRust<u64> for CheckedValue<u64> {
+impl<'a> ToRust<u64> for CheckedValue<'a, u64> {
     fn to_rust(self) -> u64 {
         unsafe { sys::NUM2U64(self.inner) }
     }
@@ -28,10 +29,10 @@ impl ToRuby for u64 {
     }
 }
 
-impl UncheckedValue<i64> for VALUE {
-    type ToRust = CheckedValue<i64>;
+impl<'a> UncheckedValue<i64> for Value<'a> {
+    type ToRust = CheckedValue<'a, i64>;
 
-    fn to_checked<'a>(self, frame: CallFrame<'a>) -> CheckResult<i64> {
+    fn to_checked(self) -> CheckResult<i64> {
         if unsafe { sys::RB_TYPE_P(self, sys::T_FIXNUM) || sys::RB_TYPE_P(self, sys::T_BIGNUM) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
@@ -41,7 +42,7 @@ impl UncheckedValue<i64> for VALUE {
     }
 }
 
-impl<'a> ToRust<i64> for CheckedValue<i64> {
+impl<'a> ToRust<i64> for CheckedValue<'a, i64> {
     fn to_rust(self) -> i64 {
         unsafe { sys::NUM2I64(self.inner) }
     }
@@ -53,10 +54,10 @@ impl ToRuby for i64 {
     }
 }
 
-impl UncheckedValue<u32> for VALUE {
-    type ToRust = CheckedValue<u32>;
+impl<'a> UncheckedValue<u32> for Value<'a> {
+    type ToRust = CheckedValue<'a, u32>;
 
-    fn to_checked<'a>(self, frame: CallFrame<'a>) -> CheckResult<u32> {
+    fn to_checked(self) -> CheckResult<u32> {
         if unsafe { sys::RB_TYPE_P(self, T_FIXNUM) || sys::RB_TYPE_P(self, T_BIGNUM) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
@@ -66,7 +67,7 @@ impl UncheckedValue<u32> for VALUE {
     }
 }
 
-impl<'a> ToRust<u32> for CheckedValue<u32> {
+impl<'a> ToRust<u32> for CheckedValue<'a, u32> {
     fn to_rust(self) -> u32 {
         unsafe { sys::NUM2U32(self.inner) }
     }
@@ -78,10 +79,10 @@ impl ToRuby for u32 {
     }
 }
 
-impl UncheckedValue<i32> for VALUE {
-    type ToRust = CheckedValue<i32>;
+impl<'a> UncheckedValue<i32> for Value<'a> {
+    type ToRust = CheckedValue<'a, i32>;
 
-    fn to_checked<'a>(self, frame: CallFrame<'a>) -> CheckResult<i32> {
+    fn to_checked(self) -> CheckResult<i32> {
         if unsafe { sys::RB_TYPE_P(self, sys::T_FIXNUM) || sys::RB_TYPE_P(self, sys::T_BIGNUM) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
@@ -91,7 +92,7 @@ impl UncheckedValue<i32> for VALUE {
     }
 }
 
-impl<'a> ToRust<i32> for CheckedValue<i32> {
+impl<'a> ToRust<i32> for CheckedValue<'a, i32> {
     fn to_rust(self) -> i32 {
         unsafe { sys::NUM2I32(self.inner) }
     }

@@ -26,7 +26,7 @@ impl<'a> Value<'a> {
         Type::of(self)
     }
 
-    pub fn to_rust<T>(&self) -> T where VALUE: UncheckedValue<T>, CheckedValue<T>: ToRust<T> {
+    pub fn to_rust<'lt, T>(&self) -> T where Value<'lt>: UncheckedValue<T>, CheckedValue<'lt, T>: ToRust<T> {
         self.inner.to_checked(self.frame).unwrap().to_rust()
     }
 }
@@ -40,7 +40,7 @@ impl<'a> ToRuby for Value<'a> {
 impl<'a> UncheckedValue<Value<'a>> for VALUE {
     type ToRust = Value<'a>;
 
-    fn to_checked<'b>(self, frame: CallFrame<'b>) -> CheckResult<Value<'b>, Value<'b>> {
+    fn to_checked(self) -> CheckResult<Value<'a>> {
         Ok(unsafe { Value::new(self, frame) })
     }
 }

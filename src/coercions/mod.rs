@@ -6,6 +6,7 @@ mod integers;
 mod float;
 mod option;
 
+use ruby;
 use sys::{VALUE};
 use std::marker::PhantomData;
 
@@ -20,15 +21,15 @@ impl<'a> CallFrame<'a> {
     }
 }
 
-pub struct CheckedValue<T> {
-    pub inner: VALUE,
+pub struct CheckedValue<'a, T> {
+    pub inner: ruby::Value<'a>,
     target: PhantomData<T>
 }
 
-impl<T> CheckedValue<T> {
+impl<'a, T> CheckedValue<'a, T> {
     // This is unsafe because it's the primary way that the coercion
     // protocol asserts that subsequent operations are safe
-    pub unsafe fn new<M>(inner: VALUE) -> CheckedValue<T> {
+    pub unsafe fn new<'lt, M>(inner: ruby::Value<'lt>) -> CheckedValue<'lt, T> {
         CheckedValue { inner, target: PhantomData }
     }
 }
@@ -38,7 +39,7 @@ pub type CheckResult<CHECKED> = Result<CHECKED, String>;
 pub trait UncheckedValue<T> {
     type ToRust: ToRust<T>;
 
-    fn to_checked<'a>(self, frame: CallFrame<'a>) -> CheckResult<Self::ToRust>;
+    fn to_checked(self) -> CheckResult<Self::ToRust>;
 }
 
 pub trait ToRust<T> {

@@ -4,14 +4,15 @@ use sys;
 use sys::{VALUE};
 
 use coercions::*;
+use ruby::Value;
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
 
 // VALUE -> to_coercible_rust<String> -> CheckResult<String> -> unwrap() -> Coercible<String> -> to_rust() -> String
 
-impl UncheckedValue<String> for VALUE {
-    type ToRust = CheckedValue<String>;
+impl<'a> UncheckedValue<String> for Value<'a> {
+    type ToRust = CheckedValue<'a, String>;
 
-    fn to_checked<'a>(self, frame: CallFrame<'a>) -> CheckResult<String> {
+    fn to_checked(self) -> CheckResult<String> {
         if unsafe { sys::RB_TYPE_P(self, sys::T_STRING) } {
             Ok(unsafe { CheckedValue::<String>::new(self) })
         } else {
@@ -21,7 +22,7 @@ impl UncheckedValue<String> for VALUE {
     }
 }
 
-impl<'a> ToRust<String> for CheckedValue<String> {
+impl<'a> ToRust<String> for CheckedValue<'a, String> {
     fn to_rust(self) -> String {
         let size = unsafe { sys::RSTRING_LEN(self.inner) };
         let ptr = unsafe { sys::RSTRING_PTR(self.inner) };

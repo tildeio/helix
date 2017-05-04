@@ -28,11 +28,11 @@ impl<'a> Index<usize> for Array<'a> {
 }
 
 struct CheckedArray<'a> {
-  inner: Value<'a>
+    inner: Value<'a>
 }
 
-impl<'a> UncheckedValue<Array<'a>> for VALUE {
-    fn to_checked(self, frame: CallFrame<'a>) -> CheckResult<Array<'a>, CheckedArray<'a>> {
+impl<'a> UncheckedValue<Array<'a>> for Value<'a> {
+    fn to_checked(self) -> CheckResult<Array<'a>> {
       Ok(CheckedArray { inner: unsafe { Value::new(self, frame) } })
     }
 }
