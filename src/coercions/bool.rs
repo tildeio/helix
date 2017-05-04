@@ -1,9 +1,11 @@
 use sys::{self, VALUE, Qtrue, Qfalse};
-
+use coercions::*;
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
 
 impl UncheckedValue<bool> for VALUE {
-    fn to_checked(self) -> CheckResult<bool> {
+    type ToRust = CheckedValue<bool>;
+
+    fn to_checked<'a>(self, frame: CallFrame<'a>) -> CheckResult<bool> {
         if unsafe { sys::RB_TYPE_P(self, sys::T_TRUE) || sys::RB_TYPE_P(self, sys::T_FALSE) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
@@ -12,7 +14,7 @@ impl UncheckedValue<bool> for VALUE {
     }
 }
 
-impl ToRust<bool> for CheckedValue<bool> {
+impl<'a> ToRust<bool> for CheckedValue<bool> {
     fn to_rust(self) -> bool {
         if self.inner == unsafe { Qtrue } {
             true

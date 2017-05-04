@@ -194,6 +194,8 @@ macro_rules! codegen_define_method {
             #[allow(unused_imports)]
             use $crate::{ToRust};
 
+            let lifetime = &();
+
             let rust_self = match $crate::UncheckedValue::<codegen_self_pointer_type! { struct: $struct, ownership: { $($ownership)* }, type: $cls }>::to_checked(rb_self) {
                 Ok(v)  => v,
                 Err(e) => return Err($crate::ExceptionInfo::with_message(e))

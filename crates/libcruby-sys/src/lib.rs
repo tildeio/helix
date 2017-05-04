@@ -158,6 +158,8 @@ extern "C" {
     #[link_name = "HELIX_T_BIGNUM"]
     pub static T_BIGNUM: isize;
 
+    pub fn rb_ary_aref(obj: VALUE, offset: libc::c_long) -> VALUE;
+
     // unknown if working?
     // fn rb_define_variable(name: c_string, value: *const VALUE);
     pub fn rb_obj_class(obj: VALUE) -> VALUE;

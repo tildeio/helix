@@ -20,4 +20,24 @@ describe Primitive do
       end
     end
   end
+
+  describe "#as_bool" do
+    it "true" do
+      expect(Primitive.as_bool(true)).to eq(true)
+    end
+
+    it "nil" do
+      expect(-> { Primitive.as_bool(nil) }).to raise_error(RuntimeError)
+    end
+  end
+
+  describe "#first" do
+    it "[1, 2, 3]" do
+      expect(Primitive.first([1,2,3])).to eq(1)
+    end
+
+    it "['a', 2, 'c']" do
+      expect(Primitive.first(['a', 2, 'c'])).to eq('a')
+    end
+  end
 end

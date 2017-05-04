@@ -77,7 +77,7 @@ macro_rules! impl_struct_to_rust {
         }
 
         impl<'a> $crate::UncheckedValue<$cls> for $crate::sys::VALUE {
-            fn to_checked(self) -> $crate::CheckResult<$cls> {
+            fn to_checked<'lt>(self) -> $crate::CheckResult<'lt, $cls> {
                 use $crate::{CheckedValue, sys};
                 use ::std::ffi::{CStr};
 

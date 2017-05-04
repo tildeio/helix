@@ -3,10 +3,13 @@ use sys;
 use sys::{VALUE};
 
 use ::inspect;
+use coercions::*;
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust};
 
 impl<'a> UncheckedValue<&'a[usize]> for VALUE {
-    fn to_checked(self) -> CheckResult<&'a[usize]> {
+    type ToRust = CheckedValue<&'a[usize]>;
+
+    fn to_checked<'b>(self, frame: CallFrame<'b>) -> CheckResult<&'a[usize]> {
         if unsafe { sys::RB_TYPE_P(self, sys::T_ARRAY) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {

@@ -79,4 +79,3 @@ macro_rules! throw {
         panic!($crate::ExceptionInfo::with_message(String::from($msg)))
     }
 }
-
