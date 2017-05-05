@@ -113,7 +113,7 @@ macro_rules! codegen_define_method {
             let checked = __checked_call__($($arg),*);
 
             match checked {
-                Ok(ref val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
+                Ok(val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
                 Err(err) => CallResult { error_klass: err.exception.inner(), value: err.message }
             }
         }
@@ -123,7 +123,11 @@ macro_rules! codegen_define_method {
             #[allow(unused_imports)]
             use $crate::{ToRust};
 
+            let lifetime = &();
+            let frame = unsafe { $crate::coercions::CallFrame::new(lifetime) };
+
             $(
+                let $arg = unsafe { $crate::ruby::Value::new($arg, frame) };
                 let $arg = match $crate::UncheckedValue::<$argty>::to_checked($arg) {
                     Ok(v) => v,
                     Err(e) => return Err($crate::ExceptionInfo::type_error(e))
@@ -184,7 +188,7 @@ macro_rules! codegen_define_method {
             let checked = __checked_call__(rb_self, $($arg),*);
 
             match checked {
-                Ok(ref val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
+                Ok(val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
                 Err(err) => CallResult { error_klass: err.exception.inner(), value: err.message }
             }
         }
@@ -195,13 +199,16 @@ macro_rules! codegen_define_method {
             use $crate::{ToRust};
 
             let lifetime = &();
+            let frame = unsafe { $crate::coercions::CallFrame::new(lifetime) };
 
+            let rb_self = unsafe { $crate::ruby::Value::new(rb_self, frame) };
             let rust_self = match $crate::UncheckedValue::<codegen_self_pointer_type! { struct: $struct, ownership: { $($ownership)* }, type: $cls }>::to_checked(rb_self) {
                 Ok(v)  => v,
                 Err(e) => return Err($crate::ExceptionInfo::with_message(e))
             };
 
             $(
+                let $arg = unsafe { $crate::ruby::Value::new($arg, frame) };
                 let $arg = match $crate::UncheckedValue::<$argty>::to_checked($arg) {
                     Ok(v) => v,
                     Err(e) => return Err($crate::ExceptionInfo::type_error(e))
@@ -265,7 +272,11 @@ macro_rules! codegen_define_method {
             #[allow(unused_imports)]
             use $crate::{ToRust};
 
+            let lifetime = &();
+            let frame = unsafe { $crate::coercions::CallFrame::new(lifetime) };
+
             $(
+                let $arg = unsafe { $crate::ruby::Value::new($arg, frame) };
                 let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
             )*
 

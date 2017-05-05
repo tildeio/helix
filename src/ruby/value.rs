@@ -1,9 +1,8 @@
-use std;
 use sys::VALUE;
 use super::Type;
 use coercions::*;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub struct Value<'a> {
   inner: VALUE,
   frame: CallFrame<'a>
@@ -18,6 +17,10 @@ impl<'a> Value<'a> {
         self.inner
     }
 
+    pub unsafe fn frame(&self) -> CallFrame<'a> {
+        self.frame
+    }
+
     pub fn is_type(&self, ty: Type) -> bool {
         ty.matches(self)
     }
@@ -26,22 +29,22 @@ impl<'a> Value<'a> {
         Type::of(self)
     }
 
-    pub fn to_rust<'lt, T>(&self) -> T where Value<'lt>: UncheckedValue<T>, CheckedValue<'lt, T>: ToRust<T> {
-        self.inner.to_checked(self.frame).unwrap().to_rust()
+    pub fn to_rust<T>(&self) -> T where Value<'a>: UncheckedValue<T>, CheckedValue<'a, T>: ToRust<T> {
+        self.to_checked().unwrap().to_rust()
     }
 }
 
 impl<'a> ToRuby for Value<'a> {
-    fn to_ruby(&self) -> VALUE {
+    fn to_ruby(self) -> VALUE {
       self.inner
     }
 }
 
-impl<'a> UncheckedValue<Value<'a>> for VALUE {
+impl<'a> UncheckedValue<Value<'a>> for Value<'a> {
     type ToRust = Value<'a>;
 
     fn to_checked(self) -> CheckResult<Value<'a>> {
-        Ok(unsafe { Value::new(self, frame) })
+        Ok(self)
     }
 }
 

@@ -1,7 +1,7 @@
 use libc;
 use std;
 use std::ops::{Deref, Index};
-use sys::{self, VALUE};
+use sys::{self};
 use super::{Value};
 use coercions::*;
 
@@ -27,18 +27,20 @@ impl<'a> Index<usize> for Array<'a> {
   }
 }
 
-struct CheckedArray<'a> {
+pub struct CheckedArray<'a> {
     inner: Value<'a>
 }
 
 impl<'a> UncheckedValue<Array<'a>> for Value<'a> {
-    fn to_checked(self) -> CheckResult<Array<'a>> {
-      Ok(CheckedArray { inner: unsafe { Value::new(self, frame) } })
+    type ToRust = CheckedArray<'a>;
+
+    fn to_checked(self) -> CheckResult<Self::ToRust> {
+      Ok(CheckedArray { inner: self })
     }
 }
 
-impl<'a> ToRust<Array<'a>> for Value<'a> {
+impl<'a> ToRust<Array<'a>> for CheckedArray<'a> {
     fn to_rust(self) -> Array<'a> {
-        Array { inner: self }
+        Array { inner: self.inner }
     }
 }

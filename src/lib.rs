@@ -12,7 +12,7 @@ use sys::VALUE;
 
 mod macros;
 mod class_definition;
-mod coercions;
+pub mod coercions;
 pub mod ruby;
 
 pub use coercions::*;
@@ -81,8 +81,8 @@ impl Class {
     }
 }
 
-pub fn inspect(val: VALUE) -> String {
-    unsafe { CheckedValue::<String>::new(sys::rb_inspect(val)).to_rust() }
+pub fn inspect<'a>(val: ruby::Value<'a>) -> String {
+    unsafe { CheckedValue::<String>::from_value(sys::rb_inspect(val.inner()), val.frame()).to_rust() }
 }
 
 pub type Metadata = ::VALUE;

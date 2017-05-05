@@ -1,7 +1,30 @@
 // use coercions::*;
-// use sys::{VALUE, Qnil};
-// use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
-// use ruby;
+use sys::{VALUE, Qnil};
+use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
+use ruby::Value;
+
+impl<'a, T> UncheckedValue<Option<T>> for Value<'a> where Value<'a>: UncheckedValue<T>, CheckedValue<'a, T>: ToRust<T> {
+    type ToRust = Option<CheckedValue<'a, T>>;
+
+    fn to_checked(self) -> CheckResult<Option<CheckedValue<'a, T>>> {
+        if unsafe { self.inner() } == unsafe { Qnil } {
+            Ok(None)
+        } else {
+            let val = UncheckedValue::<T>::to_checked(self);
+            match val {
+                // TODO: This transmute is caused by a compiler issue I think?
+                Ok(v) => Ok(Some(unsafe { CheckedValue::<T>::new(v) })),
+                Err(e) => Err(e)
+            }
+        }
+    }
+}
+
+impl<'a, T> ToRust<Option<T>> for Option<CheckedValue<'a, T>> where CheckedValue<'a, T>: ToRust<T> {
+    fn to_rust(self) -> Option<T> {
+        self.map(|val| val.to_rust())
+    }
+}
 
 // impl<T> ToRust<T> for Box<ToRust<T>> {
 //     fn to_rust(self) -> T {
