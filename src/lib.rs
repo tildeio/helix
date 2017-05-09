@@ -108,20 +108,21 @@ impl ExceptionInfo {
     }
 
     pub fn from_any(any: Box<std::any::Any>) -> ExceptionInfo {
-        match any.downcast_ref::<ExceptionInfo>() {
-            Some(e) => *e,
-            None => {
-                match any.downcast_ref::<&'static str>() {
-                    Some(e) => ExceptionInfo::with_message(e.to_string()),
-                    None => {
-                        match any.downcast_ref::<String>() {
-                            Some(e) => ExceptionInfo::with_message(e.as_str()),
-                            None => ExceptionInfo::with_message(format!("Unknown Error; err={:?}", any)),
-                        }
-                    }
-                }
-            }
-        }
+        any.downcast_ref::<ExceptionInfo>()
+            .map(|e| *e)
+            .or_else(||
+                any.downcast_ref::<&'static str>()
+                    .map(|e| e.to_string())
+                    .map(ExceptionInfo::with_message)
+            )
+            .or_else(||
+                any.downcast_ref::<String>()
+                    .map(|e| e.as_str())
+                    .map(ExceptionInfo::with_message)
+            )
+            .unwrap_or_else(||
+                ExceptionInfo::with_message(format!("Unknown Error; err={:?}", any))
+            )
     }
 
     pub fn message(&self) -> VALUE {
