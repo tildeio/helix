@@ -84,6 +84,10 @@ pub fn inspect(val: VALUE) -> String {
     unsafe { CheckedValue::<String>::new(sys::rb_inspect(val)).to_rust() }
 }
 
+pub unsafe fn as_usize(value: ::VALUE) -> usize {
+    std::mem::transmute(value)
+}
+
 pub type Metadata = ::VALUE;
 
 #[derive(Copy, Clone, Debug)]
