@@ -331,9 +331,11 @@ macro_rules! handle_exception {
             }));
         }
 
-        let res = ::std::panic::catch_unwind(|| {
+        // TODO: Poison any objects that cross the boundary to prevent them
+        // from being used in Ruby and triggering panics over and over again.
+        let res = ::std::panic::catch_unwind(::std::panic::AssertUnwindSafe(|| {
             $($body)*
-        });
+        }));
 
         if hide_err {
             let _ = ::std::panic::take_hook();
