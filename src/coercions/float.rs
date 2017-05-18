@@ -7,8 +7,7 @@ impl UncheckedValue<f64> for VALUE {
         if unsafe { sys::RB_TYPE_P(self, T_FLOAT) || sys::RB_TYPE_P(self, T_FIXNUM) || sys::RB_TYPE_P(self, T_BIGNUM) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            let val = unsafe { CheckedValue::<String>::new(sys::rb_inspect(self)) };
-            Err(format!("No implicit conversion of {} into Rust f64", val.to_rust()))
+            Err(::invalid(self, "a 64-bit float"))
         }
     }
 }
