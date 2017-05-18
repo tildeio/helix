@@ -45,7 +45,7 @@ module HelixRuntime
 
   def self.copy_dll
     if IS_WINDOWS
-      so_path = File.expand_path("../native.#{Platform.dlext}", __FILE__)
+      so_path = File.expand_path("../helix_runtime/native.#{Platform.dlext}", __FILE__)
       raise "Unable to find native bundle at #{so_path}" unless File.exists?(so_path)
 
       bindir = RbConfig::CONFIG['bindir']
