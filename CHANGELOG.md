@@ -2,6 +2,7 @@
 
 * [BUGFIX] Fix path in copy_dll task for Windows installation
 * [BUGFIX] Fix compatibility with serde_json
+* [BUGFIX] Correctly handle projects with dashes in their name
 * [IMPROVEMENT] Better language around coercion failures
 
 ## 0.6.0 (May 3, 2017)
