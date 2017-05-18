@@ -40,6 +40,14 @@ https://usehelix.com/demos
 
 https://usehelix.com/roadmap
 
+## Compatibility
+
+Helix has been tested with the following, though other combinations may also work.
+
+* cargo 0.18.0 (fe7b0cdcf 2017-04-24)
+* rustc 1.17.0 (56124baa9 2017-04-24)
+* ruby 2.4.1p111 (2017-03-22 revision 58053) [x86_64-darwin16]
+* Bundler version 1.14.6
 
 ## Contributing
 
