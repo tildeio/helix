@@ -10,11 +10,11 @@ environment:
     # 32-bit
     - RUBY_VERSION: 23
       RUST_HOST: i686-pc-windows-msvc
-      RUST_VERSION: beta
+      RUST_VERSION: stable
     # 64-bit
     - RUBY_VERSION: 23-x64
       RUST_HOST: x86_64-pc-windows-msvc
-      RUST_VERSION: beta
+      RUST_VERSION: stable
     # 64-bit
     - RUBY_VERSION: 23-x64
       RUST_HOST: x86_64-pc-windows-msvc
