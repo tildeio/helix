@@ -70,7 +70,7 @@ module HelixRuntime
         end
 
         def class_name
-          app_name.split("_").map(&:capitalize).join
+          app_name.split(/[_-]/).map(&:capitalize).join
         end
     end
   end

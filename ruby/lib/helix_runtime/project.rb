@@ -41,7 +41,7 @@ module HelixRuntime
     end
 
     def native_lib
-      "#{libfile_prefix}#{name}.#{Platform.libext}"
+      "#{libfile_prefix}#{name.sub('-', '_')}.#{Platform.libext}"
     end
 
     def outdated_build?
