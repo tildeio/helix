@@ -11,8 +11,8 @@ include = [
     "Cargo.toml",
     "ruby_info.rb",
     # Keep in sync with version
-    "helix-runtime-0-6-0.i386.lib",
-    "helix-runtime-0-6-0.x86_64.lib"
+    "helix-runtime-0-6-1.i386.lib",
+    "helix-runtime-0-6-1.x86_64.lib"
 ]
 
 [dependencies]
