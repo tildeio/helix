@@ -1,3 +1,9 @@
+## 0.6.1 (May 18, 2017)
+
+* [BUGFIX] Fix path in copy_dll task for Windows installation
+* [BUGFIX] Fix compatibility with serde_json
+* [IMPROVEMENT] Better language around coercion failures
+
 ## 0.6.0 (May 3, 2017)
 
 * [BUGFIX] Raise TypeError on bad initialize

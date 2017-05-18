@@ -6,7 +6,7 @@
 #include <helix_runtime.h>
 
 // Update with version.rb
-const char* HELIX_RUNTIME_VERSION = "0.6.0";
+const char* HELIX_RUNTIME_VERSION = "0.6.1";
 
 const char* HELIX_PRIsVALUE = PRIsVALUE;
 const char* HELIX_SPRINTF_TO_S = "%" PRIsVALUE;

@@ -1,6 +1,6 @@
 [package]
 name = "libcruby-sys"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Godhuda <engineering+godhuda@tilde.io>"]
 description = "Ruby bindings"
 repository = "https://github.com/tildeio/helix"
