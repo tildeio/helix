@@ -17,11 +17,7 @@ impl<'a> UncheckedValue<bool> for Value<'a> {
 
 impl<'a> ToRust<bool> for CheckedValue<'a, bool> {
     fn to_rust(self) -> bool {
-        if unsafe { self.inner.inner() == Qtrue } {
-            true
-        } else {
-            false
-        }
+        unsafe { self.inner.inner() == Qtrue }
     }
 }
 
