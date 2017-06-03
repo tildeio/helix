@@ -13,11 +13,14 @@ ruby! {
 
 // Delete me:
 
-use helix::{UncheckedValue, ToRust};
+use helix::{UncheckedValue, ToRust, ruby};
+use helix::coercions::CallFrame;
 
 impl ToString for RubyString {
     fn to_string(&self) -> String {
-        let checked = self.helix.to_checked().unwrap();
-        checked.to_rust()
+        let lt = &();
+        let val = unsafe { ruby::Value::new(self.helix, CallFrame::new(lt)) };
+        let checked = UncheckedValue::<String>::to_checked(val).unwrap();
+        ToRust::<String>::to_rust(checked)
     }
 }

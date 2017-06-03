@@ -27,13 +27,19 @@ ruby! {
     }
 }
 
-// Delete me:
+// This is incredibly terrible and illustrates an increasingly bad problem
+// with the current factoring around reopen. TLDR: reopen really doesn't
+// work at the moment and you shouldn't use it.
 
-use helix::{UncheckedValue, ToRust};
+use helix::{UncheckedValue, ToRust, ruby};
+use helix::coercions::CallFrame;
 
 impl AsRef<[usize]> for Array {
     fn as_ref(&self) -> &[usize] {
-        let checked = self.helix.to_checked().unwrap();
-        checked.to_rust()
+        let lt: &'static () = unsafe { std::mem::transmute(&()) };
+        let frame = unsafe { CallFrame::new(lt) };
+        let val = unsafe { ruby::Value::new(self.helix, frame) };
+        let checked = UncheckedValue::<&[usize]>::to_checked(val).unwrap();
+        ToRust::<&[usize]>::to_rust(checked)
     }
 }
