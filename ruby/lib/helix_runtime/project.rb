@@ -1,3 +1,5 @@
+require 'toml'
+
 module HelixRuntime
   class Project
 
@@ -8,20 +10,26 @@ module HelixRuntime
     end
 
     attr_accessor :root
-    attr_accessor :name
     attr_accessor :helix_lib_dir
     attr_accessor :debug_rust
     attr_accessor :build_root
 
-    def initialize(name, root)
+    def initialize(root)
       @root = find_root(root)
-      @name = name
       @debug_rust = ENV['DEBUG_RUST']
       @build_root = @root
     end
 
     def debug_rust?
       !!debug_rust
+    end
+
+    def name
+      @name ||= TOML.load_file(cargo_toml_path)["package"]["name"]
+    end
+
+    def cargo_toml_path
+      "#{root}/Cargo.toml"
     end
 
     def build_path

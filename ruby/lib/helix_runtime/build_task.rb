@@ -11,30 +11,29 @@ module HelixRuntime
     end
 
     def project
-      @project ||= Project.new(@name, Dir.pwd)
+      @project ||= Project.new(Dir.pwd)
     end
 
     delegate_attr :helix_lib_dir,  to: :project
     delegate_attr :debug_rust,     to: :project
     delegate_attr :build_root,     to: :project
 
-    attr_reader :name
     attr_accessor :pre_build
 
-    def initialize(name = nil, gem_spec = nil)
-      init(name, gem_spec)
+    def initialize(deprecated_name = nil)
       yield self if block_given?
+
+      if deprecated_name
+        warn "DEPRECATION WARNING: Passing a project name to the Helix build " \
+          "task (`HelixRuntime::BuildTask.new(#{deprecated_name.inspect})`) " \
+          "is unnecessary, as we now automatically detect the project name " \
+          "from your `Cargo.toml`.\n\n"
+      end
+
       define
     end
 
-    def init(name = nil, gem_spec = nil)
-      @name = name
-    end
-
     def define
-      fail "Extension name must be provided." if @name.nil?
-      @name = @name.to_s
-
       task "helix:pre_build" do
         pre_build.call if pre_build
       end
@@ -60,7 +59,7 @@ module HelixRuntime
         project.cargo_clean
       end
 
-      desc "Build #{name}"
+      desc "Build #{project.name}"
       task :build => ["helix:pre_build", "helix:check_path"] do
         project.build
       end
@@ -70,9 +69,9 @@ module HelixRuntime
         project.clobber
       end
 
-      desc "Launch an IRB console for #{name}"
+      desc "Launch an IRB console for #{project.name}"
       task :irb => :build do
-        exec "bundle exec irb -r#{name} -Ilib"
+        exec "bundle exec irb -r#{project.name} -Ilib"
       end
     end
 

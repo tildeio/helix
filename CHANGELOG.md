@@ -1,3 +1,7 @@
+## 0.6.2 (Unreleased)
+
+* [DEPRECATION] Deprecate passing project name to `BuildTask`
+
 ## 0.6.1 (May 18, 2017)
 
 * [BUGFIX] Fix path in copy_dll task for Windows installation

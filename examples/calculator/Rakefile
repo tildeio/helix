@@ -6,7 +6,7 @@ require_relative '../shared.rb'
 # For Windows
 $stdout.sync = true
 
-HelixRuntime::BuildTask.new("calculator") do |t|
+HelixRuntime::BuildTask.new do |t|
   t.build_root = File.expand_path("../..", __dir__)
   t.helix_lib_dir = File.expand_path("../../ruby/windows_build", __dir__)
   t.pre_build = HelixRuntime::Tests.pre_build
