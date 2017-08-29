@@ -1,4 +1,4 @@
-## 0.6.2 (Unreleased)
+## 0.6.2 (August 29, 2017)
 
 * [DEPRECATION] Deprecate passing project name to `BuildTask`
 
