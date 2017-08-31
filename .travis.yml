@@ -74,6 +74,9 @@ script: |
         popd
 
         echo -e "Publishing libcruby-sys crate...\n"
+        # need to do this since there's a .gitignore with *.lib files
+        # there's a bug in Cargo, where include isn't overriding exclude
+        rm -rf .git
         pushd crates/libcruby-sys
         HELIX_LIB_DIR=$PWD cargo publish
         popd
