@@ -1,3 +1,7 @@
+## 0.6.3 (August 30, 2017)
+
+* [BUGFIX] Include *.lib in libcruby-sys
+
 ## 0.6.2 (August 29, 2017)
 
 * [DEPRECATION] Deprecate passing project name to `BuildTask`
