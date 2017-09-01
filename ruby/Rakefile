@@ -46,16 +46,16 @@ end
 
 directory windows_build_dir
 
-def dlltool
+def dlltool(arch = nil)
   # allow override with env vars
   if dlltool_env = ENV['DLLTOOL']
     dlltool_env
   # if on windows
   elsif RUBY_PLATFORM =~ /mingw/
     "dlltool.exe"
-  elsif system("x86_64-w64-mingw32-dlltool > /dev/null")
+  elsif system("x86_64-w64-mingw32-dlltool > /dev/null") && arch == "i386:x86-64"
     "x86_64-w64-mingw32-dlltool"
-  elsif system("i686-w64-mingw32-dlltool > /dev/null")
+  elsif system("i686-w64-mingw32-dlltool > /dev/null") && arch == "i386"
     "i686-w64-mingw32-dlltool"
   else
     "dlltool"
@@ -66,7 +66,7 @@ def build_native_lib(arch, dll_name, native_def_file, target)
   Dir.mktmpdir do |dir|
     Dir.chdir(dir) do
       # Generate and then move. Symbols include generated file name, so avoid long path.
-      cmd = [dlltool]
+      cmd = [dlltool(arch)]
       cmd << "-D #{dll_name}"
       cmd << "-m #{arch}" if arch
       cmd << "-d #{native_def_file}"
