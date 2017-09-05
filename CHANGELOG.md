@@ -1,3 +1,7 @@
+## 0.6.4 (September 7, 2017)
+
+* [BUGFIX] Compile 32-bit windows .lib with 32-bit toolchain
+
 ## 0.6.3 (August 30, 2017)
 
 * [BUGFIX] Include *.lib in libcruby-sys
