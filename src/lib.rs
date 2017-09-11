@@ -1,5 +1,12 @@
 extern crate cslice;
 
+#[allow(unused_imports)]
+#[macro_use]
+extern crate cstr_macro;
+
+#[doc(hidden)]
+pub use cstr_macro::*;
+
 #[doc(hidden)]
 pub extern crate libc;
 

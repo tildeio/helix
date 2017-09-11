@@ -9,7 +9,7 @@ case ENV["IMPLEMENTATION"]
 when "RUST"
   require "duration/native"
 
-  ActiveSupport::Duration = ::Duration
+  ActiveSupport::Duration = ::RustDuration
 when "RAILS"
   require "active_support/duration"
 when "NONE"

@@ -29,7 +29,8 @@ macro_rules! codegen {
         buffer: [
             {
                 type: class,
-                name: $name:tt,
+                rust_name: $rust_name:tt,
+                ruby_name: $ruby_name:tt,
                 meta: { pub: $pub:tt, reopen: $reopen:tt },
                 struct: $struct:tt,
                 methods: [ $($method:tt)* ]
@@ -42,8 +43,9 @@ macro_rules! codegen {
             classes: [
                 $($class)*
                 {
-                    name: $name,
-                    struct: { codegen_struct! { pub: $pub, name: $name, struct: $struct } },
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
+                    struct: { codegen_struct! { pub: $pub, rust_name: $rust_name, ruby_name: $ruby_name, struct: $struct } },
                     methods: [ $( codegen_method! { $method } )* ]
                 }
             ],
@@ -52,7 +54,8 @@ macro_rules! codegen {
 
         codegen_extra_impls!({
             type: class,
-            name: $name,
+            rust_name: $rust_name,
+            ruby_name: $ruby_name,
             meta: { pub: $pub, reopen: $reopen },
             struct: $struct,
             methods: [ $($method)* ]
@@ -63,7 +66,8 @@ macro_rules! codegen {
         type: done,
         classes: [ $(
             {
-                name: $name:tt,
+                rust_name: $rust_name:tt,
+                ruby_name: $ruby_name:tt,
                 struct: { $($struct:tt)* },
                 methods: [ $($method:tt)* ]
             }
@@ -72,7 +76,7 @@ macro_rules! codegen {
         $(
             $($struct)*
 
-            impl $name {
+            impl $rust_name {
                 $($method)*
             }
         )*
@@ -84,7 +88,8 @@ macro_rules! codegen_pub_classes {
     {
             $({
                 type: class,
-                name: $name:tt,
+                rust_name: $rust_name:tt,
+                ruby_name: $ruby_name:tt,
                 meta: { pub: $pub:tt, reopen: $reopen:tt },
                 struct: $struct:tt,
                 methods: [ $($method:tt)* ]
@@ -93,7 +98,8 @@ macro_rules! codegen_pub_classes {
         $(
             codegen_pub_classes! {
                 type: class,
-                name: $name,
+                rust_name: $rust_name,
+                ruby_name: $ruby_name,
                 pub: $pub
             }
         )*
@@ -101,51 +107,54 @@ macro_rules! codegen_pub_classes {
 
     {
         type: class,
-        name: $name:tt,
+        rust_name: $rust_name:tt,
+        ruby_name: $ruby_name:tt,
         pub: false
     } => {};
 
     {
         type: class,
-        name: $name:tt,
+        rust_name: $rust_name:tt,
+        ruby_name: $ruby_name:tt,
         pub: true
     } => {
-        pub use self::init_native::$name;
+        pub use self::init_native::$rust_name;
     };
 }
 
 #[macro_export]
 macro_rules! codegen_struct {
-    { pub: false, name: $name:tt, struct: () } => {
-        codegen_struct! { pub: {}, name: $name, struct: {} }
+    { pub: false, rust_name: $rust_name:tt, ruby_name: $ruby_name:tt, struct: () } => {
+        codegen_struct! { pub: {}, rust_name: $rust_name, ruby_name: $ruby_name, struct: {} }
     };
 
-    { pub: true, name: $name:tt, struct: () } => {
-        codegen_struct! { pub: { pub }, name: $name, struct: {} }
+    { pub: true, rust_name: $rust_name:tt, ruby_name: $ruby_name:tt, struct: () } => {
+        codegen_struct! { pub: { pub }, rust_name: $rust_name, ruby_name: $ruby_name, struct: {} }
     };
 
-    { pub: false, name: $name:tt, struct: { $($rest:tt)* } } => {
-        codegen_struct! { pub: {}, name: $name, struct: { $($rest)* } }
+    { pub: false, rust_name: $rust_name:tt, ruby_name: $ruby_name:tt, struct: { $($rest:tt)* } } => {
+        codegen_struct! { pub: {}, rust_name: $rust_name, ruby_name: $ruby_name, struct: { $($rest)* } }
     };
 
-    { pub: true, name: $name:tt, struct: { $($rest:tt)* } } => {
-        codegen_struct! { pub: { pub }, name: $name, struct: { $($rest)* } }
+    { pub: true, rust_name: $rust_name:tt, ruby_name: $ruby_name:tt, struct: { $($rest:tt)* } } => {
+        codegen_struct! { pub: { pub }, rust_name: $rust_name, ruby_name: $ruby_name, struct: { $($rest)* } }
     };
 
     {
         pub: { $($pub:tt)* },
-        name: $name:tt,
+        rust_name: $rust_name:tt,
+        ruby_name: $ruby_name:tt,
         struct: { $($struct:tt)* }
     } => {
         #[derive(Clone, Debug)]
         #[repr(C)]
-        $($pub)* struct $name {
+        $($pub)* struct $rust_name {
             helix: $crate::Metadata,
             $($struct)*
         }
 
         #[allow(non_upper_case_globals)]
-        static mut $name: usize = 0;
+        static mut $rust_name: usize = 0;
     }
 }
 

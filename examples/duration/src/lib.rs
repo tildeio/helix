@@ -14,6 +14,7 @@ const SECONDS_PER_MONTH:  i64 = 2629746; // 1/12 of a gregorian year
 const SECONDS_PER_YEAR:   i64 = 31556952; // length of a gregorian year (365.2425 days)
 
 ruby! {
+    #[ruby_name="RustDuration"]
     class Duration {
         struct {
             seconds: Option<i32>,

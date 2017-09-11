@@ -18,41 +18,44 @@ macro_rules! codegen_init {
 macro_rules! codegen_class_binding {
     { $class:tt, {
         type: class,
-        name: $name:tt,
+        rust_name: $rust_name:tt,
+        ruby_name: { $($ruby_name:tt)* },
         meta: { pub: $pub:tt, reopen: false },
         struct: (),
         methods: [ $($method:tt)* ]
     } } => ({
         use ::std::mem::transmute;
-        let def = $crate::ClassDefinition::new(cstr!(stringify!($name)));
+        let def = $crate::ClassDefinition::new(cstr!($($ruby_name)*));
 
         $(
             codegen_define_method!(def, $class, $method);
         )*
 
-        unsafe { $name = transmute(def.class) };
+        unsafe { $rust_name = transmute(def.class) };
     });
 
     { $class:tt, {
         type: class,
-        name: $name:tt,
+        rust_name: $rust_name:tt,
+        ruby_name: { $($ruby_name:tt)* },
         meta: { pub: $pub:tt, reopen: true },
         struct: (),
         methods: [ $($method:tt)* ]
     } } => ({
         use ::std::mem::transmute;
-        let def = $crate::ClassDefinition::reopen(cstr!(stringify!($name)));
+        let def = $crate::ClassDefinition::reopen(cstr!($($ruby_name)*));
 
         $(
             codegen_define_method!(def, $class, $method);
         )*
 
-        unsafe { $name = transmute(def.class) };
+        unsafe { $rust_name = transmute(def.class) };
     });
 
     { $class:tt, {
         type: class,
-        name: $cls:tt,
+        rust_name: $rust_name:tt,
+        ruby_name: { $($ruby_name:tt)* },
         meta: { pub: $pub:tt, reopen: $reopen:tt },
         struct: { $($struct:tt)* },
         methods: [ $($method:tt)* ]
@@ -60,16 +63,16 @@ macro_rules! codegen_class_binding {
         use ::std::mem::transmute;
 
         extern "C" fn __alloc__(_klass: $crate::sys::VALUE) -> $crate::sys::VALUE {
-            $cls::__alloc_with__(None)
+            $rust_name::__alloc_with__(None)
         }
 
-        let def = $crate::ClassDefinition::wrapped(cstr!(stringify!($cls)), __alloc__);
+        let def = $crate::ClassDefinition::wrapped(cstr!($($ruby_name)*), __alloc__);
 
         $(
             codegen_define_method!(def, $class, $method);
         )*
 
-        unsafe { $cls = transmute(def.class) }
+        unsafe { $rust_name = transmute(def.class) }
     });
 
 }
@@ -78,7 +81,7 @@ macro_rules! codegen_class_binding {
 macro_rules! codegen_define_method {
     ($def:tt, {
         type: class,
-        name: $cls:tt,
+        rust_name: $cls_rust_name:tt,
         $($rest:tt)*
     }, {
         type: class_method,
@@ -135,7 +138,7 @@ macro_rules! codegen_define_method {
             )*
 
             handle_exception! {
-                $cls::$rust_name($($arg),*)
+                $cls_rust_name::$rust_name($($arg),*)
             }
         }
 
@@ -148,7 +151,8 @@ macro_rules! codegen_define_method {
 
     ($def:tt, {
         type: class,
-        name: $cls:tt,
+        rust_name: $cls_rust_name:tt,
+        ruby_name: $cls_ruby_name:tt,
         meta: $meta:tt,
         struct: $struct:tt,
         $($rest:tt)*
@@ -194,7 +198,7 @@ macro_rules! codegen_define_method {
             #[allow(unused_imports)]
             use $crate::{ToRust};
 
-            let rust_self = match $crate::UncheckedValue::<codegen_self_pointer_type! { struct: $struct, ownership: { $($ownership)* }, type: $cls }>::to_checked(rb_self) {
+            let rust_self = match $crate::UncheckedValue::<codegen_self_pointer_type! { struct: $struct, ownership: { $($ownership)* }, type: $cls_rust_name }>::to_checked(rb_self) {
                 Ok(v)  => v,
                 Err(e) => return Err($crate::ExceptionInfo::with_message(e))
             };
@@ -226,7 +230,8 @@ macro_rules! codegen_define_method {
 
     ($def:tt, {
         type: class,
-        name: $cls:tt,
+        rust_name: $cls_rust_name:tt,
+        ruby_name: $cls_ruby_name:tt,
         meta: $meta:tt,
         struct: $struct:tt,
         $($rest:tt)*
@@ -239,9 +244,9 @@ macro_rules! codegen_define_method {
         ret: { $($ret:tt)* },
         body: $body:tt
     }) => ({
-        impl $cls {
+        impl $cls_rust_name {
             pub fn new($($arg : $argty),*) -> $($ret)* {
-                $cls::$rust_name(unsafe { $crate::sys::Qnil } , $($arg),*)
+                $cls_rust_name::$rust_name(unsafe { $crate::sys::Qnil } , $($arg),*)
             }
         }
 
@@ -259,7 +264,7 @@ macro_rules! codegen_define_method {
             rb_self
         }
 
-        fn __checked_initialize__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$cls, String> {
+        fn __checked_initialize__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$cls_rust_name, String> {
             #[allow(unused_imports)]
             use $crate::{ToRust};
 
@@ -271,7 +276,7 @@ macro_rules! codegen_define_method {
                 let $arg = $crate::ToRust::to_rust($arg);
             )*
 
-            Ok($cls::initialize(rb_self, $($arg),*))
+            Ok($cls_rust_name::initialize(rb_self, $($arg),*))
         }
 
         let arity = method_arity!($($arg)*);
@@ -311,14 +316,6 @@ macro_rules! method_arity {
 #[macro_export]
 macro_rules! replace_expr {
     ($_t:tt $sub:expr) => {$sub};
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! cstr {
-    ($s:expr) => (
-        concat!($s, "\0") as *const str as *const [::std::os::raw::c_char] as *const ::std::os::raw::c_char
-    )
 }
 
 #[macro_export]

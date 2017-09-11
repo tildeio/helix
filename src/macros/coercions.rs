@@ -2,53 +2,55 @@
 macro_rules! codegen_coercions {
     ({
         type: class,
-        name: $cls:tt,
+        rust_name: $rust_name:tt,
+        ruby_name: $ruby_name:tt,
         meta: { pub: $pub:tt, reopen: $reopen:tt },
         struct: (),
         methods: $methods:tt
     }) => (
-        impl $crate::UncheckedValue<$cls> for $crate::sys::VALUE {
-            fn to_checked(self) -> $crate::CheckResult<$cls> {
+        impl $crate::UncheckedValue<$rust_name> for $crate::sys::VALUE {
+            fn to_checked(self) -> $crate::CheckResult<$rust_name> {
                 use $crate::{CheckedValue, sys};
                 use ::std::ffi::{CStr};
 
-                if unsafe { $cls == $crate::as_usize(sys::rb_obj_class(self)) } {
+                if unsafe { $rust_name == $crate::as_usize(sys::rb_obj_class(self)) } {
                     Ok(unsafe { CheckedValue::new(self) })
                 } else {
                     let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
-                    Err(format!("No implicit conversion of {} into {}", val, stringify!($cls)))
+                    Err(format!("No implicit conversion of {} into {}", val, stringify!($rust_name)))
                 }
             }
         }
 
-        impl $crate::ToRust<$cls> for $crate::CheckedValue<$cls> {
-            fn to_rust(self) -> $cls {
-                $cls { helix: self.inner }
+        impl $crate::ToRust<$rust_name> for $crate::CheckedValue<$rust_name> {
+            fn to_rust(self) -> $rust_name {
+                $rust_name { helix: self.inner }
             }
         }
 
-        impl_to_ruby!(&'a $cls);
-        impl_to_ruby!(&'a mut $cls);
+        impl_to_ruby!(&'a $rust_name);
+        impl_to_ruby!(&'a mut $rust_name);
     );
 
     ({
         type: class,
-        name: $cls:tt,
+        rust_name: $rust_name:tt,
+        ruby_name: $ruby_name:tt,
         meta: { pub: $pub:tt, reopen: false },
         struct: $struct:tt,
         methods: $methods:tt
     }) => (
-        impl_struct_to_rust!(&'a $cls, $cls);
-        impl_struct_to_rust!(&'a mut $cls, $cls);
+        impl_struct_to_rust!(&'a $rust_name, $rust_name);
+        impl_struct_to_rust!(&'a mut $rust_name, $rust_name);
 
-        impl $crate::ToRuby for $cls {
+        impl $crate::ToRuby for $rust_name {
             fn to_ruby(self) -> $crate::sys::VALUE {
-                $cls::__alloc_with__(Some(Box::new(self)))
+                $rust_name::__alloc_with__(Some(Box::new(self)))
             }
         }
 
-        impl_to_ruby!(&'a $cls);
-        impl_to_ruby!(&'a mut $cls);
+        impl_to_ruby!(&'a $rust_name);
+        impl_to_ruby!(&'a mut $rust_name);
     );
 }
 
@@ -56,9 +58,9 @@ macro_rules! codegen_coercions {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! impl_to_ruby {
-    ($cls:ty) => {
+    ($rust_name:ty) => {
         item! {
-            impl<'a> $crate::ToRuby for $cls {
+            impl<'a> $crate::ToRuby for $rust_name {
                 fn to_ruby(self) -> $crate::sys::VALUE {
                     self.helix
                 }
@@ -69,15 +71,15 @@ macro_rules! impl_to_ruby {
 
 #[macro_export]
 macro_rules! impl_struct_to_rust {
-    ($cls:ty, $helix_id:tt) => {
-        impl<'a> $crate::ToRust<$cls> for $crate::CheckedValue<$cls> {
-            fn to_rust(self) -> $cls {
+    ($rust_name:ty, $helix_id:tt) => {
+        impl<'a> $crate::ToRust<$rust_name> for $crate::CheckedValue<$rust_name> {
+            fn to_rust(self) -> $rust_name {
                 unsafe { ::std::mem::transmute($crate::sys::Data_Get_Struct_Value(self.inner)) }
             }
         }
 
-        impl<'a> $crate::UncheckedValue<$cls> for $crate::sys::VALUE {
-            fn to_checked(self) -> $crate::CheckResult<$cls> {
+        impl<'a> $crate::UncheckedValue<$rust_name> for $crate::sys::VALUE {
+            fn to_checked(self) -> $crate::CheckResult<$rust_name> {
                 use $crate::{CheckedValue, sys};
                 use ::std::ffi::{CStr};
 

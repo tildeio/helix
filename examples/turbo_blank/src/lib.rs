@@ -2,6 +2,7 @@
 extern crate helix;
 
 ruby! {
+    #[ruby_name = "String"]
     reopen class RubyString {
         #[ruby_name = "blank?"]
         def is_blank(&self) -> bool {
