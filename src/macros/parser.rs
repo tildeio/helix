@@ -32,7 +32,7 @@
   Meta :
     {
         pub: «bool»,
-        reopen: «bool»,
+        reopen: «bool»
     }
 
   Field :
@@ -41,7 +41,8 @@
   Method :
     {
         type: «MethodType»,
-        name: «ident»,
+        rust_name: «ident»,
+        ruby_name: { string },
         self: ‹() | «MethodSelf»›,
         args: «MethodArgs»,
         ret: { «ty» },
@@ -591,54 +592,6 @@ macro_rules! parse {
             }
         }
     };
-
-
-    {
-        state: parse_return_type,
-        buffer: { $body:block $($rest:tt)* },
-        stack: {
-            method: {
-                type: initializer,
-                rust_name: $rust_name:tt,
-                ruby_name: $ruby_name:tt,
-                self: $self:tt,
-                args: $args:tt,
-                ret: uninitialized,
-                body: uninitialized
-            },
-            class: {
-                type: class,
-                meta: { pub: $pub:tt, reopen: $reopen:tt, name: $class_name:tt },
-                struct: $struct:tt,
-                methods: $methods:tt
-            },
-            $($stack:tt)*
-        }
-    } => {
-        parse! {
-            state: finish_method,
-            buffer: { $($rest)* },
-            stack: {
-                method: {
-                    type: initializer,
-                    rust_name: $rust_name,
-                    ruby_name: $ruby_name,
-                    self: $self,
-                    args: $args,
-                    ret: { $class_name },
-                    body: $body
-                },
-                class: {
-                    type: class,
-                    meta: { pub: $pub, reopen: $reopen, name: $class_name },
-                    struct: $struct,
-                    methods: $methods
-                },
-                $($stack)*
-            }
-        }
-    };
-
 
     {
         state: parse_return_type,
