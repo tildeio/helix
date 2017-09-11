@@ -36,7 +36,8 @@ macro_rules! item {
 macro_rules! assert_struct {
     (true, {
         type: class,
-        name: $name:ident,
+        rust_name: $rust_name:ident,
+        ruby_name: $ruby_name:tt,
         meta: $meta:tt,
         struct: { $($struct:tt)+ },
         methods: $methods:tt
@@ -44,7 +45,8 @@ macro_rules! assert_struct {
 
     (false, {
         type: class,
-        name: $name:ident,
+        rust_name: $rust_name:ident,
+        ruby_name: $ruby_name:tt,
         meta: $meta:tt,
         struct: (),
         methods: $methods:tt
