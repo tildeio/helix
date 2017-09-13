@@ -89,7 +89,7 @@ macro_rules! parse {
             state: parse_class,
             buffer: $buffer,
             stack: {
-                ruby_name: {},
+                ruby_name: uninitialized,
                 pub: false,
                 reopen: false,
                 $($stack)*
@@ -103,7 +103,7 @@ macro_rules! parse {
         state: parse_class,
         buffer: { #[ruby_name = $ruby_name:tt] $($rest:tt)* },
         stack: {
-            ruby_name: {},
+            ruby_name: uninitialized,
             pub: false,
             reopen: false,
             $($stack:tt)*
@@ -169,7 +169,7 @@ macro_rules! parse {
         state: parse_class,
         buffer: { class $name:tt $($rest:tt)* },
         stack: {
-            ruby_name: {},
+            ruby_name: uninitialized,
             $($stack:tt)*
         }
     } => {
@@ -195,7 +195,7 @@ macro_rules! parse {
         }
     } => {
         parse! {
-            state: parse_class_body,
+            state: parse_struct,
             buffer: { $($body)* },
             stack: {
                 class: {
@@ -203,7 +203,7 @@ macro_rules! parse {
                     rust_name: $name,
                     ruby_name: $ruby_name,
                     meta: { pub: $pub, reopen: $reopen },
-                    struct: uninitialized,
+                    struct: (),
                     methods: []
                 },
                 program: { $($rest)* },
@@ -212,23 +212,25 @@ macro_rules! parse {
         }
     };
 
-    // STATE: parse_class_body
+    // STATE: parse_struct
 
     {
-        state: parse_class_body,
+        state: parse_struct,
         buffer: { struct { $($struct:tt)* } $($rest:tt)* },
         stack: {
             class: {
                 type: class,
-                rust_name: $rust_name:ident,
+                rust_name: $rust_name:tt,
                 ruby_name: $ruby_name:tt,
-                meta: $meta:tt,
-                struct: uninitialized,
-                methods : []
+                meta: { pub: $pub:tt, reopen: $reopen:tt },
+                struct: (),
+                methods: []
             },
             $($stack:tt)*
         }
     } => {
+        assert_not_reopen!({ reopen: $reopen }, "Cannot define a struct in `reopen class`");
+
         parse! {
             state: parse_methods,
             buffer: { $($rest)* },
@@ -237,7 +239,7 @@ macro_rules! parse {
                     type: class,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
-                    meta: $meta,
+                    meta: { pub: $pub, reopen: $reopen },
                     struct: { $($struct)* },
                     methods: []
                 },
@@ -247,34 +249,14 @@ macro_rules! parse {
     };
 
     {
-        state: parse_class_body,
+        state: parse_struct,
         buffer: $buffer:tt,
-        stack: {
-            class: {
-                type: class,
-                rust_name: $rust_name:ident,
-                ruby_name: $ruby_name:tt,
-                meta: $meta:tt,
-                struct: uninitialized,
-                methods : []
-            },
-            $($stack:tt)*
-        }
+        stack: $stack:tt
     } => {
         parse! {
             state: parse_methods,
             buffer: $buffer,
-            stack: {
-                class: {
-                    type: class,
-                    rust_name: $rust_name,
-                    ruby_name: $ruby_name,
-                    meta: $meta,
-                    struct: (),
-                    methods: []
-                },
-                $($stack)*
-            }
+            stack: $stack
         }
     };
 
@@ -342,7 +324,8 @@ macro_rules! parse {
             $($stack:tt)*
         }
     } => {
-        assert_struct!(true, $class);
+        assert_not_reopen!($class, "Cannot define `initialize` in `reopen class`");
+        assert_has_struct!($class, "Cannot define `initialize` without a `struct`");
 
         parse! {
             state: parse_arguments_helix,
@@ -578,7 +561,7 @@ macro_rules! parse {
             $($stack:tt)*
         }
     } => {
-        assert_no_explict_return_for_initializer!($type, ->);
+        assert_no_explict_return_for_initializer!({ type: $type }, "`def initialize` cannot have an explicit return type");
 
         parse! {
             state: finish_method,
@@ -716,4 +699,91 @@ macro_rules! parse {
             }
         }
     };
+
+    // Catch all
+
+    { $($state:tt)* } => {
+        parse_error!(
+            "Unknonw parser state. ",
+            "This is possibly a bug in Helix itself, please file an issue ",
+            "with the following debug information:\n\n",
+            format_parser_state!($($state)*)
+        );
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! parse_error {
+    ($($message:expr),*) => { compile_error!(concat!("Parse Error! ", $($message),*)); };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! format_parser_state {
+    {
+        state: $state:tt,
+        buffer: $buffer:tt,
+        stack: $stack:tt
+    } => {
+        concat!("{\n",
+            "  state: ", stringify!($state), ",\n",
+            "  buffer: ", stringify!($buffer), ",\n",
+            "  stack: ", stringify!($stack), ",\n",
+        "}")
+    };
+
+    { $($state:tt)* } => { concat!("(CORRUPTED)\n", stringify!($($state)*)) };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_not_reopen {
+    {
+        {
+            type: class,
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
+            meta: { pub: $pub:tt, reopen: $reopen:tt },
+            struct: $struct:tt,
+            methods: $methods:tt
+        },
+        $($message:expr),*
+    } => { assert_not_reopen!({ reopen: $reopen }, $($message),*); };
+
+    { { reopen: true }, $($message:expr),* } => { parse_error!($($message),*); };
+    { { reopen: false }, $($message:expr),* } => {};
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_has_struct {
+    {
+        {
+            type: class,
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
+            meta: $meta:tt,
+            struct: $struct:tt,
+            methods: $methods:tt
+        },
+        $($message:expr),*
+    } => { assert_has_struct!({ struct: $struct }, $($message),*); };
+
+    { { struct: () }, $($message:expr),* } => { parse_error!($($message),*); };
+    { { struct: $struct:tt }, $($message:expr),* } => {};
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_valid_self_arg {
+    (self) => {};
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_no_explict_return_for_initializer {
+    ({ type: instance_method }, $($message:expr),*) => {};
+    ({ type: class_method }, $($message:expr),*) => {};
+    ({ type: initializer }, $($message:expr),*) => { parse_error!($($message),*); };
 }
