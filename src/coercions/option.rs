@@ -1,5 +1,5 @@
 use sys::{VALUE, Qnil};
-use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
+use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
 
 impl<T> UncheckedValue<Option<T>> for VALUE where VALUE: UncheckedValue<T> {
     fn to_checked(self) -> CheckResult<Option<T>> {
@@ -24,10 +24,10 @@ impl<T> ToRust<Option<T>> for CheckedValue<Option<T>> where CheckedValue<T>: ToR
 }
 
 impl<T> ToRuby for Option<T> where T: ToRuby {
-    fn to_ruby(self) -> VALUE {
+    fn to_ruby(self) -> ToRubyResult {
         match self {
             Some(value) => value.to_ruby(),
-            None => unsafe { Qnil }
+            None => Ok(unsafe { Qnil })
         }
     }
 }

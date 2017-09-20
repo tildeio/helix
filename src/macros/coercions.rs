@@ -44,8 +44,8 @@ macro_rules! codegen_coercions {
         impl_struct_to_rust!(&'a mut $rust_name, $rust_name);
 
         impl $crate::ToRuby for $rust_name {
-            fn to_ruby(self) -> $crate::sys::VALUE {
-                $rust_name::__alloc_with__(Some(Box::new(self)))
+            fn to_ruby(self) -> $crate::ToRubyResult {
+                Ok($rust_name::__alloc_with__(Some(Box::new(self))))
             }
         }
 
@@ -61,8 +61,8 @@ macro_rules! impl_to_ruby {
     ($rust_name:ty) => {
         item! {
             impl<'a> $crate::ToRuby for $rust_name {
-                fn to_ruby(self) -> $crate::sys::VALUE {
-                    self.helix
+                fn to_ruby(self) -> $crate::ToRubyResult {
+                    Ok(self.helix)
                 }
             }
         }

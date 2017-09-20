@@ -1,6 +1,6 @@
 use sys::{self, VALUE, Qtrue, Qfalse};
 
-use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
+use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
 
 impl UncheckedValue<bool> for VALUE {
     fn to_checked(self) -> CheckResult<bool> {
@@ -19,11 +19,11 @@ impl ToRust<bool> for CheckedValue<bool> {
 }
 
 impl ToRuby for bool {
-    fn to_ruby(self) -> VALUE {
+    fn to_ruby(self) -> ToRubyResult {
         if self {
-            unsafe { Qtrue }
+            Ok(unsafe { Qtrue })
         } else {
-            unsafe { Qfalse }
+            Ok(unsafe { Qfalse })
         }
     }
 }

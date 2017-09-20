@@ -3,7 +3,7 @@ use std;
 use sys;
 use sys::{VALUE};
 
-use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
+use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
 
 // VALUE -> to_coercible_rust<String> -> CheckResult<String> -> unwrap() -> Coercible<String> -> to_rust() -> String
 
@@ -27,17 +27,17 @@ impl ToRust<String> for CheckedValue<String> {
 }
 
 impl ToRuby for String {
-    fn to_ruby(self) -> VALUE {
+    fn to_ruby(self) -> ToRubyResult {
         let ptr = self.as_ptr();
         let len = self.len();
-        unsafe { sys::rb_utf8_str_new(ptr as *const libc::c_char, len as libc::c_long) }
+        Ok(unsafe { sys::rb_utf8_str_new(ptr as *const libc::c_char, len as libc::c_long) })
     }
 }
 
 impl<'a> ToRuby for &'a str {
-    fn to_ruby(self) -> VALUE {
+    fn to_ruby(self) -> ToRubyResult {
         let ptr = self.as_ptr();
         let len = self.len();
-        unsafe { sys::rb_utf8_str_new(ptr as *const libc::c_char, len as libc::c_long) }
+        Ok(unsafe { sys::rb_utf8_str_new(ptr as *const libc::c_char, len as libc::c_long) })
     }
 }

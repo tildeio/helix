@@ -113,10 +113,10 @@ macro_rules! codegen_define_method {
 
         #[inline]
         fn __rust_method__($($arg : $crate::sys::VALUE),*) -> CallResult {
-            let checked = __checked_call__($($arg),*);
+            let checked = __checked_call__($($arg),*).and_then($crate::ToRuby::to_ruby);
 
             match checked {
-                Ok(val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
+                Ok(value) => CallResult { error_klass: unsafe { Qnil }, value },
                 Err(err) => CallResult { error_klass: err.exception.inner(), value: err.message }
             }
         }
@@ -185,10 +185,10 @@ macro_rules! codegen_define_method {
 
         #[inline]
         fn __rust_method__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> CallResult {
-            let checked = __checked_call__(rb_self, $($arg),*);
+            let checked = __checked_call__(rb_self, $($arg),*).and_then($crate::ToRuby::to_ruby);
 
             match checked {
-                Ok(val) => CallResult { error_klass: unsafe { Qnil }, value: $crate::ToRuby::to_ruby(val) },
+                Ok(value) => CallResult { error_klass: unsafe { Qnil }, value },
                 Err(err) => CallResult { error_klass: err.exception.inner(), value: err.message }
             }
         }

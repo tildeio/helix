@@ -1,5 +1,3 @@
-extern crate cslice;
-
 #[allow(unused_imports)]
 #[macro_use]
 extern crate cstr_macro;
@@ -109,17 +107,17 @@ pub struct ExceptionInfo {
 }
 
 impl ExceptionInfo {
-    pub fn with_message<T: ToRuby>(string: T) -> ExceptionInfo {
-        ExceptionInfo {
-            exception: Class(unsafe { sys::rb_eRuntimeError }),
-            message: string.to_ruby(),
+    pub fn with_message<T: ToRuby>(reason: T) -> ExceptionInfo {
+        match reason.to_ruby() {
+            Ok(message) => ExceptionInfo { exception: Class(unsafe { sys::rb_eRuntimeError }), message },
+            Err(cause) => ExceptionInfo::with_message(format!("Unknown Error; cause={:?})", cause))
         }
     }
 
-    pub fn type_error<T: ToRuby>(string: T) -> ExceptionInfo {
-        ExceptionInfo {
-            exception: Class(unsafe { sys::rb_eTypeError }),
-            message: string.to_ruby(),
+    pub fn type_error<T: ToRuby>(reason: T) -> ExceptionInfo {
+        match reason.to_ruby() {
+            Ok(message) => ExceptionInfo { exception: Class(unsafe { sys::rb_eTypeError }), message },
+            Err(cause) => ExceptionInfo::with_message(format!("Unknown Error; cause={:?})", cause))
         }
     }
 

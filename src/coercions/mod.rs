@@ -5,8 +5,10 @@ mod bool;
 mod integers;
 mod float;
 mod option;
+mod result;
 
 use sys::{VALUE};
+use super::ExceptionInfo;
 use std::marker::PhantomData;
 
 pub struct CheckedValue<T> {
@@ -30,12 +32,14 @@ pub trait ToRust<T> {
     fn to_rust(self) -> T;
 }
 
+pub type ToRubyResult = Result<VALUE, ExceptionInfo>;
+
 pub trait ToRuby {
-    fn to_ruby(self) -> VALUE;
+    fn to_ruby(self) -> ToRubyResult;
 }
 
 impl ToRuby for VALUE {
-    fn to_ruby(self) -> VALUE {
-        self
+    fn to_ruby(self) -> ToRubyResult {
+        Ok(self)
     }
 }

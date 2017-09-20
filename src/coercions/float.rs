@@ -1,6 +1,6 @@
 use sys::{self, VALUE, T_FLOAT, T_FIXNUM, T_BIGNUM};
 
-use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby};
+use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
 
 impl UncheckedValue<f64> for VALUE {
     fn to_checked(self) -> CheckResult<f64> {
@@ -19,7 +19,7 @@ impl ToRust<f64> for CheckedValue<f64> {
 }
 
 impl ToRuby for f64 {
-    fn to_ruby(self) -> VALUE {
-        unsafe { sys::F642NUM(self) }
+    fn to_ruby(self) -> ToRubyResult {
+        Ok(unsafe { sys::F642NUM(self) })
     }
 }
