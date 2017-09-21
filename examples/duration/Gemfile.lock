@@ -4,7 +4,7 @@ PATH
     helix_runtime (0.6.4)
       rake (>= 10.0)
       thor (~> 0.19.4)
-      toml (~> 0.1.2)
+      tomlrb (~> 1.2.4)
 
 PATH
   remote: .
@@ -20,17 +20,13 @@ GEM
       i18n (~> 0.7)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
-    blankslate (2.1.2.4)
     concurrent-ruby (1.0.5)
     i18n (0.8.1)
     minitest (5.8.3)
-    parslet (1.5.0)
-      blankslate (~> 2.0)
     rake (10.5.0)
     thor (0.19.4)
     thread_safe (0.3.6)
-    toml (0.1.2)
-      parslet (~> 1.5.0)
+    tomlrb (1.2.4)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
 
@@ -48,4 +44,4 @@ DEPENDENCIES
   rake (~> 10.0)
 
 BUNDLED WITH
-   1.14.6
+   1.15.3

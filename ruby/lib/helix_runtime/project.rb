@@ -1,4 +1,4 @@
-require 'toml'
+require 'tomlrb'
 
 module HelixRuntime
   class Project
@@ -25,7 +25,7 @@ module HelixRuntime
     end
 
     def name
-      @name ||= TOML.load_file(cargo_toml_path)["package"]["name"]
+      @name ||= Tomlrb.load_file(cargo_toml_path)["package"]["name"]
     end
 
     def cargo_toml_path
