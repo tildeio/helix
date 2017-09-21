@@ -4,7 +4,7 @@ PATH
     helix_runtime (0.6.4)
       rake (>= 10.0)
       thor (~> 0.19.4)
-      toml (~> 0.1.2)
+      tomlrb (~> 1.2.4)
 
 PATH
   remote: .
@@ -15,14 +15,10 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    blankslate (2.1.2.4)
     minitest (5.8.3)
-    parslet (1.5.0)
-      blankslate (~> 2.0)
     rake (10.5.0)
     thor (0.19.4)
-    toml (0.1.2)
-      parslet (~> 1.5.0)
+    tomlrb (1.2.4)
 
 PLATFORMS
   ruby
@@ -37,4 +33,4 @@ DEPENDENCIES
   turbo_blank!
 
 BUNDLED WITH
-   1.14.6
+   1.15.3
