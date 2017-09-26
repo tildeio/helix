@@ -6,7 +6,6 @@ macro_rules! codegen_init {
         pub extern "C" fn Init_native() {
             $crate::sys::check_version();
 
-
             $(
                 codegen_class_binding!($class, $class);
             )*

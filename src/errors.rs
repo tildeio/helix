@@ -24,11 +24,11 @@ impl Error {
     }
 
     pub fn from_any(any: Box<any::Any>) -> Error {
-        any.downcast_ref::<Error>()
+        any.downcast::<Error>()
             .map(|e| *e)
-            .or_else(|| any.downcast_ref::<&'static str>().map(|e| e.to_error()))
-            .or_else(|| any.downcast_ref::<String>().map(|e| e.as_str().to_error()))
-            .unwrap_or_else(|| format!("Unknown Error (caused by `{:?}`)", any).to_error())
+            .or_else(|any| any.downcast::<&str>().map(|e| e.to_error()))
+            .or_else(|any| any.downcast::<String>().map(|e| e.to_error()))
+            .unwrap_or_else(|any| format!("Unknown Error (caused by `{:?}`)", any).to_error())
     }
 
     pub fn with_class(self, class: Class) -> Error {
