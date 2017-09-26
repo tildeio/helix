@@ -1,3 +1,5 @@
+#![recursion_limit="1024"]
+
 #[allow(unused_imports)]
 #[macro_use]
 extern crate cstr_macro;
@@ -15,23 +17,50 @@ pub extern crate libcruby_sys as sys;
 use std::ffi::CStr;
 use sys::VALUE;
 
+#[macro_export]
+macro_rules! raise {
+    ($msg:expr) => { return Err($crate::ToError::to_error($msg)); };
+
+    ($class:expr, $msg:expr) => {
+        return Err($crate::ToError::to_error($msg).with_class($class));
+    };
+}
+
+#[macro_export]
+macro_rules! raise_panic {
+    ($msg:expr) => { panic!($crate::ToError::to_error($msg)); };
+
+    ($class:expr, $msg:expr) => {
+        panic!($crate::ToError::to_error($msg).with_class($class));
+    };
+}
+
+#[macro_export]
+macro_rules! type_error {
+    ($message:expr) => { raise!(unsafe { $crate::Class::from_value($crate::sys::rb_eTypeError) }, $message); };
+
+    ($actual:expr, $expected:expr) => {
+        {
+            let actual = unsafe { CheckedValue::<String>::new(sys::rb_inspect($actual)) };
+            let message = format!("Expected {}, got {}", $expected, actual.to_rust());
+            type_error!(message);
+        }
+    };
+}
+
 mod macros;
 mod class_definition;
 mod coercions;
+mod errors;
 
 pub use coercions::*;
+pub use errors::*;
 
 pub use class_definition::{ClassDefinition, MethodDefinition};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 pub struct Class(VALUE);
-
-impl Class {
-    pub fn inner(&self) -> VALUE {
-        self.0
-    }
-}
 
 pub trait RubyMethod {
     fn install(self, class: VALUE, name: &CStr);
@@ -70,6 +99,14 @@ fn ObjectClass() -> Class {
 }
 
 impl Class {
+    pub unsafe fn from_value(value: VALUE) -> Class {
+        Class(value)
+    }
+
+    pub fn to_value(&self) -> VALUE {
+        self.0
+    }
+
     pub fn new(name: &CStr) -> Class {
         ObjectClass().subclass(name)
     }
@@ -89,68 +126,8 @@ pub fn inspect(val: VALUE) -> String {
     unsafe { CheckedValue::<String>::new(sys::rb_inspect(val)).to_rust() }
 }
 
-pub fn invalid(val: VALUE, expected: &str) -> String {
-    let val = unsafe { CheckedValue::<String>::new(sys::rb_inspect(val)) };
-    format!("Expected {}, got {}", expected, val.to_rust())
-}
-
 pub unsafe fn as_usize(value: ::VALUE) -> usize {
     std::mem::transmute(value)
 }
 
 pub type Metadata = ::VALUE;
-
-#[derive(Copy, Clone, Debug)]
-pub struct ExceptionInfo {
-    pub exception: Class,
-    pub message: VALUE
-}
-
-impl ExceptionInfo {
-    pub fn with_message<T: ToRuby>(reason: T) -> ExceptionInfo {
-        match reason.to_ruby() {
-            Ok(message) => ExceptionInfo { exception: Class(unsafe { sys::rb_eRuntimeError }), message },
-            Err(cause) => ExceptionInfo::with_message(format!("Unknown Error; cause={:?})", cause))
-        }
-    }
-
-    pub fn type_error<T: ToRuby>(reason: T) -> ExceptionInfo {
-        match reason.to_ruby() {
-            Ok(message) => ExceptionInfo { exception: Class(unsafe { sys::rb_eTypeError }), message },
-            Err(cause) => ExceptionInfo::with_message(format!("Unknown Error; cause={:?})", cause))
-        }
-    }
-
-    pub fn from_any(any: Box<std::any::Any>) -> ExceptionInfo {
-        any.downcast_ref::<ExceptionInfo>()
-            .map(|e| *e)
-            .or_else(||
-                any.downcast_ref::<&'static str>()
-                    .map(|e| e.to_string())
-                    .map(ExceptionInfo::with_message)
-            )
-            .or_else(||
-                any.downcast_ref::<String>()
-                    .map(|e| e.as_str())
-                    .map(ExceptionInfo::with_message)
-            )
-            .unwrap_or_else(||
-                ExceptionInfo::with_message(format!("Unknown Error; err={:?}", any))
-            )
-    }
-
-    pub fn message(&self) -> VALUE {
-        self.message
-    }
-
-    pub fn raise(&self) -> ! {
-        unsafe {
-            sys::rb_raise(self.exception.0,
-                          sys::SPRINTF_TO_S,
-                          self.message);
-        }
-    }
-}
-
-unsafe impl Send for ExceptionInfo {}
-unsafe impl Sync for ExceptionInfo {}

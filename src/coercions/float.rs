@@ -7,7 +7,7 @@ impl UncheckedValue<f64> for VALUE {
         if unsafe { sys::RB_TYPE_P(self, T_FLOAT) || sys::RB_TYPE_P(self, T_FIXNUM) || sys::RB_TYPE_P(self, T_BIGNUM) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            Err(::invalid(self, "a 64-bit float"))
+            type_error!(self, "a 64-bit float")
         }
     }
 }

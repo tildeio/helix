@@ -7,7 +7,7 @@ impl UncheckedValue<u64> for VALUE {
         if unsafe { sys::RB_TYPE_P(self, T_FIXNUM) || sys::RB_TYPE_P(self, T_BIGNUM) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            Err(::invalid(self, "a 64-bit unsigned integer"))
+            type_error!(self, "a 64-bit unsigned integer")
         }
     }
 }
@@ -29,7 +29,7 @@ impl UncheckedValue<i64> for VALUE {
         if unsafe { sys::RB_TYPE_P(self, sys::T_FIXNUM) || sys::RB_TYPE_P(self, sys::T_BIGNUM) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            Err(::invalid(self, "a 64-bit signed integer"))
+            type_error!(self, "a 64-bit signed integer")
         }
     }
 }
@@ -51,7 +51,7 @@ impl UncheckedValue<u32> for VALUE {
         if unsafe { sys::RB_TYPE_P(self, T_FIXNUM) || sys::RB_TYPE_P(self, T_BIGNUM) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            Err(::invalid(self, "a 32-bit unsigned integer"))
+            type_error!(self, "a 32-bit unsigned integer")
         }
     }
 }
@@ -73,7 +73,7 @@ impl UncheckedValue<i32> for VALUE {
         if unsafe { sys::RB_TYPE_P(self, sys::T_FIXNUM) || sys::RB_TYPE_P(self, sys::T_BIGNUM) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            Err(::invalid(self, "a 32-bit signed integer"))
+            type_error!(self, "a 32-bit signed integer")
         }
     }
 }

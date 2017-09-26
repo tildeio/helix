@@ -29,10 +29,3 @@ macro_rules! ruby {
 macro_rules! item {
     ($it: item) => { $it }
 }
-
-#[macro_export]
-macro_rules! throw {
-    ($msg:expr) => {
-        panic!($crate::ExceptionInfo::with_message(String::from($msg)))
-    }
-}

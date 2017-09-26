@@ -34,7 +34,7 @@ ruby! {
         }
 
         def freak_out(&self) {
-            throw!("Aaaaahhhhh!!!!!");
+            panic!("Aaaaahhhhh!!!!!");
         }
     }
 }

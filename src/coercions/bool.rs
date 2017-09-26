@@ -7,7 +7,7 @@ impl UncheckedValue<bool> for VALUE {
         if unsafe { sys::RB_TYPE_P(self, sys::T_TRUE) || sys::RB_TYPE_P(self, sys::T_FALSE) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            Err(::invalid(self, "true or false"))
+            type_error!(self, "a boolean")
         }
     }
 }

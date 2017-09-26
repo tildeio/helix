@@ -92,54 +92,36 @@ macro_rules! codegen_define_method {
         ret: { $($ret:tt)* },
         body: $body:tt
     }) => ({
-        use $crate::sys::{VALUE, SPRINTF_TO_S, Qnil, rb_raise};
+        use $crate::sys::{VALUE};
+        use $crate::{Error};
 
-        #[repr(C)]
-        #[derive(Debug)]
-        struct CallResult {
-            error_klass: VALUE,
-            value: VALUE
-        }
-
-        extern "C" fn __ruby_method__(_: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
+        extern "C" fn __ruby_method__(_: VALUE, $($arg : VALUE),*) -> VALUE {
             let result = __rust_method__($($arg),*);
 
-            if result.error_klass == unsafe { Qnil } {
-                result.value
-            } else {
-                unsafe { rb_raise(result.error_klass, SPRINTF_TO_S, result.value) }
+            match result {
+                Ok(value) => return value,
+                Err(exception) => unsafe { exception.raise() }
             }
         }
 
         #[inline]
-        fn __rust_method__($($arg : $crate::sys::VALUE),*) -> CallResult {
-            let checked = __checked_call__($($arg),*).and_then($crate::ToRuby::to_ruby);
-
-            match checked {
-                Ok(value) => CallResult { error_klass: unsafe { Qnil }, value },
-                Err(err) => CallResult { error_klass: err.exception.inner(), value: err.message }
-            }
-        }
-
-        #[inline]
-        fn __checked_call__($($arg : $crate::sys::VALUE),*) -> Result<$($ret)*, $crate::ExceptionInfo> {
+        fn __rust_method__($($arg : $crate::sys::VALUE),*) -> Result<VALUE, Error> {
             #[allow(unused_imports)]
-            use $crate::{ToRust};
+            use $crate::{ToRust, ToRuby};
 
             $(
-                let $arg = match $crate::UncheckedValue::<$argty>::to_checked($arg) {
-                    Ok(v) => v,
-                    Err(e) => return Err($crate::ExceptionInfo::type_error(e))
-                };
+                let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
             )*
 
             $(
-                let $arg = $crate::ToRust::to_rust($arg);
+                let $arg = ToRust::to_rust($arg);
             )*
 
-            handle_exception! {
+            let result: Result<$($ret)*, Error> = handle_exception! {
                 $cls_rust_name::$rust_name($($arg),*)
-            }
+            };
+
+            result.and_then(ToRuby::to_ruby)
         }
 
         let name = cstr!($($ruby_name)*);
@@ -165,60 +147,40 @@ macro_rules! codegen_define_method {
         ret: { $($ret:tt)* },
         body: $body:tt
     }) => ({
-        use $crate::sys::{VALUE, SPRINTF_TO_S, Qnil, rb_raise};
+        use $crate::sys::{VALUE};
+        use $crate::{Error};
 
-        #[repr(C)]
-        struct CallResult {
-            error_klass: VALUE,
-            value: VALUE
-        }
-
-        extern "C" fn __ruby_method__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
+        extern "C" fn __ruby_method__(rb_self: VALUE, $($arg : VALUE),*) -> VALUE {
             let result = __rust_method__(rb_self, $($arg),*);
 
-            if result.error_klass == unsafe { Qnil } {
-                result.value
-            } else {
-                unsafe { rb_raise(result.error_klass, SPRINTF_TO_S, result.value) }
+            match result {
+                Ok(value) => return value,
+                Err(exception) => unsafe { exception.raise() }
             }
         }
 
         #[inline]
-        fn __rust_method__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> CallResult {
-            let checked = __checked_call__(rb_self, $($arg),*).and_then($crate::ToRuby::to_ruby);
-
-            match checked {
-                Ok(value) => CallResult { error_klass: unsafe { Qnil }, value },
-                Err(err) => CallResult { error_klass: err.exception.inner(), value: err.message }
-            }
-        }
-
-        #[inline]
-        fn __checked_call__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$($ret)*, $crate::ExceptionInfo> {
+        fn __rust_method__(rb_self: VALUE, $($arg : VALUE),*) -> Result<VALUE, Error> {
             #[allow(unused_imports)]
-            use $crate::{ToRust};
+            use $crate::{ToRust, ToRuby};
 
-            let rust_self = match $crate::UncheckedValue::<codegen_self_pointer_type! { struct: $struct, ownership: { $($ownership)* }, type: $cls_rust_name }>::to_checked(rb_self) {
-                Ok(v)  => v,
-                Err(e) => return Err($crate::ExceptionInfo::with_message(e))
-            };
+            let rust_self = try!($crate::UncheckedValue::<codegen_self_pointer_type! { struct: $struct, ownership: { $($ownership)* }, type: $cls_rust_name }>::to_checked(rb_self));
 
             $(
-                let $arg = match $crate::UncheckedValue::<$argty>::to_checked($arg) {
-                    Ok(v) => v,
-                    Err(e) => return Err($crate::ExceptionInfo::type_error(e))
-                };
+                let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
             )*
 
             let rust_self = rust_self.to_rust();
 
             $(
-                let $arg = $crate::ToRust::to_rust($arg);
+                let $arg = ToRust::to_rust($arg);
             )*
 
-            handle_exception! {
+            let result: Result<$($ret)*, Error> = handle_exception! {
                 rust_self.$rust_name($($arg),*)
-            }
+            };
+
+            result.and_then(ToRuby::to_ruby)
         }
 
         let name = cstr!($($ruby_name)*);
@@ -244,29 +206,29 @@ macro_rules! codegen_define_method {
         ret: { $($ret:tt)* },
         body: $body:tt
     }) => ({
+        use $crate::sys::{VALUE};
+        use $crate::{Error};
+
         impl $cls_rust_name {
             pub fn new($($arg : $argty),*) -> $($ret)* {
                 $cls_rust_name::$rust_name(unsafe { $crate::sys::Qnil } , $($arg),*)
             }
         }
 
-        extern "C" fn __initialize__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> $crate::sys::VALUE {
-            let result = __checked_initialize__(rb_self $(, $arg)*);
+        extern "C" fn __ruby_initialize__(rb_self: VALUE, $($arg : VALUE),*) -> VALUE {
+            let result = __rust_initialize__(rb_self $(, $arg)*);
 
             match result {
-                Ok(rust_self) => {
-                    let data = Box::new(rust_self);
-                    unsafe { $crate::sys::Data_Set_Struct_Value(rb_self, ::std::mem::transmute(data)) };
-                }
-                Err(e) => $crate::ExceptionInfo::type_error(e).raise()
+                Ok(value) => return value,
+                Err(exception) => unsafe { exception.raise() }
             }
-
-            rb_self
         }
 
-        fn __checked_initialize__(rb_self: $crate::sys::VALUE, $($arg : $crate::sys::VALUE),*) -> Result<$cls_rust_name, String> {
+        #[inline]
+        fn __rust_initialize__(rb_self: VALUE, $($arg : VALUE),*) -> Result<VALUE, Error> {
             #[allow(unused_imports)]
             use $crate::{ToRust};
+            use $crate::sys::{Data_Set_Struct_Value};
 
             $(
                 let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
@@ -276,11 +238,15 @@ macro_rules! codegen_define_method {
                 let $arg = $crate::ToRust::to_rust($arg);
             )*
 
-            Ok($cls_rust_name::initialize(rb_self, $($arg),*))
+            let rust_self = Box::new($cls_rust_name::initialize(rb_self, $($arg),*));
+
+            unsafe { Data_Set_Struct_Value(rb_self, ::std::mem::transmute(rust_self)) };
+
+            Ok(rb_self)
         }
 
         let arity = method_arity!($($arg)*);
-        let method = __initialize__ as *const $crate::libc::c_void;
+        let method = __ruby_initialize__ as *const $crate::libc::c_void;
 
         $def.define_method($crate::MethodDefinition::instance(cstr!($($ruby_name)*), method, arity));
     });
@@ -321,23 +287,26 @@ macro_rules! replace_expr {
 #[macro_export]
 macro_rules! handle_exception {
     { $($body:tt)* } => {
-        let hide_err = ::std::env::var("RUST_BACKTRACE").is_err();
-        if hide_err {
-            ::std::panic::set_hook(Box::new(|_| {
-                // Silence
+        {
+            let hide_err = ::std::env::var("RUST_BACKTRACE").is_err();
+
+            if hide_err {
+                ::std::panic::set_hook(Box::new(|_| {
+                    // Silence
+                }));
+            }
+
+            // TODO: Poison any objects that cross the boundary to prevent them
+            // from being used in Ruby and triggering panics over and over again.
+            let res = ::std::panic::catch_unwind(::std::panic::AssertUnwindSafe(|| {
+                $($body)*
             }));
+
+            if hide_err {
+                let _ = ::std::panic::take_hook();
+            }
+
+            res.map_err(|e| $crate::Error::from_any(e))
         }
-
-        // TODO: Poison any objects that cross the boundary to prevent them
-        // from being used in Ruby and triggering panics over and over again.
-        let res = ::std::panic::catch_unwind(::std::panic::AssertUnwindSafe(|| {
-            $($body)*
-        }));
-
-        if hide_err {
-            let _ = ::std::panic::take_hook();
-        }
-
-        res.map_err(|e| $crate::ExceptionInfo::from_any(e))
     }
 }

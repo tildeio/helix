@@ -17,7 +17,7 @@ macro_rules! codegen_coercions {
                     Ok(unsafe { CheckedValue::new(self) })
                 } else {
                     let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
-                    Err(format!("No implicit conversion of {} into {}", val, stringify!($rust_name)))
+                    panic!(format!("No implicit conversion of {} into {}", val, stringify!($rust_name)))
                 }
             }
         }
@@ -85,13 +85,13 @@ macro_rules! impl_struct_to_rust {
 
                 if unsafe { $helix_id == $crate::as_usize(sys::rb_obj_class(self)) } {
                     if unsafe { $crate::sys::Data_Get_Struct_Value(self) == ::std::ptr::null_mut() } {
-                        Err(format!("Uninitialized {}", $crate::inspect(unsafe { sys::rb_obj_class(self) })))
+                        type_error!(format!("Uninitialized {}", $crate::inspect(unsafe { sys::rb_obj_class(self) })))
                     } else {
                         Ok(unsafe { CheckedValue::new(self) })
                     }
                 } else {
                     let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
-                    Err(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(self) })))
+                    panic!(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(self) })))
                 }
             }
         }

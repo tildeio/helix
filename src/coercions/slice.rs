@@ -9,7 +9,7 @@ impl<'a> UncheckedValue<&'a[usize]> for VALUE {
         if unsafe { sys::RB_TYPE_P(self, sys::T_ARRAY) } {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
-            Err(::invalid(self, "an Array of unsigned pointer-sized integers"))
+            type_error!(self, "an Array of unsigned pointer-sized integers")
         }
     }
 }

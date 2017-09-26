@@ -5,14 +5,12 @@ use sys::{VALUE};
 
 use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
 
-// VALUE -> to_coercible_rust<String> -> CheckResult<String> -> unwrap() -> Coercible<String> -> to_rust() -> String
-
 impl UncheckedValue<String> for VALUE {
     fn to_checked(self) -> CheckResult<String> {
         if unsafe { sys::RB_TYPE_P(self, sys::T_STRING) } {
             Ok(unsafe { CheckedValue::<String>::new(self) })
         } else {
-            Err(::invalid(self, "a UTF-8 String"))
+            type_error!(self, "a UTF-8 String")
         }
     }
 }
