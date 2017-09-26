@@ -1,6 +1,5 @@
 use sys::{self, VALUE, Qtrue, Qfalse};
-
-use super::{UncheckedValue, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
+use super::{UncheckedValue, FromRuby, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
 
 impl UncheckedValue<bool> for VALUE {
     fn to_checked(self) -> CheckResult<bool> {
@@ -8,6 +7,16 @@ impl UncheckedValue<bool> for VALUE {
             Ok(unsafe { CheckedValue::new(self) })
         } else {
             type_error!(self, "a boolean")
+        }
+    }
+}
+
+impl FromRuby for bool {
+    fn from_ruby(value: VALUE) -> CheckResult<bool> {
+        if unsafe { sys::RB_TYPE_P(value, sys::T_TRUE) || sys::RB_TYPE_P(value, sys::T_FALSE) } {
+            Ok(unsafe { CheckedValue::new(value) })
+        } else {
+            type_error!(value, "a boolean")
         }
     }
 }

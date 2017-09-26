@@ -109,7 +109,7 @@ macro_rules! codegen_define_method {
             use $crate::{ToRust, ToRuby};
 
             $(
-                let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
+                let $arg = try!($crate::FromRuby::from_ruby($arg));
             )*
 
             $(
@@ -163,10 +163,10 @@ macro_rules! codegen_define_method {
             #[allow(unused_imports)]
             use $crate::{ToRust, ToRuby};
 
-            let rust_self = try!($crate::UncheckedValue::<codegen_self_pointer_type! { struct: $struct, ownership: { $($ownership)* }, type: $cls_rust_name }>::to_checked(rb_self));
+            let rust_self = try!(<codegen_self_pointer_type! { struct: $struct, ownership: { $($ownership)* }, type: $cls_rust_name } as $crate::FromRuby>::from_ruby(rb_self));
 
             $(
-                let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
+                let $arg = try!($crate::FromRuby::from_ruby($arg));
             )*
 
             let rust_self = rust_self.to_rust();
@@ -230,7 +230,7 @@ macro_rules! codegen_define_method {
             use $crate::sys::{Data_Set_Struct_Value};
 
             $(
-                let $arg = try!($crate::UncheckedValue::<$argty>::to_checked($arg));
+                let $arg = try!($crate::FromRuby::from_ruby($arg));
             )*
 
             $(

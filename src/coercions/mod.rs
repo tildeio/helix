@@ -1,4 +1,3 @@
-mod slice;
 mod string;
 mod unit;
 mod bool;
@@ -9,11 +8,11 @@ mod result;
 
 use sys::{VALUE};
 use super::{Error, ToError};
-use std::marker::PhantomData;
+use std::marker::{PhantomData, Sized};
 
 pub struct CheckedValue<T> {
     pub inner: VALUE,
-    marker: PhantomData<T>
+    marker: PhantomData<T>,
 }
 
 impl<T> CheckedValue<T> {
@@ -26,6 +25,10 @@ pub type CheckResult<T> = Result<CheckedValue<T>, Error>;
 
 pub trait UncheckedValue<T> {
     fn to_checked(self) -> CheckResult<T>;
+}
+
+pub trait FromRuby : Sized {
+    fn from_ruby(value: VALUE) -> CheckResult<Self>;
 }
 
 pub trait ToRust<T> {

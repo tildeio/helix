@@ -22,6 +22,20 @@ macro_rules! codegen_coercions {
             }
         }
 
+        impl $crate::FromRuby for $rust_name {
+            fn from_ruby(value: $crate::sys::VALUE) -> $crate::CheckResult<$rust_name> {
+                use $crate::{CheckedValue, sys};
+                use ::std::ffi::{CStr};
+
+                if unsafe { $rust_name == $crate::as_usize(sys::rb_obj_class(value)) } {
+                    Ok(unsafe { CheckedValue::new(value) })
+                } else {
+                    let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(value)).to_string_lossy() };
+                    panic!(format!("No implicit conversion of {} into {}", val, stringify!($rust_name)))
+                }
+            }
+        }
+
         impl $crate::ToRust<$rust_name> for $crate::CheckedValue<$rust_name> {
             fn to_rust(self) -> $rust_name {
                 $rust_name { helix: self.inner }
@@ -92,6 +106,24 @@ macro_rules! impl_struct_to_rust {
                 } else {
                     let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(self)).to_string_lossy() };
                     panic!(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(self) })))
+                }
+            }
+        }
+
+        impl<'a> $crate::FromRuby for $rust_name {
+            fn from_ruby(value: $crate::sys::VALUE) -> $crate::CheckResult<$rust_name> {
+                use $crate::{CheckedValue, sys};
+                use ::std::ffi::{CStr};
+
+                if unsafe { $helix_id == $crate::as_usize(sys::rb_obj_class(value)) } {
+                    if unsafe { $crate::sys::Data_Get_Struct_Value(value) == ::std::ptr::null_mut() } {
+                        type_error!(format!("Uninitialized {}", $crate::inspect(unsafe { sys::rb_obj_class(value) })))
+                    } else {
+                        Ok(unsafe { CheckedValue::new(value) })
+                    }
+                } else {
+                    let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(value)).to_string_lossy() };
+                    panic!(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(value) })))
                 }
             }
         }
