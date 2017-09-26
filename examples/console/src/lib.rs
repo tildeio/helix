@@ -33,8 +33,16 @@ ruby! {
             string.starts_with("\x1B[0;31;49m") && string.ends_with("\x1B[0m")
         }
 
-        def freak_out(&self) {
-            panic!("Aaaaahhhhh!!!!!");
+        def raise(&self) -> Result<(), helix::Error> {
+            raise!("raised from Rust with `raise`");
+        }
+
+        def raise_panic(&self) {
+            raise_panic!("raised from Rust with `raise_panic`");
+        }
+
+        def panic(&self) {
+            panic!("raised from Rust with `panic`");
         }
     }
 }

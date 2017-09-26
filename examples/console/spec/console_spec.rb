@@ -34,10 +34,12 @@ describe "Console" do
     expect(console.is_red("hello".colorize(:red))).to eq(true)
   end
 
-  it "can handle panics" do
-    expect { console.freak_out }.to raise_error(RuntimeError, "Aaaaahhhhh!!!!!")
-    # Do it twice to make sure we cleaned up correctly the first time
-    expect { console.freak_out }.to raise_error(RuntimeError, "Aaaaahhhhh!!!!!")
+  [:raise, :raise_panic, :panic].each do |method|
+    it "can handle #{method}" do
+      expect { console.send(method) }.to raise_error(RuntimeError, "raised from Rust with `#{method}`")
+      # Do it twice to make sure we cleaned up correctly the first time
+      expect { console.send(method) }.to raise_error(RuntimeError, "raised from Rust with `#{method}`")
+    end
   end
 
   it "can handle invalid arguments" do
