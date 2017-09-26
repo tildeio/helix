@@ -2,17 +2,7 @@ use libc;
 use std;
 use sys;
 use sys::{VALUE};
-use super::{UncheckedValue, FromRuby, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
-
-impl UncheckedValue<String> for VALUE {
-    fn to_checked(self) -> CheckResult<String> {
-        if unsafe { sys::RB_TYPE_P(self, sys::T_STRING) } {
-            Ok(unsafe { CheckedValue::<String>::new(self) })
-        } else {
-            type_error!(self, "a UTF-8 String")
-        }
-    }
-}
+use super::{FromRuby, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
 
 impl FromRuby for String {
     fn from_ruby(value: VALUE) -> CheckResult<String> {

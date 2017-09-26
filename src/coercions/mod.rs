@@ -23,10 +23,6 @@ impl<T> CheckedValue<T> {
 
 pub type CheckResult<T> = Result<CheckedValue<T>, Error>;
 
-pub trait UncheckedValue<T> {
-    fn to_checked(self) -> CheckResult<T>;
-}
-
 pub trait FromRuby : Sized {
     fn from_ruby(value: VALUE) -> CheckResult<Self>;
 }

@@ -1,15 +1,5 @@
 use sys::{self, VALUE, T_FLOAT, T_FIXNUM, T_BIGNUM};
-use super::{UncheckedValue, FromRuby, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
-
-impl UncheckedValue<f64> for VALUE {
-    fn to_checked(self) -> CheckResult<f64> {
-        if unsafe { sys::RB_TYPE_P(self, T_FLOAT) || sys::RB_TYPE_P(self, T_FIXNUM) || sys::RB_TYPE_P(self, T_BIGNUM) } {
-            Ok(unsafe { CheckedValue::new(self) })
-        } else {
-            type_error!(self, "a 64-bit float")
-        }
-    }
-}
+use super::{FromRuby, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
 
 impl FromRuby for f64 {
     fn from_ruby(value: VALUE) -> CheckResult<f64> {

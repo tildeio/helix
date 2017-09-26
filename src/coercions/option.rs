@@ -1,16 +1,5 @@
 use sys::{VALUE, Qnil};
-use super::{UncheckedValue, FromRuby, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
-
-impl<T> UncheckedValue<Option<T>> for VALUE where VALUE: UncheckedValue<T> {
-    fn to_checked(self) -> CheckResult<Option<T>> {
-        if unsafe { self == Qnil } {
-            Ok(unsafe { CheckedValue::new(self) })
-        } else {
-            UncheckedValue::<T>::to_checked(self)
-                .map(|_| unsafe { CheckedValue::new(self) })
-        }
-    }
-}
+use super::{FromRuby, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
 
 impl<T: FromRuby> FromRuby for Option<T> {
     fn from_ruby(value: VALUE) -> CheckResult<Option<T>> {
