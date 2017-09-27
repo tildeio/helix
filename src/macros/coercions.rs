@@ -19,7 +19,7 @@ macro_rules! codegen_coercions {
                     Ok(unsafe { CheckedValue::new(value) })
                 } else {
                     let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(value)).to_string_lossy() };
-                    panic!(format!("No implicit conversion of {} into {}", val, stringify!($rust_name)))
+                    type_error!(format!("No implicit conversion of {} into {}", val, stringify!($rust_name)))
                 }
             }
 
@@ -87,7 +87,7 @@ macro_rules! impl_struct_to_rust {
                     }
                 } else {
                     let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(value)).to_string_lossy() };
-                    panic!(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(value) })))
+                    type_error!(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(value) })))
                 }
             }
 

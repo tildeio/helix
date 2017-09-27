@@ -46,10 +46,10 @@ macro_rules! type_error {
     };
 }
 
-mod macros;
 mod class_definition;
 mod coercions;
 mod errors;
+mod macros;
 
 pub use coercions::*;
 pub use errors::*;
