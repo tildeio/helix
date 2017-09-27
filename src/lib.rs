@@ -41,9 +41,7 @@ macro_rules! type_error {
 
     ($actual:expr, $expected:expr) => {
         {
-            let actual = unsafe { CheckedValue::<String>::new(sys::rb_inspect($actual)) };
-            let message = format!("Expected {}, got {}", $expected, actual.to_rust());
-            type_error!(message);
+            type_error!(format!("Expected {}, got {}", $expected, $crate::inspect($actual)));
         }
     };
 }
@@ -123,7 +121,7 @@ impl Class {
 }
 
 pub fn inspect(val: VALUE) -> String {
-    unsafe { CheckedValue::<String>::new(sys::rb_inspect(val)).to_rust() }
+    unsafe { String::from_ruby_unwrap(sys::rb_inspect(val)) }
 }
 
 pub unsafe fn as_usize(value: ::VALUE) -> usize {

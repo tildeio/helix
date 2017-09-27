@@ -106,14 +106,14 @@ macro_rules! codegen_define_method {
         #[inline]
         fn __rust_method__($($arg : $crate::sys::VALUE),*) -> Result<VALUE, Error> {
             #[allow(unused_imports)]
-            use $crate::{ToRust, ToRuby};
+            use $crate::{FromRuby, ToRuby};
 
             $(
-                let $arg = try!($crate::FromRuby::from_ruby($arg));
+                let $arg = try!(<$argty>::from_ruby($arg));
             )*
 
             $(
-                let $arg = ToRust::to_rust($arg);
+                let $arg = <$argty>::from_checked($arg);
             )*
 
             let result: Result<$($ret)*, Error> = handle_exception! {
@@ -161,18 +161,18 @@ macro_rules! codegen_define_method {
         #[inline]
         fn __rust_method__(rb_self: VALUE, $($arg : VALUE),*) -> Result<VALUE, Error> {
             #[allow(unused_imports)]
-            use $crate::{ToRust, ToRuby};
+            use $crate::{FromRuby, ToRuby};
 
-            let rust_self = try!(<codegen_self_pointer_type! { struct: $struct, ownership: { $($ownership)* }, type: $cls_rust_name } as $crate::FromRuby>::from_ruby(rb_self));
+            let rust_self = try!(<codegen_self_pointer_type! { struct: $struct, ownership: { $($ownership)* }, type: $cls_rust_name }>::from_ruby(rb_self));
 
             $(
-                let $arg = try!($crate::FromRuby::from_ruby($arg));
+                let $arg = try!(<$argty>::from_ruby($arg));
             )*
 
-            let rust_self = rust_self.to_rust();
+            let rust_self = <codegen_self_pointer_type! { struct: $struct, ownership: { $($ownership)* }, type: $cls_rust_name }>::from_checked(rust_self);
 
             $(
-                let $arg = ToRust::to_rust($arg);
+                let $arg = <$argty>::from_checked($arg);
             )*
 
             let result: Result<$($ret)*, Error> = handle_exception! {
@@ -226,15 +226,15 @@ macro_rules! codegen_define_method {
         #[inline]
         fn __rust_initialize__(rb_self: VALUE, $($arg : VALUE),*) -> Result<VALUE, Error> {
             #[allow(unused_imports)]
-            use $crate::{ToRust};
+            use $crate::{FromRuby};
             use $crate::sys::{Data_Set_Struct_Value};
 
             $(
-                let $arg = try!($crate::FromRuby::from_ruby($arg));
+                let $arg = try!(<$argty>::from_ruby($arg));
             )*
 
             $(
-                let $arg = $crate::ToRust::to_rust($arg);
+                let $arg = <$argty>::from_checked($arg);
             )*
 
             let rust_self = Box::new($cls_rust_name::initialize(rb_self, $($arg),*));

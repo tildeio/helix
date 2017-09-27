@@ -10,8 +10,21 @@ use sys::{VALUE};
 use super::{Error, ToError};
 use std::marker::{PhantomData, Sized};
 
+pub trait FromRuby : Sized {
+    type Checked /* = CheckedValue<Self> */;
+
+    fn from_ruby(value: VALUE) -> CheckResult<Self::Checked>;
+    fn from_checked(checked: Self::Checked) -> Self;
+
+    fn from_ruby_unwrap(value: VALUE) -> Self {
+        Self::from_checked(Self::from_ruby(value).unwrap())
+    }
+}
+
+pub type CheckResult<T> = Result<T, Error>;
+
 pub struct CheckedValue<T> {
-    pub inner: VALUE,
+    inner: VALUE,
     marker: PhantomData<T>,
 }
 
@@ -19,16 +32,10 @@ impl<T> CheckedValue<T> {
     pub unsafe fn new(inner: VALUE) -> CheckedValue<T> {
         CheckedValue { inner: inner, marker: PhantomData }
     }
-}
 
-pub type CheckResult<T> = Result<CheckedValue<T>, Error>;
-
-pub trait FromRuby : Sized {
-    fn from_ruby(value: VALUE) -> CheckResult<Self>;
-}
-
-pub trait ToRust<T> {
-    fn to_rust(self) -> T;
+    pub fn to_value(self) -> VALUE {
+        self.inner
+    }
 }
 
 pub type ToRubyResult = Result<VALUE, Error>;

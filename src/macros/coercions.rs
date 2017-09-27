@@ -9,7 +9,9 @@ macro_rules! codegen_coercions {
         methods: $methods:tt
     }) => (
         impl $crate::FromRuby for $rust_name {
-            fn from_ruby(value: $crate::sys::VALUE) -> $crate::CheckResult<$rust_name> {
+            type Checked = $crate::CheckedValue<$rust_name>;
+
+            fn from_ruby(value: $crate::sys::VALUE) -> $crate::CheckResult<$crate::CheckedValue<$rust_name>> {
                 use $crate::{CheckedValue, sys};
                 use ::std::ffi::{CStr};
 
@@ -20,11 +22,9 @@ macro_rules! codegen_coercions {
                     panic!(format!("No implicit conversion of {} into {}", val, stringify!($rust_name)))
                 }
             }
-        }
 
-        impl $crate::ToRust<$rust_name> for $crate::CheckedValue<$rust_name> {
-            fn to_rust(self) -> $rust_name {
-                $rust_name { helix: self.inner }
+            fn from_checked(checked: $crate::CheckedValue<$rust_name>) -> $rust_name {
+                $rust_name { helix: checked.to_value() }
             }
         }
 
@@ -72,14 +72,10 @@ macro_rules! impl_to_ruby {
 #[macro_export]
 macro_rules! impl_struct_to_rust {
     ($rust_name:ty, $helix_id:tt) => {
-        impl<'a> $crate::ToRust<$rust_name> for $crate::CheckedValue<$rust_name> {
-            fn to_rust(self) -> $rust_name {
-                unsafe { ::std::mem::transmute($crate::sys::Data_Get_Struct_Value(self.inner)) }
-            }
-        }
-
         impl<'a> $crate::FromRuby for $rust_name {
-            fn from_ruby(value: $crate::sys::VALUE) -> $crate::CheckResult<$rust_name> {
+            type Checked = $crate::CheckedValue<$rust_name>;
+
+            fn from_ruby(value: $crate::sys::VALUE) -> $crate::CheckResult<$crate::CheckedValue<$rust_name>> {
                 use $crate::{CheckedValue, sys};
                 use ::std::ffi::{CStr};
 
@@ -93,6 +89,10 @@ macro_rules! impl_struct_to_rust {
                     let val = unsafe { CStr::from_ptr(sys::rb_obj_classname(value)).to_string_lossy() };
                     panic!(format!("No implicit conversion of {} into {}", val, $crate::inspect(unsafe { sys::rb_obj_class(value) })))
                 }
+            }
+
+            fn from_checked(checked: $crate::CheckedValue<$rust_name>) -> $rust_name {
+                unsafe { ::std::mem::transmute($crate::sys::Data_Get_Struct_Value(checked.to_value())) }
             }
         }
     }

@@ -1,25 +1,19 @@
 use sys::{VALUE, Qnil};
-use super::{FromRuby, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
+use super::{FromRuby, CheckResult, ToRuby, ToRubyResult};
 
 impl<T: FromRuby> FromRuby for Option<T> {
-    fn from_ruby(value: VALUE) -> CheckResult<Option<T>> {
+    type Checked = Option<T::Checked>;
+
+    fn from_ruby(value: VALUE) -> CheckResult<Option<T::Checked>> {
         if unsafe { value == Qnil } {
-            Ok(unsafe { CheckedValue::new(value) })
+            Ok(None)
         } else {
-            T::from_ruby(value)
-                .map(|_| unsafe { CheckedValue::new(value) })
+            T::from_ruby(value).map(|c| Some(c))
         }
     }
-}
 
-impl<T> ToRust<Option<T>> for CheckedValue<Option<T>> where CheckedValue<T>: ToRust<T> {
-    fn to_rust(self) -> Option<T> {
-        if unsafe { self.inner == Qnil } {
-            None
-        } else {
-            let checked: CheckedValue<T> = unsafe { CheckedValue::new(self.inner) };
-            Some(checked.to_rust())
-        }
+    fn from_checked(checked: Option<T::Checked>) -> Option<T> {
+        checked.map(T::from_checked)
     }
 }
 

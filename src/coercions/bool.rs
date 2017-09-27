@@ -1,19 +1,21 @@
 use sys::{self, VALUE, Qtrue, Qfalse};
-use super::{FromRuby, CheckResult, CheckedValue, ToRust, ToRuby, ToRubyResult};
+use super::{FromRuby, CheckResult, ToRuby, ToRubyResult};
 
 impl FromRuby for bool {
+    type Checked = bool;
+
     fn from_ruby(value: VALUE) -> CheckResult<bool> {
-        if unsafe { sys::RB_TYPE_P(value, sys::T_TRUE) || sys::RB_TYPE_P(value, sys::T_FALSE) } {
-            Ok(unsafe { CheckedValue::new(value) })
+        if unsafe { sys::RB_TYPE_P(value, sys::T_TRUE) } {
+            Ok(true)
+        } else if unsafe { sys::RB_TYPE_P(value, sys::T_FALSE) } {
+            Ok(false)
         } else {
             type_error!(value, "a boolean")
         }
     }
-}
 
-impl ToRust<bool> for CheckedValue<bool> {
-    fn to_rust(self) -> bool {
-        self.inner == unsafe { Qtrue }
+    fn from_checked(checked: bool) -> bool {
+        checked
     }
 }
 

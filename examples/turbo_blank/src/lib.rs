@@ -14,11 +14,10 @@ ruby! {
 
 // Delete me:
 
-use helix::{FromRuby, ToRust};
+use helix::{FromRuby};
 
 impl ToString for RubyString {
     fn to_string(&self) -> String {
-        let checked = FromRuby::from_ruby(self.helix);
-        checked.unwrap().to_rust()
+        String::from_ruby_unwrap(self.helix)
     }
 }
