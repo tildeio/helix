@@ -1,3 +1,11 @@
+## 0.7.0 (October 3, 2017)
+
+* [IMPROVEMENT] Add error message for parse errors
+* [IMPREVEMENT] Support #[ruby_name] remapping for classes
+* [IMPREVEMENT] Support returning an exception to Ruby (via `Result` coercion)
+* [BUGFIX] Fix build erros for project names with more than one `-`
+* [EXPERIMENTAL] Make it possible to implement `FromRuby` and `ToRuby` for custom types
+
 ## 0.6.4 (September 7, 2017)
 
 * [BUGFIX] Compile 32-bit windows .lib with 32-bit toolchain
