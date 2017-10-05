@@ -1,8 +1,9 @@
-mod string;
+mod value;
 mod unit;
 mod bool;
 mod integers;
 mod float;
+mod string;
 mod option;
 mod result;
 mod vec;
@@ -43,10 +44,4 @@ pub type ToRubyResult = Result<VALUE, Error>;
 
 pub trait ToRuby {
     fn to_ruby(self) -> ToRubyResult;
-}
-
-impl ToRuby for VALUE {
-    fn to_ruby(self) -> ToRubyResult {
-        Ok(self)
-    }
 }
