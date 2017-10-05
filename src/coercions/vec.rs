@@ -2,6 +2,7 @@ use sys;
 use sys::{VALUE};
 
 use super::{CheckResult, FromRuby, ToRuby, ToRubyResult};
+use super::super::{inspect};
 
 impl<T: FromRuby> FromRuby for Vec<T> {
     type Checked = Vec<T::Checked>;
@@ -11,13 +12,15 @@ impl<T: FromRuby> FromRuby for Vec<T> {
             // Make sure we can actually do the conversions for the values.
             let len = unsafe { sys::RARRAY_LEN(value) };
             let mut checked = Vec::with_capacity(len as usize);
+
             for i in 0..len {
                 let val = unsafe { sys::rb_ary_entry(value, i) };
                 match T::from_ruby(val) {
                     Ok(v) => checked.push(v),
-                    Err(e) => type_error!(format!("Failed to convert value for Vec<T>: {}", e)),
+                    Err(e) => type_error!(format!("Failed to convert {}, element {} has the wrong type: {}", inspect(value), i, e)),
                 }
             }
+
             Ok(checked)
         } else {
             type_error!(value, "an array")
