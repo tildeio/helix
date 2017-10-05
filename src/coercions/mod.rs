@@ -6,6 +6,7 @@ mod float;
 mod string;
 mod option;
 mod result;
+mod slice;
 mod vec;
 
 use sys::{VALUE};

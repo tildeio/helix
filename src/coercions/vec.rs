@@ -1,5 +1,4 @@
-use sys;
-use sys::{VALUE};
+use sys::{self, VALUE};
 
 use super::{CheckResult, FromRuby, ToRuby, ToRubyResult};
 use super::super::{inspect};
