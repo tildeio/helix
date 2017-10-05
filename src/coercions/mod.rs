@@ -5,7 +5,7 @@ mod integers;
 mod float;
 mod option;
 mod result;
-mod array;
+mod vec;
 
 use sys::{VALUE};
 use super::{Error, ToError};
