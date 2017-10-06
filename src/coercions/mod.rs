@@ -8,6 +8,7 @@ mod option;
 mod result;
 mod slice;
 mod vec;
+mod hash;
 
 use sys::{VALUE};
 use super::{Error, ToError};

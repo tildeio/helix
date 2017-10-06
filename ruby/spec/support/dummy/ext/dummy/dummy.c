@@ -39,6 +39,10 @@ static VALUE TEST_RARRAY_CONST_PTR(VALUE _self, VALUE val) {
   return SIZET2NUM((uintptr_t)HELIX_RARRAY_CONST_PTR(val));
 }
 
+static VALUE TEST_RHASH_SIZE(VALUE _self, VALUE val) {
+  return LONG2NUM(HELIX_RHASH_SIZE(val));
+}
+
 static VALUE TEST_RB_TYPE_P(VALUE _self, VALUE val, VALUE type) {
   int result = HELIX_RB_TYPE_P(val, FIX2INT(type));
   return result ? Qtrue : Qfalse;
@@ -186,6 +190,7 @@ void Init_dummy() {
   EXPORT_RUBY_FUNC(RARRAY_PTR, 1);
   EXPORT_FUNC(RARRAY_CONST_PTR, 1);
   EXPORT_RUBY_FUNC(RARRAY_CONST_PTR, 1);
+  EXPORT_FUNC(RHASH_SIZE, 1);
   EXPORT_FUNC(RB_TYPE_P, 2);
   EXPORT_FUNC(TYPE, 1);
   EXPORT_FUNC(INT2FIX, 1);
