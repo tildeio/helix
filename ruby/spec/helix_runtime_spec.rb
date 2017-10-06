@@ -76,6 +76,10 @@ describe HelixRuntime do
     expect(Dummy.RARRAY_CONST_PTR(arr)).to eq(Dummy::RARRAY_CONST_PTR(arr))
   end
 
+  it 'exports the RHASH_SIZE macro' do
+    expect(Dummy.RHASH_SIZE({a: 1, b: 2, c: 3, d: 4, e: 5})).to equal(5)
+  end
+
   describe 'coercions' do
     it "(INT2FIX)" do
       expect(Dummy.INT2FIX(10)).to eq(10)

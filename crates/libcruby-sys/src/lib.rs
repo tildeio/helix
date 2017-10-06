@@ -49,6 +49,14 @@ impl RubyException {
 
 pub const EMPTY_EXCEPTION: RubyException = RubyException(0);
 
+#[repr(C)]
+pub enum st_retval {
+    ST_CONTINUE,
+    ST_STOP,
+    ST_DELETE,
+    // ST_CHECK
+}
+
 #[cfg_attr(windows, link(name="helix-runtime"))]
 extern "C" {
     #[link_name = "HELIX_RUNTIME_VERSION"]
@@ -99,6 +107,9 @@ extern "C" {
     #[link_name = "HELIX_RARRAY_CONST_PTR"]
     pub fn RARRAY_CONST_PTR(array: VALUE) -> *const VALUE;
 
+    #[link_name = "HELIX_RHASH_SIZE"]
+    pub fn RHASH_SIZE(hash: VALUE) -> isize;
+
     #[link_name = "HELIX_RB_TYPE_P"]
     pub fn RB_TYPE_P(val: VALUE, rb_type: isize) -> bool;
 
@@ -143,6 +154,9 @@ extern "C" {
     #[link_name = "HELIX_T_ARRAY"]
     pub static T_ARRAY: isize;
 
+    #[link_name = "HELIX_T_HASH"]
+    pub static T_HASH: isize;
+
     #[link_name = "HELIX_T_TRUE"]
     pub static T_TRUE: isize;
 
@@ -174,8 +188,14 @@ extern "C" {
     pub fn rb_sprintf(specifier: c_string, ...) -> VALUE;
     pub fn rb_inspect(value: VALUE) -> VALUE;
     pub fn rb_intern(string: c_string) -> ID;
-    pub fn rb_raise(exc: VALUE, string: c_string, ...) -> !;
+    pub fn rb_ary_new_capa(capa: isize) -> VALUE;
+    pub fn rb_ary_entry(ary: VALUE, offset: isize) -> VALUE;
+    pub fn rb_ary_push(ary: VALUE, item: VALUE) -> VALUE;
+    pub fn rb_hash_new() -> VALUE;
+    pub fn rb_hash_aset(hash: VALUE, key: VALUE, value: VALUE) -> VALUE;
+    pub fn rb_hash_foreach(hash: VALUE, f: extern "C" fn(key: VALUE, value: VALUE, farg: *mut void) -> st_retval, farg: *mut void);
 
+    pub fn rb_raise(exc: VALUE, string: c_string, ...) -> !;
     pub fn rb_jump_tag(state: RubyException) -> !;
     pub fn rb_protect(try: extern "C" fn(v: *mut void) -> VALUE,
                       arg: *mut void,

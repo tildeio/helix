@@ -36,6 +36,10 @@ const void* HELIX_RARRAY_CONST_PTR(VALUE array) {
   return RARRAY_CONST_PTR(array);
 }
 
+long HELIX_RHASH_SIZE(VALUE hash) {
+  return RHASH_SIZE(hash);
+}
+
 bool HELIX_RB_TYPE_P(VALUE v, int type) {
   return RB_TYPE_P(v, type);
 }

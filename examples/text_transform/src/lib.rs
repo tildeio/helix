@@ -1,5 +1,9 @@
+#![recursion_limit="1024"]
+
 #[macro_use]
 extern crate helix;
+
+use std::collections::HashMap;
 
 ruby! {
     class TextTransform {
@@ -22,6 +26,14 @@ ruby! {
             }).collect()
         }
 
+        def widen_array(text: Vec<String>) -> Vec<String> {
+            text.into_iter().map(TextTransform::widen).collect()
+        }
+
+        def widen_hash(text: HashMap<String, String>) -> HashMap<String, String> {
+            text.into_iter().map(|(k,v)| (TextTransform::widen(k), TextTransform::widen(v))).collect()
+        }
+
         def narrowen(text: String) -> String {
             text.chars().map(|char| {
                 match char {
@@ -41,6 +53,14 @@ ruby! {
             }).collect()
         }
 
+        def narrowen_array(text: Vec<String>) -> Vec<String> {
+            text.into_iter().map(TextTransform::narrowen).collect()
+        }
+
+        def narrowen_hash(text: HashMap<String, String>) -> HashMap<String, String> {
+            text.into_iter().map(|(k,v)| (TextTransform::narrowen(k), TextTransform::narrowen(v))).collect()
+        }
+
         def flip(text: String) -> String {
             text.chars().rev().map(|char| {
                 match char {
@@ -57,6 +77,14 @@ ruby! {
                     'y' => 'ʎ', '{' => '}', '}' => '{', _ => char,
                 }
             }).collect()
+        }
+
+        def flip_array(text: Vec<String>) -> Vec<String> {
+            text.into_iter().rev().map(TextTransform::flip).collect()
+        }
+
+        def flip_hash(text: HashMap<String, String>) -> HashMap<String, String> {
+            text.into_iter().map(|(k,v)| (TextTransform::flip(v), TextTransform::flip(k))).collect()
         }
     }
 }
