@@ -1,3 +1,7 @@
+## 0.7.1 (October 6, 2017)
+
+* [IMPROVEMENT] Add coercion for `Vec` and `HashMap`
+
 ## 0.7.0 (October 3, 2017)
 
 * [IMPROVEMENT] Add error message for parse errors

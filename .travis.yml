@@ -21,7 +21,7 @@ cache:
 
 env:
   global:
-    - EXAMPLES="calculator console membership turbo_blank duration"
+    - EXAMPLES="duration calculator console membership text_transform turbo_blank"
     - VERBOSE=true
     - RUST_BACKTRACE=1
     - RUST_VERSION=stable
