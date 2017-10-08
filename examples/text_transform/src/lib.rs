@@ -4,6 +4,7 @@
 extern crate helix;
 
 use std::collections::HashMap;
+use helix::Symbol;
 
 ruby! {
     class TextTransform {
@@ -30,8 +31,8 @@ ruby! {
             text.into_iter().map(TextTransform::widen).collect()
         }
 
-        def widen_hash(text: HashMap<String, String>) -> HashMap<String, String> {
-            text.into_iter().map(|(k,v)| (TextTransform::widen(k), TextTransform::widen(v))).collect()
+        def widen_hash(text: HashMap<Symbol, String>) -> HashMap<Symbol, String> {
+            text.into_iter().map(|(k,v)| (Symbol::from_string(TextTransform::widen(k.to_string())), TextTransform::widen(v))).collect()
         }
 
         def narrowen(text: String) -> String {
@@ -57,8 +58,8 @@ ruby! {
             text.into_iter().map(TextTransform::narrowen).collect()
         }
 
-        def narrowen_hash(text: HashMap<String, String>) -> HashMap<String, String> {
-            text.into_iter().map(|(k,v)| (TextTransform::narrowen(k), TextTransform::narrowen(v))).collect()
+        def narrowen_hash(text: HashMap<Symbol, String>) -> HashMap<Symbol, String> {
+            text.into_iter().map(|(k,v)| (Symbol::from_string(TextTransform::narrowen(k.to_string())), TextTransform::narrowen(v))).collect()
         }
 
         def flip(text: String) -> String {
@@ -83,8 +84,8 @@ ruby! {
             text.into_iter().rev().map(TextTransform::flip).collect()
         }
 
-        def flip_hash(text: HashMap<String, String>) -> HashMap<String, String> {
-            text.into_iter().map(|(k,v)| (TextTransform::flip(v), TextTransform::flip(k))).collect()
+        def flip_hash(text: HashMap<Symbol, String>) -> HashMap<Symbol, String> {
+            text.into_iter().map(|(k,v)| (Symbol::from_string(TextTransform::flip(v)), TextTransform::flip(k.to_string()))).collect()
         }
     }
 }

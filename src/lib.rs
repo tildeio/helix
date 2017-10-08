@@ -15,7 +15,7 @@ pub extern crate libcruby_sys as sys;
 // pub use rb;
 
 use std::ffi::CStr;
-use sys::VALUE;
+use sys::{VALUE, ID};
 
 #[macro_export]
 macro_rules! raise {
@@ -54,10 +54,39 @@ mod macros;
 pub use coercions::*;
 pub use errors::*;
 
+
+#[repr(C)]
+#[derive(Eq, PartialEq, Hash, Copy, Clone, Debug)]
+pub struct Symbol(ID);
+
+// Since the main use case for `Symbol` at the moment is as the
+// key for a `HashMap`, this tries to avoid GC issues by alaways
+// pinning the symbol, essentially making it a "copy type". This
+// is probably overly aggressive, we can reconsider this when we
+// have a more general-purpose mechanism to encode pinning
+// semantics in the type system.
+impl Symbol {
+    pub fn from_id(id: ID) -> Symbol {
+        Symbol(id)
+    }
+
+    pub fn to_id(self) -> ID {
+        self.0
+    }
+
+    pub fn from_string(string: String) -> Symbol {
+        Symbol(unsafe { sys::rb_intern_str(string.to_ruby().unwrap()) })
+    }
+
+    pub fn to_string(self) -> String {
+        unsafe { String::from_ruby_unwrap(sys::rb_id2str(self.0)) }
+    }
+}
+
 pub use class_definition::{ClassDefinition, MethodDefinition};
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct Class(VALUE);
 
 pub trait RubyMethod {
@@ -101,7 +130,7 @@ impl Class {
         Class(value)
     }
 
-    pub fn to_value(&self) -> VALUE {
+    pub fn to_value(self) -> VALUE {
         self.0
     }
 

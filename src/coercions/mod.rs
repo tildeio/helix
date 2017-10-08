@@ -3,6 +3,7 @@ mod unit;
 mod bool;
 mod integers;
 mod float;
+mod symbol;
 mod string;
 mod option;
 mod result;

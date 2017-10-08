@@ -11,13 +11,13 @@ describe "TextTransform" do
 
   it "can widen hash" do
     expect(TextTransform.widen_hash({
-      "message" => "Hello",
-      "name" => "Aaron",
-      "handle" => "@tenderlove"
+      message: "Hello",
+      name: "Aaron",
+      handle: "@tenderlove"
     })).to eq({
-      "ｍｅｓｓａｇｅ" => "Ｈｅｌｌｏ",
-      "ｎａｍｅ" => "Ａａｒｏｎ",
-      "ｈａｎｄｌｅ" => "＠ｔｅｎｄｅｒｌｏｖｅ"
+      "ｍｅｓｓａｇｅ": "Ｈｅｌｌｏ",
+      "ｎａｍｅ": "Ａａｒｏｎ",
+      "ｈａｎｄｌｅ": "＠ｔｅｎｄｅｒｌｏｖｅ"
     })
   end
 
@@ -31,13 +31,13 @@ describe "TextTransform" do
 
   it "can narrowen hash" do
     expect(TextTransform.narrowen_hash({
-      "ｍｅｓｓａｇｅ" => "Ｈｅｌｌｏ",
-      "ｎａｍｅ" => "Ａａｒｏｎ",
-      "ｈａｎｄｌｅ" => "＠ｔｅｎｄｅｒｌｏｖｅ"
+      "ｍｅｓｓａｇｅ": "Ｈｅｌｌｏ",
+      "ｎａｍｅ": "Ａａｒｏｎ",
+      "ｈａｎｄｌｅ": "＠ｔｅｎｄｅｒｌｏｖｅ"
     })).to eq({
-      "message" => "Hello",
-      "name" => "Aaron",
-      "handle" => "@tenderlove"
+      message: "Hello",
+      name: "Aaron",
+      handle: "@tenderlove"
     })
   end
 
@@ -51,13 +51,13 @@ describe "TextTransform" do
 
   it "can flip hash" do
     expect(TextTransform.flip_hash({
-      "message" => "Hello",
-      "name" => "Aaron",
-      "handle" => "@tenderlove"
+      message: "Hello",
+      name: "Aaron",
+      handle: "@tenderlove"
     })).to eq({
-      "ollǝH" => "ǝƃɐssǝɯ",
-      "uoɹɐ∀" => "ǝɯɐu",
-      "ǝʌolɹǝpuǝʇ@" => "ǝlpuɐɥ"
+      "ollǝH": "ǝƃɐssǝɯ",
+      "uoɹɐ∀": "ǝɯɐu",
+      "ǝʌolɹǝpuǝʇ@": "ǝlpuɐɥ"
     })
   end
 end
