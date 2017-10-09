@@ -328,7 +328,7 @@ macro_rules! parse {
         assert_has_struct!($class, "Cannot define `initialize` without a `struct`");
 
         parse! {
-            state: parse_arguments_helix,
+            state: parse_arguments_initialize,
             buffer: { $($args)* },
             stack: {
                 class_body: { $($rest)* },
@@ -348,7 +348,7 @@ macro_rules! parse {
         }
     } => {
         parse! {
-            state: parse_arguments_self,
+            state: parse_arguments,
             buffer: { $($args)* },
             stack: {
                 rust_name: $rust_name,
@@ -359,16 +359,21 @@ macro_rules! parse {
         }
     };
 
-    // STATE: parse_arguments_helix
+    // STATE: parse_arguments_initialize
 
     {
-        state: parse_arguments_helix,
-        buffer: { $helix_arg:tt $($rest:tt)* },
-        stack: { $($stack:tt)* }
+        state: parse_arguments_initialize,
+        buffer: { $helix_arg:tt, $($args:tt)+ },
+        stack: {
+            class_body: $class_body:tt,
+            $($stack:tt)*
+        }
     } => {
+        assert_valid_helix_arg!($helix_arg);
+
         parse! {
-            state: parse_arguments_consume_possible_comma,
-            buffer: { $($rest)* },
+            state: parse_return_type,
+            buffer: $class_body,
             stack: {
                 method: {
                     type: initializer,
@@ -378,7 +383,7 @@ macro_rules! parse {
                         ownership: { },
                         name: $helix_arg
                     },
-                    args: uninitialized,
+                    args: [ $($args)* ],
                     ret: uninitialized,
                     body: uninitialized
                 },
@@ -387,22 +392,54 @@ macro_rules! parse {
         }
     };
 
-    // STATE: parse_arguments_self
+    {
+        state: parse_arguments_initialize,
+        buffer: { $helix_arg:tt },
+        stack: {
+            class_body: $class_body:tt,
+            $($stack:tt)*
+        }
+    } => {
+        assert_valid_helix_arg!($helix_arg);
+
+        parse! {
+            state: parse_return_type,
+            buffer: $class_body,
+            stack: {
+                method: {
+                    type: initializer,
+                    rust_name: initialize,
+                    ruby_name: { "initialize" },
+                    self: {
+                        ownership: { },
+                        name: $helix_arg
+                    },
+                    args: [ ],
+                    ret: uninitialized,
+                    body: uninitialized
+                },
+                $($stack)*
+            }
+        }
+    };
+
+    // STATE: parse_arguments
 
     {
-        state: parse_arguments_self,
-        buffer: { &mut $self_arg:tt $($rest:tt)* },
+        state: parse_arguments,
+        buffer: { &mut $self_arg:tt, $($args:tt)+ },
         stack: {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            class_body: $class_body:tt,
             $($stack:tt)*
         }
     } => {
         assert_valid_self_arg!($self_arg);
 
         parse! {
-            state: parse_arguments_consume_possible_comma,
-            buffer: { $($rest)* },
+            state: parse_return_type,
+            buffer: $class_body,
             stack: {
                 method: {
                     type: instance_method,
@@ -412,7 +449,7 @@ macro_rules! parse {
                         ownership: { &mut },
                         name: $self_arg
                     },
-                    args: uninitialized,
+                    args: [ $($args)* ],
                     ret: uninitialized,
                     body: uninitialized
                 },
@@ -422,19 +459,53 @@ macro_rules! parse {
     };
 
     {
-        state: parse_arguments_self,
-        buffer: { & $self_arg:tt $($rest:tt)* },
+        state: parse_arguments,
+        buffer: { &mut $self_arg:tt },
         stack: {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            class_body: $class_body:tt,
             $($stack:tt)*
         }
     } => {
         assert_valid_self_arg!($self_arg);
 
         parse! {
-            state: parse_arguments_consume_possible_comma,
-            buffer: { $($rest)* },
+            state: parse_return_type,
+            buffer: $class_body,
+            stack: {
+                method: {
+                    type: instance_method,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
+                    self: {
+                        ownership: { &mut },
+                        name: $self_arg
+                    },
+                    args: [ ],
+                    ret: uninitialized,
+                    body: uninitialized
+                },
+                $($stack)*
+            }
+        }
+    };
+
+    {
+        state: parse_arguments,
+        buffer: { & $self_arg:tt, $($args:tt)+ },
+        stack: {
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
+            class_body: $class_body:tt,
+            $($stack:tt)*
+        }
+    } => {
+        assert_valid_self_arg!($self_arg);
+
+        parse! {
+            state: parse_return_type,
+            buffer: $class_body,
             stack: {
                 method: {
                     type: instance_method,
@@ -444,7 +515,7 @@ macro_rules! parse {
                         ownership: { & },
                         name: $self_arg
                     },
-                    args: uninitialized,
+                    args: [ $($args)* ],
                     ret: uninitialized,
                     body: uninitialized
                 },
@@ -454,24 +525,30 @@ macro_rules! parse {
     };
 
     {
-        state: parse_arguments_self,
-        buffer: $buffer:tt,
+        state: parse_arguments,
+        buffer: { & $self_arg:tt },
         stack: {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            class_body: $class_body:tt,
             $($stack:tt)*
         }
     } => {
+        assert_valid_self_arg!($self_arg);
+
         parse! {
-            state: parse_arguments,
-            buffer: $buffer,
+            state: parse_return_type,
+            buffer: $class_body,
             stack: {
                 method: {
-                    type: class_method,
+                    type: instance_method,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
-                    self: (),
-                    args: uninitialized,
+                    self: {
+                        ownership: { & },
+                        name: $self_arg
+                    },
+                    args: [ ],
                     ret: uninitialized,
                     body: uninitialized
                 },
@@ -480,47 +557,78 @@ macro_rules! parse {
         }
     };
 
-    // STATE: parse_arguments_consume_possible_comma
-
-    {
-        state: parse_arguments_consume_possible_comma,
-        buffer: { , $($rest:tt)+ },
-        stack: $stack:tt
+{
+        state: parse_arguments,
+        buffer: { $self_arg:tt, $($args:tt)+ },
+        stack: {
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
+            class_body: $class_body:tt,
+            $($stack:tt)*
+        }
     } => {
+        assert_valid_self_arg!($self_arg);
+
         parse! {
-            state: parse_arguments,
-            buffer: { $($rest)+ },
-            stack: $stack
+            state: parse_return_type,
+            buffer: $class_body,
+            stack: {
+                method: {
+                    type: instance_method,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
+                    self: {
+                        ownership: { },
+                        name: $self_arg
+                    },
+                    args: [ $($args)* ],
+                    ret: uninitialized,
+                    body: uninitialized
+                },
+                $($stack)*
+            }
         }
     };
 
     {
-        state: parse_arguments_consume_possible_comma,
-        buffer: { },
-        stack: $stack:tt
+        state: parse_arguments,
+        buffer: { $self_arg:tt },
+        stack: {
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
+            class_body: $class_body:tt,
+            $($stack:tt)*
+        }
     } => {
+        assert_valid_self_arg!($self_arg);
+
         parse! {
-            state: parse_arguments,
-            buffer: { },
-            stack: $stack
+            state: parse_return_type,
+            buffer: $class_body,
+            stack: {
+                method: {
+                    type: instance_method,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
+                    self: {
+                        ownership: { },
+                        name: $self_arg
+                    },
+                    args: [ ],
+                    ret: uninitialized,
+                    body: uninitialized
+                },
+                $($stack)*
+            }
         }
     };
-
-    // STATE: parse_arguments
 
     {
         state: parse_arguments,
         buffer: { $($args:tt)* },
         stack: {
-            method: {
-                type: $type:tt,
-                rust_name: $rust_name:tt,
-                ruby_name: $ruby_name:tt,
-                self: $self:tt,
-                args: uninitialized,
-                ret: uninitialized,
-                body: uninitialized
-            },
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
             class_body: $class_body:tt,
             $($stack:tt)*
         }
@@ -530,10 +638,10 @@ macro_rules! parse {
             buffer: $class_body,
             stack: {
                 method: {
-                    type: $type,
+                    type: class_method,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
-                    self: $self,
+                    self: (),
                     args: [ $($args)* ],
                     ret: uninitialized,
                     body: uninitialized
@@ -772,6 +880,12 @@ macro_rules! assert_has_struct {
 
     { { struct: () }, $($message:expr),* } => { parse_error!($($message),*); };
     { { struct: $struct:tt }, $($message:expr),* } => {};
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_valid_helix_arg {
+    (helix) => {};
 }
 
 #[doc(hidden)]
