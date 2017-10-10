@@ -1,3 +1,8 @@
+## 0.7.2 (October 9, 2017)
+
+* [IMPROVEMENT] Add coercion for Symbols
+* [IMPROVEMENT] Allow consuming self in methods
+
 ## 0.7.1 (October 6, 2017)
 
 * [IMPROVEMENT] Add coercion for `Vec` and `HashMap`
