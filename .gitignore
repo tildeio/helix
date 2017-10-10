@@ -1,5 +1,6 @@
 target
 Cargo.lock
+Gemfile.lock
 .vscode
 *.o
 *.a
