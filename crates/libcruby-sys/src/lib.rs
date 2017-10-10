@@ -22,7 +22,7 @@ pub type c_string = *const libc::c_char;
 // pub type c_func = extern "C" fn(...);
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Hash, Copy, Clone, Debug)]
 pub struct ID(*mut void);
 
 #[repr(C)]
@@ -30,7 +30,7 @@ pub struct ID(*mut void);
 pub struct VALUE(*mut void);
 
 #[repr(C)]
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct RubyException(isize);
 
 impl RubyException {
@@ -163,6 +163,9 @@ extern "C" {
     #[link_name = "HELIX_T_FALSE"]
     pub static T_FALSE: isize;
 
+    #[link_name = "HELIX_T_SYMBOL"]
+    pub static T_SYMBOL: isize;
+
     #[link_name = "HELIX_T_FIXNUM"]
     pub static T_FIXNUM: isize;
 
@@ -188,6 +191,10 @@ extern "C" {
     pub fn rb_sprintf(specifier: c_string, ...) -> VALUE;
     pub fn rb_inspect(value: VALUE) -> VALUE;
     pub fn rb_intern(string: c_string) -> ID;
+    pub fn rb_intern_str(string: VALUE) -> ID;
+    pub fn rb_sym2id(symbol: VALUE) -> ID;
+    pub fn rb_id2sym(id: ID) -> VALUE;
+    pub fn rb_id2str(id: ID) -> VALUE;
     pub fn rb_ary_new_capa(capa: isize) -> VALUE;
     pub fn rb_ary_entry(ary: VALUE, offset: isize) -> VALUE;
     pub fn rb_ary_push(ary: VALUE, item: VALUE) -> VALUE;
