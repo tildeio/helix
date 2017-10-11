@@ -1,6 +1,6 @@
 require 'thor'
 
-module HelixRuntime
+module HelixCLI
   module CLI
     class Bootstrap < Thor::Group
       argument :path, type: :string
@@ -31,8 +31,16 @@ module HelixRuntime
         template "Gemfile", "#{base_path}/Gemfile"
       end
 
+      def rename_old_rake_task
+        if File.exists?("#{base_path}/lib/tasks/helix_runtime.rake")
+          say "Renaming helix_runtime.rake to helix_cli.rake"
+          mv "#{base_path}/lib/tasks/helix_runtime.rake",
+             "#{base_path}/lib/tasks/helix_cli.rake"
+        end
+      end
+
       def add_rake_task
-        template "helix_runtime.rake", "#{base_path}/lib/tasks/helix_runtime.rake"
+        template "helix_cli.rake", "#{base_path}/lib/tasks/helix_cli.rake"
       end
 
       def add_ruby_lib_file
@@ -48,7 +56,7 @@ module HelixRuntime
           create_file "#{base_path}/Rakefile", "require 'bundler/setup'\n"
         end
 
-        append_to_file "#{base_path}/Rakefile", "import 'lib/tasks/helix_runtime.rake'\n"
+        append_to_file "#{base_path}/Rakefile", "import 'lib/tasks/helix_cli.rake'\n"
       end
 
       def bundle

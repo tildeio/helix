@@ -1,7 +1,7 @@
 require 'rake/tasklib'
-require 'helix_runtime'
+require 'helix_cli'
 
-module HelixRuntime
+module HelixCLI
   # FIXME: I don't like this name
   class ParentBuildTask < Rake::TaskLib
 

@@ -1,7 +1,7 @@
 require 'rake/tasklib'
-require 'helix_runtime'
+require 'helix_cli'
 
-module HelixRuntime
+module HelixCLI
   class BuildTask < Rake::TaskLib
 
     def self.delegate_attr(getter, to:)
@@ -25,7 +25,7 @@ module HelixRuntime
 
       if deprecated_name
         warn "DEPRECATION WARNING: Passing a project name to the Helix build " \
-          "task (`HelixRuntime::BuildTask.new(#{deprecated_name.inspect})`) " \
+          "task (`HelixCLI::BuildTask.new(#{deprecated_name.inspect})`) " \
           "is unnecessary, as we now automatically detect the project name " \
           "from your `Cargo.toml`.\n\n"
       end
@@ -40,15 +40,15 @@ module HelixRuntime
 
       task "helix:check_path" do
         begin
-          HelixRuntime.ensure_dll!
-        rescue HelixRuntime::MissingDllError => e
+          HelixCLI.ensure_dll!
+        rescue HelixCLI::MissingDllError => e
           puts e.message
           abort "Run `rake helix:copy_dll` to copy to your Ruby bin dir."
         end
       end
 
       task "helix:copy_dll" do
-        HelixRuntime.copy_dll
+        HelixCLI.copy_dll
       end
 
       task "cargo:build" => ["helix:pre_build", "helix:check_path"] do

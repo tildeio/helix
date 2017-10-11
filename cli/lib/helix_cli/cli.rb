@@ -1,6 +1,6 @@
-require 'helix_runtime/cli/bootstrap'
+require 'helix_cli/cli/bootstrap'
 
-module HelixRuntime
+module HelixCLI
   module CLI
     class Base < Thor
       include Thor::Actions

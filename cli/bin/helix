@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require 'helix_cli'
+require 'helix_cli/cli'
+
+HelixCLI::CLI::Base.start(ARGV)

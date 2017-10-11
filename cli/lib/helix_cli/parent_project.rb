@@ -1,4 +1,4 @@
-module HelixRuntime
+module HelixCLI
   class ParentProject
 
     attr_accessor :root

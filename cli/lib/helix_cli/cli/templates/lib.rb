@@ -1,4 +1,4 @@
-require "helix_runtime"
+require "helix_cli"
 
 begin
   require "<%= app_name %>/native"

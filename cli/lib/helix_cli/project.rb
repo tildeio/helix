@@ -1,6 +1,6 @@
 require 'tomlrb'
 
-module HelixRuntime
+module HelixCLI
   class Project
 
     class OutdatedBuildError < StandardError
@@ -67,7 +67,7 @@ module HelixRuntime
     end
 
     def cargo_build
-      HelixRuntime.ensure_dll!
+      HelixCLI.ensure_dll!
 
       # We have to do this here since Cargo has no internal means of specifying `-C` flags
       link_args = if IS_WINDOWS
