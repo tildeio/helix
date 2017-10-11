@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set -x
+
 pushd ../../ruby
 bundle install
 bundle exec rake native_lib_files
