@@ -195,12 +195,21 @@ extern "C" {
     pub fn rb_sym2id(symbol: VALUE) -> ID;
     pub fn rb_id2sym(id: ID) -> VALUE;
     pub fn rb_id2str(id: ID) -> VALUE;
+    pub fn rb_ary_new() -> VALUE;
     pub fn rb_ary_new_capa(capa: isize) -> VALUE;
     pub fn rb_ary_entry(ary: VALUE, offset: isize) -> VALUE;
     pub fn rb_ary_push(ary: VALUE, item: VALUE) -> VALUE;
     pub fn rb_hash_new() -> VALUE;
+    pub fn rb_hash_aref(hash: VALUE, key: VALUE) -> VALUE;
     pub fn rb_hash_aset(hash: VALUE, key: VALUE, value: VALUE) -> VALUE;
     pub fn rb_hash_foreach(hash: VALUE, f: extern "C" fn(key: VALUE, value: VALUE, farg: *mut void) -> st_retval, farg: *mut void);
+    pub fn rb_gc_mark(value: VALUE);
+    pub fn rb_funcall(value: VALUE, mid: ID, argc: libc::c_int, ...) -> VALUE;
+    pub fn rb_scan_args(argc: libc::c_int, argv: *const VALUE, fmt: c_string, ...);
+    pub fn rb_block_given_p() -> bool;
+    pub fn rb_yield(value: VALUE) -> VALUE;
+    pub fn rb_obj_dup(value: VALUE) -> VALUE;
+    pub fn rb_obj_init_copy(value: VALUE, orig: VALUE) -> VALUE;
 
     pub fn rb_raise(exc: VALUE, string: c_string, ...) -> !;
     pub fn rb_jump_tag(state: RubyException) -> !;
