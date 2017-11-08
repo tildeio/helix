@@ -80,6 +80,18 @@ describe HelixRuntime do
     expect(Dummy.RHASH_SIZE({a: 1, b: 2, c: 3, d: 4, e: 5})).to equal(5)
   end
 
+  it 'exports the RB_NIL_P macro' do
+    expect(Dummy.RB_NIL_P(nil)).to eq(true)
+    expect(Dummy.RB_NIL_P(:foo)).to eq(false)
+  end
+
+  it 'exports the RTEST macro' do
+    expect(Dummy.RTEST(true)).to eq(true)
+    expect(Dummy.RTEST(:foo)).to eq(true)
+    expect(Dummy.RTEST(false)).to eq(false)
+    expect(Dummy.RTEST(nil)).to eq(false)
+  end
+
   describe 'coercions' do
     it "(INT2FIX)" do
       expect(Dummy.INT2FIX(10)).to eq(10)
