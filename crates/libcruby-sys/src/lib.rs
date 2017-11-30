@@ -85,6 +85,9 @@ extern "C" {
     #[link_name = "rb_cObject"]
     pub static rb_cObject: VALUE;
 
+    #[link_name = "rb_cBasicObject"]
+    pub static rb_cBasicObject: VALUE;
+
     #[link_name = "rb_eRuntimeError"]
     pub static rb_eRuntimeError: VALUE;
 
@@ -156,6 +159,12 @@ extern "C" {
     #[link_name = "HELIX_F642NUM"]
     pub fn F642NUM(num: f64) -> VALUE;
 
+    #[link_name = "HELIX_OBJ_FROZEN"]
+    pub fn OBJ_FROZEN(v: VALUE) -> bool;
+
+    #[link_name = "HELIX_T_OBJECT"]
+    pub static T_OBJECT: isize;
+
     #[link_name = "HELIX_T_STRING"]
     pub static T_STRING: isize;
 
@@ -216,6 +225,7 @@ extern "C" {
     pub fn rb_hash_foreach(hash: VALUE, f: extern "C" fn(key: VALUE, value: VALUE, farg: *mut void) -> st_retval, farg: *mut void);
     pub fn rb_gc_mark(value: VALUE);
     pub fn rb_funcall(value: VALUE, mid: ID, argc: libc::c_int, ...) -> VALUE;
+    pub fn rb_funcallv(value: VALUE, mid: ID, argc: libc::c_int, argv: *const VALUE) -> VALUE;
     pub fn rb_scan_args(argc: libc::c_int, argv: *const VALUE, fmt: c_string, ...);
     pub fn rb_block_given_p() -> bool;
     pub fn rb_yield(value: VALUE) -> VALUE;

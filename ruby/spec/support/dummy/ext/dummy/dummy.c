@@ -58,6 +58,11 @@ static VALUE TEST_RTEST(VALUE _self, VALUE val) {
   return result ? Qtrue : Qfalse;
 }
 
+static VALUE TEST_OBJ_FROZEN(VALUE _self, VALUE val) {
+  int result = HELIX_OBJ_FROZEN(val);
+  return result ? Qtrue : Qfalse;
+}
+
 static VALUE TEST_TYPE(VALUE _self, VALUE val) {
   return INT2FIX(HELIX_TYPE(val));
 }
@@ -203,6 +208,7 @@ void Init_dummy() {
   EXPORT_FUNC(RHASH_SIZE, 1);
   EXPORT_FUNC(RB_TYPE_P, 2);
   EXPORT_FUNC(RB_NIL_P, 1);
+  EXPORT_FUNC(OBJ_FROZEN, 1);
   EXPORT_FUNC(TYPE, 1);
   EXPORT_FUNC(INT2FIX, 1);
   EXPORT_FUNC(FIX2INT, 1);

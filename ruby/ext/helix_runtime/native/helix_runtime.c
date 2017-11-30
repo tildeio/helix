@@ -108,6 +108,10 @@ VALUE HELIX_F642NUM(RUST_F64 num) {
   return DBL2NUM(num);
 }
 
+bool HELIX_OBJ_FROZEN(VALUE obj) {
+  return OBJ_FROZEN(obj);
+}
+
 void* HELIX_Data_Get_Struct_Value(VALUE obj) {
   void* data;
   Data_Get_Struct(obj, void*, data);
