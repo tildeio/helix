@@ -25,6 +25,8 @@ pub type c_string = *const libc::c_char;
 #[derive(Eq, PartialEq, Hash, Copy, Clone, Debug)]
 pub struct ID(*mut void);
 
+unsafe impl Sync for ID {}
+
 #[repr(C)]
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct VALUE(*mut void);
