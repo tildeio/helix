@@ -45,7 +45,7 @@ bool HELIX_RB_TYPE_P(VALUE v, int type) {
 }
 
 bool HELIX_RB_NIL_P(VALUE v) {
-  return RB_NIL_P(v);
+  return NIL_P(v);
 }
 
 bool HELIX_RTEST(VALUE v) {
