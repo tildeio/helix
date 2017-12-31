@@ -812,7 +812,7 @@ macro_rules! parse {
 
     { $($state:tt)* } => {
         parse_error!(
-            "Unknonw parser state. ",
+            "Unknown parser state. ",
             "This is possibly a bug in Helix itself, please file an issue ",
             "with the following debug information:\n\n",
             format_parser_state!($($state)*)
