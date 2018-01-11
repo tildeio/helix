@@ -115,6 +115,12 @@ extern "C" {
     #[link_name = "HELIX_RB_TYPE_P"]
     pub fn RB_TYPE_P(val: VALUE, rb_type: isize) -> bool;
 
+    #[link_name = "HELIX_RB_NIL_P"]
+    pub fn RB_NIL_P(val: VALUE) -> bool;
+
+    #[link_name = "HELIX_RTEST"]
+    pub fn RTEST(val: VALUE) -> bool;
+
     #[link_name = "HELIX_TYPE"]
     pub fn TYPE(val: VALUE) -> isize;
 

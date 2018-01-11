@@ -48,6 +48,16 @@ static VALUE TEST_RB_TYPE_P(VALUE _self, VALUE val, VALUE type) {
   return result ? Qtrue : Qfalse;
 }
 
+static VALUE TEST_RB_NIL_P(VALUE _self, VALUE val) {
+  int result = HELIX_RB_NIL_P(val);
+  return result ? Qtrue : Qfalse;
+}
+
+static VALUE TEST_RTEST(VALUE _self, VALUE val) {
+  int result = HELIX_RTEST(val);
+  return result ? Qtrue : Qfalse;
+}
+
 static VALUE TEST_TYPE(VALUE _self, VALUE val) {
   return INT2FIX(HELIX_TYPE(val));
 }
@@ -192,9 +202,11 @@ void Init_dummy() {
   EXPORT_RUBY_FUNC(RARRAY_CONST_PTR, 1);
   EXPORT_FUNC(RHASH_SIZE, 1);
   EXPORT_FUNC(RB_TYPE_P, 2);
+  EXPORT_FUNC(RB_NIL_P, 1);
   EXPORT_FUNC(TYPE, 1);
   EXPORT_FUNC(INT2FIX, 1);
   EXPORT_FUNC(FIX2INT, 1);
+  EXPORT_FUNC(RTEST, 1);
 
   EXPORT_FUNC(NUM2U64, 1);
   EXPORT_FUNC(U642NUM, 1);

@@ -44,6 +44,14 @@ bool HELIX_RB_TYPE_P(VALUE v, int type) {
   return RB_TYPE_P(v, type);
 }
 
+bool HELIX_RB_NIL_P(VALUE v) {
+  return NIL_P(v);
+}
+
+bool HELIX_RTEST(VALUE v) {
+  return RTEST(v);
+}
+
 VALUE HELIX_INT2FIX(int c_int) {
   return INT2FIX(c_int);
 }
