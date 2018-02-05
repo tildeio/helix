@@ -92,6 +92,11 @@ describe HelixRuntime do
     expect(Dummy.RTEST(nil)).to eq(false)
   end
 
+  it 'exports the OBJ_FROZEN macro' do
+    expect(Dummy.OBJ_FROZEN(Object.new)).to eq(false)
+    expect(Dummy.OBJ_FROZEN(Object.new.freeze)).to eq(true)
+  end
+
   describe 'coercions' do
     it "(INT2FIX)" do
       expect(Dummy.INT2FIX(10)).to eq(10)
