@@ -1,6 +1,6 @@
 [package]
 name = "helix"
-version = "0.7.2"
+version = "0.7.3"
 authors = ["Godhuda <engineering+godhuda@tilde.io>"]
 description = "Embed Rust in your Ruby"
 documentation = "https://usehelix.com/documentation"
@@ -28,7 +28,7 @@ libc = "0.2.0"
 
 [dependencies.libcruby-sys]
 path = "crates/libcruby-sys"
-version = "0.7.2"
+version = "0.7.3"
 
 [dependencies.cstr-macro]
 path = "crates/cstr-macro"

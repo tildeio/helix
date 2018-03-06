@@ -1,3 +1,7 @@
+## 0.7.3 (March 6, 2018)
+
+* [IMPROVEMENT] Various improvements to the underlying `libcruby-sys` library
+
 ## 0.7.2 (October 9, 2017)
 
 * [IMPROVEMENT] Add coercion for Symbols
