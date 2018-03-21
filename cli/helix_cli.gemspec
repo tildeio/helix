@@ -1,5 +1,5 @@
 # coding: utf-8
-runtime_lib = File.expand_path('../ruby/lib', __FILE__)
+runtime_lib = File.expand_path('../../ruby/lib', __FILE__)
 $LOAD_PATH.unshift(runtime_lib) unless $LOAD_PATH.include?(runtime_lib)
 require 'helix_runtime/version'
 
