@@ -213,9 +213,43 @@ macro_rules! codegen_method {
 }
 
 #[macro_export]
+macro_rules! codegen_ruby_init {
+    ({
+        type: class,
+        rust_name: $rust_name:tt,
+        ruby_name: $ruby_name:tt,
+        meta: { pub: $pub:tt, reopen: $reopen:tt },
+        struct: (),
+        methods: $methods:tt
+    }) => (
+        impl $crate::InitRuby for $rust_name {
+            fn init_ruby() {
+                codegen_class_binding!({
+                    type: class,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
+                    meta: { pub: $pub, reopen: $reopen },
+                    struct: (),
+                    methods: $methods
+                }, {
+                    type: class,
+                    rust_name: $rust_name,
+                    ruby_name: $ruby_name,
+                    meta: { pub: $pub, reopen: $reopen },
+                    struct: (),
+                    methods: $methods
+                });
+            }
+        }
+    );
+}
+
+
+#[macro_export]
 macro_rules! codegen_extra_impls {
     ($class:tt) => (
         codegen_allocator!($class);
         codegen_coercions!($class);
+        codegen_ruby_init!($class);
     )
 }
