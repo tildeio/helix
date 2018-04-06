@@ -1,4 +1,5 @@
 require 'tomlrb'
+require 'json'
 
 module HelixRuntime
   class Project
@@ -33,7 +34,9 @@ module HelixRuntime
     end
 
     def build_path
-      File.expand_path(debug_rust? ? 'target/debug' : 'target/release', build_root)
+      metadata = %x[cargo metadata --format-version 1]
+      target_directory = JSON.parse(metadata)["target_directory"]
+      File.expand_path(debug_rust? ? 'debug' : 'release', target_directory)
     end
 
     def lib_path
