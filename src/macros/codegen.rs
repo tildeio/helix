@@ -219,7 +219,7 @@ macro_rules! codegen_ruby_init {
         rust_name: $rust_name:tt,
         ruby_name: $ruby_name:tt,
         meta: { pub: $pub:tt, reopen: $reopen:tt },
-        struct: (),
+        struct: $struct:tt,
         methods: $methods:tt
     }) => (
         impl $crate::InitRuby for $rust_name {
@@ -229,14 +229,14 @@ macro_rules! codegen_ruby_init {
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
                     meta: { pub: $pub, reopen: $reopen },
-                    struct: (),
+                    struct: $struct,
                     methods: $methods
                 }, {
                     type: class,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
                     meta: { pub: $pub, reopen: $reopen },
-                    struct: (),
+                    struct: $struct,
                     methods: $methods
                 });
             }
