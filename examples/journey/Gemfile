@@ -1,0 +1,6 @@
+source 'https://rubygems.org'
+
+gemspec
+
+gem 'helix_runtime', path: '../../ruby'
+gem 'action_dispatch/journey'
