@@ -1,0 +1,11 @@
+[package]
+name = "journey"
+version = "0.1.0"
+authors = ["Vaidehi Joshi <vaidehi.sj@gmail.com>", "Godfrey Chan <godfreykfc@gmail.com>"]
+
+[lib]
+
+crate-type = ["cdylib"]
+
+[dependencies.helix]
+path = "../.."

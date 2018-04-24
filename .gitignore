@@ -8,3 +8,4 @@ Gemfile.lock
 *.dylib
 *.bundle
 .vagrant
+.DS_Store
