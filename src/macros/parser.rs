@@ -303,6 +303,8 @@ macro_rules! parse {
             ast: [ $($ast:tt)* ]
         }
     } => {
+        assert_has_initialize!($class, "Classes defining a struct must implement `initialize`");
+
         parse! {
             state: top_level,
             buffer: $program,
@@ -861,6 +863,29 @@ macro_rules! assert_not_reopen {
 
     { { reopen: true }, $($message:expr),* } => { parse_error!($($message),*); };
     { { reopen: false }, $($message:expr),* } => {};
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! assert_has_initialize {
+    {
+        {
+            type: class,
+            rust_name: $rust_name:tt,
+            ruby_name: $ruby_name:tt,
+            meta: $meta:tt,
+            struct: $struct:tt,
+            methods: $methods:tt
+        },
+        $($message:expr),*
+    } => { assert_has_initialize!({ struct: $struct }, $methods, $($message),*); };
+
+    { { struct: () }, $methods:tt, $($message:expr),* } => {};
+    { { struct: $struct:tt }, [ ], $($message:expr),* } => { parse_error!($($message),*); };
+    { { struct: $struct:tt }, [ { type: initializer, $($rest:tt)* } $($methods:tt)* ], $($message:expr),* } => {};
+    { { struct: $struct:tt }, [ $method:tt $($methods:tt)* ], $($message:expr),* } => {
+        assert_has_initialize!({ struct: $struct }, [ $($methods)* ], $($message),*);
+    };
 }
 
 #[doc(hidden)]
