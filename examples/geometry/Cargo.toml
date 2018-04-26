@@ -1,0 +1,11 @@
+[package]
+name = "geometry"
+version = "0.1.0"
+authors = ["Godfrey Chan <godfrey@tilde.io>"]
+
+[lib]
+
+crate-type = ["cdylib"]
+
+[dependencies.helix]
+path = "../.."
