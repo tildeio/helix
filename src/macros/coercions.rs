@@ -61,7 +61,7 @@ macro_rules! codegen_coercions {
 
             fn from_checked(mut checked: Box<$rust_name>) -> $rust_name {
                 unsafe { $crate::sys::Data_Set_Struct_Value(checked.helix, ::std::ptr::null_mut()) };
-                checked.helix = unsafe { $crate::sys::Qnil };
+                checked.helix = $crate::Metadata::uninitialized();
                 *checked
             }
         }
@@ -75,8 +75,8 @@ macro_rules! codegen_coercions {
             }
         }
 
-        impl_to_ruby!(&'a $rust_name);
-        impl_to_ruby!(&'a mut $rust_name);
+        impl_to_ruby!(&'a $rust_name, $rust_name);
+        impl_to_ruby!(&'a mut $rust_name, $rust_name);
     );
 }
 
@@ -112,11 +112,14 @@ macro_rules! impl_struct_to_rust {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! impl_to_ruby {
-    ($rust_name:ty) => {
+    ($rust_type:ty, $rust_name) => {
         item! {
-            impl<'a> $crate::ToRuby for $rust_name {
+            impl<'a> $crate::ToRuby for $rust_type {
                 fn to_ruby(self) -> $crate::ToRubyResult {
-                    Ok(self.helix)
+                    match self.helix.value() {
+                        Some(value) => Ok(value),
+                        None => Ok($rust_name::__alloc_with__(Some(self))))
+                    }
                 }
             }
         }

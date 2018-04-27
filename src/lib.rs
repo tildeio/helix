@@ -15,7 +15,7 @@ pub extern crate libcruby_sys as sys;
 // pub use rb;
 
 use std::ffi::CStr;
-use sys::{VALUE, ID};
+use sys::{VALUE, ID, Qnil};
 
 #[macro_export]
 macro_rules! raise {
@@ -157,4 +157,21 @@ pub unsafe fn as_usize(value: ::VALUE) -> usize {
     std::mem::transmute(value)
 }
 
-pub type Metadata = ::VALUE;
+#[derive(Debug)]
+pub struct Metadata(Option<VALUE>);
+
+impl Metadata {
+    fn uninitialized() -> Metadata {
+        Metadata(None)
+    }
+
+    fn value(&self) -> Option<VALUE> {
+        self.0
+    }
+}
+
+impl Clone for Metadata {
+    fn clone(&self) -> Metadata {
+        Metadata::uninitialized()
+    }
+}

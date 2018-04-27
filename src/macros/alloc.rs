@@ -22,7 +22,7 @@ macro_rules! codegen_allocator {
             extern "C" fn __free__(_klass: Option<Box<$rust_name>>) {}
 
             #[inline]
-            fn __alloc_with__(rust_self: Option<Box<$rust_name>>) -> $crate::sys::VALUE {
+            fn __alloc_with__(rust_self: Option<AsRef<$rust_name>>) -> $crate::sys::VALUE {
                 use ::std::mem::transmute;
 
                 unsafe {
@@ -30,7 +30,7 @@ macro_rules! codegen_allocator {
                         transmute($rust_name),
                         transmute($rust_name::__mark__ as usize),
                         transmute($rust_name::__free__ as usize),
-                        transmute(rust_self)
+                        transmute(rust_self.as_ref())
                     );
 
                     instance
