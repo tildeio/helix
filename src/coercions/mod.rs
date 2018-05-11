@@ -5,6 +5,7 @@ mod integers;
 mod float;
 mod symbol;
 mod string;
+mod tuples;
 mod option;
 mod result;
 mod slice;
