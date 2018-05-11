@@ -9,22 +9,28 @@ ruby! {
     #[ruby_name="RustJourneyScanner"]
     class Scanner {
         struct {
-            count: u32,
+            tokens: Vec<String>,
         }
 
         def initialize(helix) {
-            Scanner { helix, count: 0 }
+            Scanner { helix, tokens: vec![] }
         }
 
-        def scan_setup(&self, _pattern: String) {
-
+        def scan_setup(&mut self, pattern: String) {
+            self.tokens.clear();
+            let iterator = pattern.split('/');
+            self.tokens.extend(iterator.map(|s| s.to_string()));
         }
 
         def next_token(&mut self) -> Option<(Symbol, String)> {
-            self.count += 1;
+            if self.tokens.len() > 0 {
+                let token = self.tokens.remove(0);
 
-            if self.count == 1 {
-                Some((Symbol::from_string("SLASH".to_string()), "/".to_string()))
+                if token == "" {
+                    Some((Symbol::from_string("SLASH".to_string()), "/".to_string()))
+                } else {
+                    Some((Symbol::from_string("LITERAL".to_string()), token))
+                }
             } else {
                 None
             }
