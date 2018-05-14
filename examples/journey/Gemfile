@@ -5,3 +5,4 @@ gemspec
 gem 'helix_runtime', path: '../../ruby'
 gem 'actionpack'
 gem 'activesupport'
+gem 'pry'

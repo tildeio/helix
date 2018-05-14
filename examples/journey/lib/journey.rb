@@ -9,6 +9,9 @@ when "RUST"
 
   ActionDispatch::Journey::Scanner = ::RustJourneyScanner
 when "RAILS"
+when "RUBY"
+  require "journey/ruby"
+  ActionDispatch::Journey::Scanner = ::Journey::Ruby::Scanner
 when "NONE"
 else
   puts "\nPlease specify an IMPLEMENTATION: RUST, RAILS or NONE"

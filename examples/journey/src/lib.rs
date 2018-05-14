@@ -9,31 +9,44 @@ ruby! {
     #[ruby_name="RustJourneyScanner"]
     class Scanner {
         struct {
-            tokens: Vec<String>,
+            pattern: String,
+            index: usize,
         }
 
         def initialize(helix) {
-            Scanner { helix, tokens: vec![] }
+            Scanner {
+                helix,
+                pattern: "".to_string(),
+                index: 0
+            }
         }
 
         def scan_setup(&mut self, pattern: String) {
-            self.tokens.clear();
-            let iterator = pattern.split('/');
-            self.tokens.extend(iterator.map(|s| s.to_string()));
+            self.pattern = pattern;
+            self.index = 0;
         }
 
         def next_token(&mut self) -> Option<(Symbol, String)> {
-            if self.tokens.len() > 0 {
-                let token = self.tokens.remove(0);
+            None
+            // if self.index >= self.pattern.len() {
+            //     None
+            // } else if self.pattern[self.index] == '/' {
+            //     Some((Symbol::from_string("SLASH".to_string()), "/".to_string()))
+            // } else {
+            //     None
+            // }
 
-                if token == "" {
-                    Some((Symbol::from_string("SLASH".to_string()), "/".to_string()))
-                } else {
-                    Some((Symbol::from_string("LITERAL".to_string()), token))
-                }
-            } else {
-                None
-            }
+            // if self.tokens.len() > 0 {
+                // let token = self.tokens.remove(0);
+                //
+                // if token == "" {
+                //     Some((Symbol::from_string("SLASH".to_string()), "/".to_string()))
+                // } else {
+                //     Some((Symbol::from_string("LITERAL".to_string()), token))
+                // }
+            // } else {
+                // None
+            // }
         }
     }
 }
