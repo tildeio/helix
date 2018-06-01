@@ -1,0 +1,14 @@
+[package]
+name = "docopt"
+version = "0.1.0"
+authors = ["Godhuda <engineering+godhuda@tilde.io>"]
+
+[lib]
+
+crate-type = ["cdylib"]
+
+[dependencies.helix]
+path = "../.."
+
+[dependencies]
+docopt = "*"
