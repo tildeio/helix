@@ -131,6 +131,14 @@ VALUE allocate_wrapper(VALUE klass) {
   return HELIX_Data_Wrap_Struct(klass, NULL, deallocate_wrapper, num);
 }
 
+static VALUE TEST_valid_encoding_p(VALUE _self, VALUE str) {
+  return HELIX_rb_str_valid_encoding_p(str) ? Qtrue : Qfalse;
+}
+
+static VALUE TEST_ascii_only_p(VALUE _self, VALUE str) {
+  return HELIX_rb_str_ascii_only_p(str) ? Qtrue : Qfalse;
+}
+
 static VALUE TEST_get_data(VALUE _self, VALUE wrapped) {
   int* num = HELIX_Data_Get_Struct_Value(wrapped);
   return INT2FIX(*num);
@@ -226,6 +234,9 @@ void Init_dummy() {
   EXPORT_FUNC(F642NUM, 1);
 
   EXPORT_FUNC(STR2STR, 2);
+
+  EXPORT_FUNC(valid_encoding_p, 1);
+  EXPORT_FUNC(ascii_only_p, 1);
 
   EXPORT_FUNC(get_data, 1);
   EXPORT_FUNC(get_data_ptr, 1);

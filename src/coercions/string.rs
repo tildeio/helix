@@ -9,9 +9,21 @@ impl FromRuby for String {
 
     fn from_ruby(value: VALUE) -> CheckResult<CheckedValue<String>> {
         if unsafe { sys::RB_TYPE_P(value, sys::T_STRING) } {
-            Ok(unsafe { CheckedValue::new(value) })
+            if unsafe { sys::rb_enc_get_index(value) == sys::rb_utf8_encindex() } {
+                if unsafe { sys::rb_str_valid_encoding_p(value) } {
+                    unsafe { Ok(CheckedValue::new(value)) }
+                } else {
+                    type_error!(value, "a valid UTF-8 String")
+                }
+            } else {
+                if unsafe { sys::rb_str_ascii_only_p(value) } {
+                    unsafe { Ok(CheckedValue::new(value)) }
+                } else {
+                    type_error!(value, "an UTF-8 String")
+                }
+            }
         } else {
-            type_error!(value, "a UTF-8 String")
+            type_error!(value, "a String")
         }
     }
 

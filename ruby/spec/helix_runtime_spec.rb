@@ -204,6 +204,56 @@ describe HelixRuntime do
     end
   end
 
+  describe "HELIX_rb_str_valid_encoding_p" do
+    it "matches #valid_encoding?" do
+      str = "hello world"
+      expect(Dummy.valid_encoding_p(str)).to eq(str.valid_encoding?)
+
+      str = "hello world".encode("BIG5")
+      expect(Dummy.valid_encoding_p(str)).to eq(str.valid_encoding?)
+
+      str = "hello world".force_encoding("BIG5")
+      expect(Dummy.valid_encoding_p(str)).to eq(str.valid_encoding?)
+
+      str = "ｈｅｌｌｏ"
+      expect(Dummy.valid_encoding_p(str)).to eq(str.valid_encoding?)
+
+      str = "ｈｅｌｌｏ".encode("BIG5")
+      expect(Dummy.valid_encoding_p(str)).to eq(str.valid_encoding?)
+
+      str = "ｈｅｌｌｏ".force_encoding("BIG5")
+      expect(Dummy.valid_encoding_p(str)).to eq(str.valid_encoding?)
+
+      str = "\330"
+      expect(Dummy.valid_encoding_p(str)).to eq(str.valid_encoding?)
+    end
+  end
+
+  describe "HELIX_rb_str_ascii_only_p" do
+    it "matches #ascii_only?" do
+      str = "hello world"
+      expect(Dummy.ascii_only_p(str)).to eq(str.ascii_only?)
+
+      str = "hello world".encode("BIG5")
+      expect(Dummy.ascii_only_p(str)).to eq(str.ascii_only?)
+
+      str = "hello world".force_encoding("BIG5")
+      expect(Dummy.ascii_only_p(str)).to eq(str.ascii_only?)
+
+      str = "ｈｅｌｌｏ"
+      expect(Dummy.ascii_only_p(str)).to eq(str.ascii_only?)
+
+      str = "ｈｅｌｌｏ".encode("BIG5")
+      expect(Dummy.ascii_only_p(str)).to eq(str.ascii_only?)
+
+      str = "ｈｅｌｌｏ".force_encoding("BIG5")
+      expect(Dummy.ascii_only_p(str)).to eq(str.ascii_only?)
+
+      str = "\330"
+      expect(Dummy.ascii_only_p(str)).to eq(str.ascii_only?)
+    end
+  end
+
   describe "Data_{Wrap,Get,Set}_Struct" do
     it "can allocate then change the data" do
       wrapper = Dummy::Wrapper.new

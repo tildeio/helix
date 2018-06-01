@@ -50,7 +50,19 @@ describe "Console" do
     end
   end
 
-  it "can handle invalid arguments" do
-    expect { console.log(123) }.to raise_error(TypeError, "Expected a UTF-8 String, got 123")
+  describe "invalid arguments" do
+    it "can handle non-strings" do
+      expect { console.log(123) }.to raise_error(TypeError, "Expected a String, got 123")
+    end
+
+    it "raises on non UTF-8 strings" do
+      str = "ｈｅｌｌｏ".encode("BIG5")
+      expect { console.log(str) }.to raise_error(TypeError, "Expected an UTF-8 String, got #{str.inspect}")
+    end
+
+    it "raises on invalid UTF-8 strings" do
+      str = "\330"
+      expect { console.log(str) }.to raise_error(TypeError, "Expected a valid UTF-8 String, got #{str.inspect}")
+    end
   end
 end
