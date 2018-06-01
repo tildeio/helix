@@ -4,7 +4,7 @@ task :test do
     sh "bundle exec rake"
   end
 
-  examples = ENV["EXAMPLES"] || "duration calculator console geometry membership text_transform turbo_blank json_builder"
+  examples = ENV["EXAMPLES"] || "unit duration calculator console geometry membership text_transform turbo_blank json_builder"
 
   sh "bash ./examples/runner default #{examples}"
 end
@@ -15,7 +15,7 @@ task :install do
     sh "bundle"
   end
 
-  examples = ENV["EXAMPLES"] || "duration calculator console geometry membership text_transform turbo_blank json_builder"
+  examples = ENV["EXAMPLES"] || "unit duration calculator console geometry membership text_transform turbo_blank json_builder"
 
   sh "bash ./examples/runner install #{examples}"
 end
