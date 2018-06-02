@@ -1,3 +1,10 @@
+## 0.7.4 (June 2, 2018)
+
+* [BUGFIX] Ensure classes with a `struct` also defines `initialize`
+* [BUGFIX] Ensure Ruby Strings have the correct encoding before performing coercion
+* [BUGFIX] Abort rake task when `cargo build` fails
+* [IMPROVEMENT] Add coercion for tuples
+
 ## 0.7.3 (March 6, 2018)
 
 * [IMPROVEMENT] Various improvements to the underlying `libcruby-sys` library
