@@ -117,11 +117,11 @@ module HelixRuntime
       raise "native source doesn't exist, run `cargo_build` first; source=#{source}" unless File.exist?(source)
       FileUtils.mkdir_p(File.dirname(native_path))
       FileUtils.cp source, native_path
+      true
     end
 
     def build
-      cargo_build
-      copy_native
+      cargo_build && copy_native
     end
 
     def clobber
