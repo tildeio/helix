@@ -2,6 +2,7 @@
 
 #include <ruby.h>
 #include <ruby/intern.h>
+#include <ruby/encoding.h>
 #include <stdbool.h>
 #include <helix_runtime.h>
 
@@ -62,6 +63,14 @@ VALUE HELIX_FIX2INT(VALUE v) {
 
 VALUE HELIX_rb_utf8_str_new(const char* str, long len) {
   return rb_utf8_str_new(str, len);
+}
+
+bool HELIX_rb_str_valid_encoding_p(VALUE str) {
+  return rb_enc_str_coderange(str) != ENC_CODERANGE_BROKEN;
+}
+
+bool HELIX_rb_str_ascii_only_p(VALUE str) {
+  return rb_enc_str_coderange(str) == ENC_CODERANGE_7BIT;
 }
 
 VALUE HELIX_Data_Wrap_Struct(VALUE klass, HELIX_RUBY_DATA_FUNC mark, HELIX_RUBY_DATA_FUNC free, void* data) {

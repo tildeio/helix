@@ -69,6 +69,9 @@ HELIX_EXTERN VALUE HELIX_FIX2INT(VALUE fix);
 
 HELIX_EXTERN VALUE HELIX_rb_utf8_str_new(const char* str, long len);
 
+HELIX_EXTERN bool HELIX_rb_str_valid_encoding_p(VALUE str);
+HELIX_EXTERN bool HELIX_rb_str_ascii_only_p(VALUE str);
+
 // typedef VALUE (*HELIX_rb_alloc_func_t)(VALUE);
 // void HELIX_rb_define_alloc_func(VALUE klass, HELIX_rb_alloc_func_t func);
 

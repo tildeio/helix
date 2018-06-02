@@ -208,6 +208,8 @@ extern "C" {
     pub fn rb_define_alloc_func(klass: VALUE, func: extern "C" fn(klass: VALUE) -> VALUE);
     pub fn rb_define_method(class: VALUE, name: c_string, func: c_func, arity: isize);
     pub fn rb_define_singleton_method(class: VALUE, name: c_string, func: c_func, arity: isize);
+    pub fn rb_enc_get_index(obj: VALUE) -> isize;
+    pub fn rb_utf8_encindex() -> isize;
     pub fn rb_sprintf(specifier: c_string, ...) -> VALUE;
     pub fn rb_inspect(value: VALUE) -> VALUE;
     pub fn rb_intern(string: c_string) -> ID;
@@ -238,6 +240,12 @@ extern "C" {
                       arg: *mut void,
                       state: *mut RubyException)
                       -> VALUE;
+
+    #[link_name = "HELIX_rb_str_valid_encoding_p"]
+    pub fn rb_str_valid_encoding_p(string: VALUE) -> bool;
+
+    #[link_name = "HELIX_rb_str_ascii_only_p"]
+    pub fn rb_str_ascii_only_p(string: VALUE) -> bool;
 
     #[link_name = "HELIX_Data_Wrap_Struct"]
     pub fn Data_Wrap_Struct(klass: VALUE, mark: extern "C" fn(*mut void), free: extern "C" fn(*mut void), data: *mut void) -> VALUE;
