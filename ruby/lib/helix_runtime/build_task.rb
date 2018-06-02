@@ -52,7 +52,7 @@ module HelixRuntime
       end
 
       task "cargo:build" => ["helix:pre_build", "helix:check_path"] do
-        project.cargo_build
+        project.cargo_build || abort
       end
 
       task "cargo:clean" do
@@ -61,7 +61,7 @@ module HelixRuntime
 
       desc "Build #{project.name}"
       task :build => ["helix:pre_build", "helix:check_path"] do
-        project.build
+        project.build || abort
       end
 
       desc "Remove build artifacts"
