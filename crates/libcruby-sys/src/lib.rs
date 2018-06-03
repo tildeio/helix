@@ -4,6 +4,7 @@
 extern crate libc;
 
 use std::ffi::CStr;
+use std::mem::size_of;
 
 pub const PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -13,6 +14,10 @@ pub fn check_version() {
 
     if PKG_VERSION != version {
         panic!("libcsys-ruby version ({}) doesn't match helix_runtime version ({}).", PKG_VERSION, version);
+    }
+
+    if size_of::<usize>() != size_of::<u32>() && size_of::<usize>() != size_of::<u64>() {
+        panic!("unsupported architecture, size_of::<usize>() = {}", size_of::<usize>());
     }
 }
 
@@ -255,4 +260,40 @@ extern "C" {
 
     #[link_name = "HELIX_Data_Set_Struct_Value"]
     pub fn Data_Set_Struct_Value(obj: VALUE, data: *mut void);
+}
+
+#[inline]
+pub unsafe fn NUM2USIZE(v: VALUE) -> usize {
+    if size_of::<usize>() == size_of::<u32>() {
+        NUM2U32(v) as usize
+    } else {
+        NUM2U64(v) as usize
+    }
+}
+
+#[inline]
+pub unsafe fn USIZE2NUM(num: usize) -> VALUE {
+    if size_of::<usize>() == size_of::<u32>() {
+        U322NUM(num as u32)
+    } else {
+        U642NUM(num as u64)
+    }
+}
+
+#[inline]
+pub unsafe fn NUM2ISIZE(v: VALUE) -> isize {
+    if size_of::<isize>() == size_of::<i32>() {
+        NUM2I32(v) as isize
+    } else {
+        NUM2I64(v) as isize
+    }
+}
+
+#[inline]
+pub unsafe fn ISIZE2NUM(num: isize) -> VALUE {
+    if size_of::<isize>() == size_of::<i32>() {
+        I322NUM(num as i32)
+    } else {
+        I642NUM(num as i64)
+    }
 }

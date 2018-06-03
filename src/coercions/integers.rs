@@ -1,5 +1,54 @@
+use std::mem::size_of;
 use sys::{self, VALUE, T_FIXNUM, T_BIGNUM};
 use super::{FromRuby, CheckResult, CheckedValue, ToRuby, ToRubyResult};
+
+impl FromRuby for usize {
+    type Checked = CheckedValue<usize>;
+
+    fn from_ruby(value: VALUE) -> CheckResult<CheckedValue<usize>> {
+        if unsafe { sys::RB_TYPE_P(value, T_FIXNUM) || sys::RB_TYPE_P(value, T_BIGNUM) } {
+            Ok(unsafe { CheckedValue::new(value) })
+        } else if size_of::<usize>() == size_of::<u32>() {
+            type_error!(value, "a 32-bit unsigned integer")
+        } else {
+            type_error!(value, "a 64-bit unsigned integer")
+        }
+    }
+
+    fn from_checked(checked: CheckedValue<usize>) -> usize {
+        unsafe { sys::NUM2USIZE(checked.to_value()) }
+    }
+}
+
+impl ToRuby for usize {
+    fn to_ruby(self) -> ToRubyResult {
+        Ok(unsafe { sys::USIZE2NUM(self) })
+    }
+}
+
+impl FromRuby for isize {
+    type Checked = CheckedValue<isize>;
+
+    fn from_ruby(value: VALUE) -> CheckResult<CheckedValue<isize>> {
+        if unsafe { sys::RB_TYPE_P(value, T_FIXNUM) || sys::RB_TYPE_P(value, T_BIGNUM) } {
+            Ok(unsafe { CheckedValue::new(value) })
+        } else if size_of::<isize>() == size_of::<i32>() {
+            type_error!(value, "a 32-bit signed integer")
+        } else {
+            type_error!(value, "a 64-bit signed integer")
+        }
+    }
+
+    fn from_checked(checked: CheckedValue<isize>) -> isize {
+        unsafe { sys::NUM2ISIZE(checked.to_value()) }
+    }
+}
+
+impl ToRuby for isize {
+    fn to_ruby(self) -> ToRubyResult {
+        Ok(unsafe { sys::ISIZE2NUM(self) })
+    }
+}
 
 impl FromRuby for u64 {
     type Checked = CheckedValue<u64>;
