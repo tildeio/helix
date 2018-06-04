@@ -1,3 +1,7 @@
+## 0.7.5 (June 4, 2018)
+
+* [IMPROVEMENT] Add coercion for `usize` and `isize`
+
 ## 0.7.4 (June 2, 2018)
 
 * [BUGFIX] Ensure classes with a `struct` also defines `initialize`

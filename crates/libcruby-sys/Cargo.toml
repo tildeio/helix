@@ -1,6 +1,6 @@
 [package]
 name = "libcruby-sys"
-version = "0.7.4"
+version = "0.7.5"
 authors = ["Godhuda <engineering+godhuda@tilde.io>"]
 description = "Ruby bindings"
 repository = "https://github.com/tildeio/helix"
@@ -11,8 +11,8 @@ include = [
     "Cargo.toml",
     "ruby_info.rb",
     # Keep in sync with version
-    "helix-runtime-0-7-4.i386.lib",
-    "helix-runtime-0-7-4.x86_64.lib"
+    "helix-runtime-0-7-5.i386.lib",
+    "helix-runtime-0-7-5.x86_64.lib"
 ]
 
 [dependencies]
