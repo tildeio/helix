@@ -1,0 +1,15 @@
+[package]
+name = "game_of_life"
+version = "0.1.0"
+authors = ["Godfrey Chan <godfrey@tilde.io>"]
+
+[lib]
+
+crate-type = ["cdylib"]
+
+[dependencies.helix]
+path = "../.."
+
+[dependencies]
+termion = "*"
+rand = "*"

@@ -3,6 +3,7 @@ cache:
   - '%HOMEDRIVE%%HOMEPATH%\.multirust -> .appveyor.yml'
 
 environment:
+  # can't run game_of_life since termion doesn't support windows https://github.com/redox-os/termion/issues/103
   EXAMPLES: duration calculator console geometry membership text_transform turbo_blank json_builder
   VERBOSE: true
   RUST_BACKTRACE: 1
