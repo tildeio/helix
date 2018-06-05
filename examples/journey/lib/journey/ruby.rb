@@ -51,14 +51,6 @@ module Journey
           else
             [determine_type(token), token]
           end
-
-          # if token == "/"
-          #   @index += 1
-          #   [:SLASH, token]
-          # else
-          #   binding.pry
-          #   nil
-          # end
         end
       end
 
