@@ -34,19 +34,18 @@ module Journey
           if determine_type(next_token) === nil
             return
           elsif (determine_type(token) == :LITERAL) && (determine_type(next_token) == :LITERAL)
-            # need to handle building a word here.
-            # @index is where the word starts
-            # word_end_index is where the word ends
-
-            # if next_token is a char, don't consume it but add it to the word.
+            # Begin building the word by starting with the current index.
             word_end_index = @index
 
-            while determine_type(peek_at(word_end_index + 1)) == :LITERAL
+            # Continue incrementing the offset until we reach the end of word.
+            while determine_type(peek_at_index(word_end_index + 1)) == :LITERAL
               word_end_index += 1
             end
 
-            word = build_word(@index - 1, word_end_index)
+            # Build the word literal and set the index to the offset of word literal.
+            word = word_from_offset(@index - 1, word_end_index)
             @index = word_end_index
+
             [:LITERAL, word]
           else
             [determine_type(token), token]
@@ -66,17 +65,18 @@ module Journey
         end
       end
 
-      def peek_at(index)
+      # Check a token at a specific index.
+      def peek_at_index(index)
         @pattern[index]
       end
 
+      # Check what the next token is.
       def peek_next_token
-        # Check what the next token is.
         next_index = @index + 1
         @pattern[next_index]
       end
 
-      def build_word(beginning_index, ending_index)
+      def word_from_offset(beginning_index, ending_index)
         @pattern[beginning_index, ending_index]
       end
     end
