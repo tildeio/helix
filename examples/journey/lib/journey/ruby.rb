@@ -33,20 +33,10 @@ module Journey
 
           if determine_type(next_token) === nil
             return
+          elsif (determine_type(token) == :SYMBOL) && (determine_type(next_token) == :LITERAL)
+            [:SYMBOL, consumed_word]
           elsif (determine_type(token) == :LITERAL) && (determine_type(next_token) == :LITERAL)
-            # Begin building the word by starting with the current index.
-            word_end_index = @index
-
-            # Continue incrementing the offset until we reach the end of word.
-            while determine_type(peek_at_index(word_end_index + 1)) == :LITERAL
-              word_end_index += 1
-            end
-
-            # Build the word literal and set the index to the offset of word literal.
-            word = word_from_offset(@index - 1, word_end_index)
-            @index = word_end_index
-
-            [:LITERAL, word]
+            [:LITERAL, consumed_word]
           else
             [determine_type(token), token]
           end
@@ -78,6 +68,22 @@ module Journey
 
       def word_from_offset(beginning_index, ending_index)
         @pattern[beginning_index, ending_index]
+      end
+
+      def consumed_word
+        # Begin building the word by starting with the current index.
+        word_end_index = @index
+
+        # Continue incrementing the offset until we reach the end of word.
+        while determine_type(peek_at_index(word_end_index + 1)) == :LITERAL
+          word_end_index += 1
+        end
+
+        # Build the word literal and set the index to the offset of word literal.
+        word = word_from_offset(@index - 1, word_end_index)
+        @index = word_end_index
+
+        word
       end
     end
   end
