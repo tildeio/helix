@@ -9,3 +9,6 @@ crate-type = ["cdylib"]
 
 [dependencies.helix]
 path = "../.."
+
+[dependencies]
+owned_chars = "0.3"
