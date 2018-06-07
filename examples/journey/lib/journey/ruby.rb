@@ -1,4 +1,4 @@
-# require 'pry'
+require 'pry'
 puts "*** USING RUBY IMPL ***"
 
 module Journey
@@ -33,6 +33,9 @@ module Journey
 
           if determine_type(next_token) === nil
             return
+          elsif (determine_type(token) == :STAR) && (determine_type(next_token) == :LITERAL)
+            # binding.pry
+            [:STAR, consumed_word]
           elsif (determine_type(token) == :SYMBOL) && (determine_type(next_token) == :LITERAL)
             [:SYMBOL, consumed_word]
           elsif (determine_type(token) == :LITERAL) && (determine_type(next_token) == :LITERAL)
@@ -74,10 +77,15 @@ module Journey
         # Begin building the word by starting with the current index.
         word_end_index = @index
 
+        # FIXME: WHAT ABOUT WHEN THE END OF THE WORD IS ALSO END OF STRING?
+
         # Continue incrementing the offset until we reach the end of word.
-        while determine_type(peek_at_index(word_end_index + 1)) == :LITERAL
+        while determine_type(peek_at_index(word_end_index + 1)) == (:LITERAL || nil)
+          # binding.pry
           word_end_index += 1
         end
+
+        # binding.pry
 
         # Build the word literal and set the index to the offset of word literal.
         word = word_from_offset(@index - 1, word_end_index)
