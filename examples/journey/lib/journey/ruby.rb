@@ -1,6 +1,3 @@
-require 'pry'
-puts "*** USING RUBY IMPL ***"
-
 module Journey
   module Ruby
     class Scanner
@@ -31,15 +28,11 @@ module Journey
           # Increment the index in preparation for next iteration.
           @index += 1
 
-          # binding.pry
-
           if determine_type(next_token) === nil
             return
           elsif (determine_type(token) == :STAR) && (determine_type(next_token) == :LITERAL)
-            # binding.pry
             [:STAR, consumed_word]
           elsif (determine_type(token) == :SYMBOL) && (determine_type(next_token) == :LITERAL)
-            # binding.pry
             [:SYMBOL, consumed_word]
           elsif (determine_type(token) == :LITERAL) && (determine_type(next_token) == :LITERAL)
             [:LITERAL, consumed_word]
@@ -73,44 +66,21 @@ module Journey
       end
 
       def word_from_offset(beginning_index, ending_index)
-        binding.pry
-        @pattern[beginning_index, ending_index]
+        @pattern[beginning_index..ending_index]
       end
 
       def consumed_word
-        puts " "
-        puts " "
-        puts "@pattern is: #{@pattern}"
-        puts "*** ENTERING consumed_word method ***"
-
         # Begin building the word by starting with the current index.
         word_end_index = @index
-        puts "**@index is: #{@index}, and item at @index is #{peek_at_index(@index)}"
-        puts "**word_end_index is: #{word_end_index}"
-        puts "**item at next index #{word_end_index + 1} is: #{peek_at_index(word_end_index + 1)}"
-
-        # FIXME: WHAT ABOUT WHEN THE END OF THE WORD IS ALSO END OF STRING?
 
         # Continue incrementing the offset until we reach the end of word.
-        puts "**the item at #{word_end_index + 1} is of the type: #{determine_type(peek_at_index(word_end_index + 1))}"
         while determine_type(peek_at_index(word_end_index + 1)) == :LITERAL
-          # binding.pry
-          puts "~~the item at #{word_end_index + 1} is #{peek_at_index(word_end_index + 1)} and is of the type: #{determine_type(peek_at_index(word_end_index + 1))}~~"
-
           word_end_index += 1
-          puts "**I JUST INCREMENTED word_end_index, it is now: #{word_end_index}"
         end
-
-        # binding.pry
 
         # Build the word literal and set the index to the offset of word literal.
         word = word_from_offset(@index - 1, word_end_index)
-        puts "** WORD is: #{word}, between #{@index - 1} and #{word_end_index}"
-
         @index = word_end_index
-        puts "** I SET @index to be word_end_index: #{word_end_index}"
-
-        # binding.pry
 
         word
       end
