@@ -4,18 +4,35 @@
 extern crate helix;
 extern crate owned_chars;
 
-use helix::Symbol;
+use helix::{ToRuby, ToRubyResult};
 use owned_chars::{OwnedCharsExt, OwnedChars};
 
-// enum Token {
-//     Slash,
-//     Star(String),
-//     LParen,
-//     RParen,
-//     Dot,
-//     Symbol(String),
-//     Literal(String),
-// }
+enum Token {
+    Slash,
+    LParen,
+    RParen,
+    Dot,
+    Star(String),
+    Symbol(String),
+    Literal(String),
+}
+
+impl ToRuby for Token {
+    fn to_ruby(self) -> ToRubyResult {
+        use Token::*;
+        use helix::Symbol as RSymbol;
+
+        match self {
+            Slash          => (RSymbol::from_string("SLASH".to_string()), "/").to_ruby(),
+            LParen         => (RSymbol::from_string("LPAREN".to_string()), "(").to_ruby(),
+            RParen         => (RSymbol::from_string("RPAREN".to_string()), ")").to_ruby(),
+            Dot            => (RSymbol::from_string("DOT".to_string()), ".").to_ruby(),
+            Star(ident)    => (RSymbol::from_string("STAR".to_string()), ident).to_ruby(),
+            Symbol(ident)  => (RSymbol::from_string("SYMBOL".to_string()), ident).to_ruby(),
+            Literal(ident) => (RSymbol::from_string("LITERAL".to_string()), ident).to_ruby(),
+        }
+    }
+}
 
 ruby! {
     #[ruby_name="RustJourneyScanner"]
@@ -34,57 +51,30 @@ ruby! {
             self.peeked = None;
         }
 
-        def next_token(&mut self) -> Option<(Symbol, String)> {
-            let character = self.consume_char();
-            let next_character = self.peek_char();
+        def next_token(&mut self) -> Option<Token> {
+            use Token::*;
 
-            println!("character: {:?}, next_character: {:?}", character, next_character);
-            //     let character = chars.next();
-            //     let next_character = chars.peek();
-            //
-            //     None
-            // })
-            None
-
-            // self.chars.and_then(|chars| None)
-
-
-            // match self.chars {
-            //     Some(ref mut chars) => { None },
-            //     None => { None },
-            // }
-
-
-            // if self.chars.is_none() {
-            //     None
-            // } else {
-            //     let  = self.chars.unwrap().as_re;
-            //     let c = chars.next();
-            //     None
-            // }
-
-            // let c = self.chars.next();
-            // return None
-
-            // if self.index >= self.pattern.len() {
-            //     None
-            // } else if self.pattern[self.index] == '/' {
-            //     Some((Symbol::from_string("SLASH".to_string()), "/".to_string()))
-            // } else {
-            //     None
-            // }
-
-            // if self.tokens.len() > 0 {
-                // let token = self.tokens.remove(0);
-                //
-                // if token == "" {
-                //     Some((Symbol::from_string("SLASH".to_string()), "/".to_string()))
-                // } else {
-                //     Some((Symbol::from_string("LITERAL".to_string()), token))
-                // }
-            // } else {
-                // None
-            // }
+            self.peek_char().map(|character| match character {
+                '/' => {
+                    self.consume_char();
+                    Slash
+                },
+                '(' => {
+                    self.consume_char();
+                    LParen
+                },
+                ')' => {
+                    self.consume_char();
+                    RParen
+                },
+                '.' => {
+                    self.consume_char();
+                    Dot
+                },
+                '*' => Star(self.consume_star().unwrap()),
+                ':' => Symbol(self.consume_symbol().unwrap()),
+                _   => Literal(self.consume_literal().unwrap()),
+            })
         }
     }
 }
@@ -103,5 +93,83 @@ impl Scanner {
             self.peeked = self.consume_char();
             self.peeked
         })
+    }
+
+    fn consume_star(&mut self) -> Option<String> {
+        if self.peek_char().is_none() {
+            return None
+        } else {
+            let mut ident = String::new();
+
+            loop {
+                ident.push(self.consume_char().unwrap());
+
+                let is_boundary = match self.peek_char() {
+                    Some(c) => match c {
+                        '_' => false,
+                        c   => !c.is_ascii_alphanumeric(),
+                    },
+                    None => true
+                };
+
+                if is_boundary { break; }
+            }
+
+            Some(ident)
+        }
+    }
+
+    fn consume_symbol(&mut self) -> Option<String> {
+        if self.peek_char().is_none() {
+            return None
+        } else {
+            let mut ident = String::new();
+
+            loop {
+                ident.push(self.consume_char().unwrap());
+
+                let is_boundary = match self.peek_char() {
+                    Some(c) => match c {
+                        '_' => false,
+                        c   => !c.is_ascii_alphanumeric(),
+                    },
+                    None => true
+                };
+
+                if is_boundary { break; }
+            }
+
+            Some(ident)
+        }
+    }
+
+    fn consume_literal(&mut self) -> Option<String> {
+        if self.peek_char().is_none() {
+            return None
+        } else {
+            let mut ident = String::new();
+
+            loop {
+                let character = self.consume_char().unwrap();
+
+                if character == '\\' {
+                    continue;
+                } else {
+                    ident.push(character);
+                }
+
+                let is_boundary = match self.peek_char() {
+                    Some(c) => match c {
+                        '/' => true,
+                        _   => false,
+                    },
+                    None => true
+                };
+
+                if is_boundary { break; }
+            }
+
+            Some(ident)
+        }
     }
 }
