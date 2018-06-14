@@ -924,38 +924,44 @@ macro_rules! parse {
 
     // Catch all
 
+    {
+        state: $state:tt,
+        buffer: { $($buffer:tt)* },
+        stack: $stack:tt
+    } => {
+        unexpected_token!($($buffer)*);
+
+        parse_error!(
+            "If you suspect this is a bug in Helix itself, please file an ",
+            "issue with the following debug information:\n\n",
+            "{\n",
+            "  state: ", stringify!($state), ",\n",
+            "  buffer: ", stringify!({ $($buffer)* }), ",\n",
+            "  stack: ", stringify!($stack), ",\n",
+            "}"
+        );
+    };
+
     { $($state:tt)* } => {
         parse_error!(
-            "Unknown parser state. ",
-            "This is possibly a bug in Helix itself, please file an issue ",
+            "Corrupted parser state. ",
+            "This is likely a bug in Helix itself, please file an issue ",
             "with the following debug information:\n\n",
-            format_parser_state!($($state)*)
+            stringify!($($state)*)
         );
     };
 }
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! parse_error {
-    ($($message:expr),*) => { compile_error!(concat!("Parse Error! ", $($message),*)); };
+macro_rules! unexpected_token {
+    () => {};
 }
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! format_parser_state {
-    {
-        state: $state:tt,
-        buffer: $buffer:tt,
-        stack: $stack:tt
-    } => {
-        concat!("{\n",
-            "  state: ", stringify!($state), ",\n",
-            "  buffer: ", stringify!($buffer), ",\n",
-            "  stack: ", stringify!($stack), ",\n",
-        "}")
-    };
-
-    { $($state:tt)* } => { concat!("(CORRUPTED)\n", stringify!($($state)*)) };
+macro_rules! parse_error {
+    ($($message:expr),*) => { compile_error!(concat!("Parse Error! ", $($message),*)); };
 }
 
 #[doc(hidden)]
