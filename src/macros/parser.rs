@@ -70,6 +70,7 @@
 #[doc(hidden)]
 #[macro_export]
 macro_rules! parse {
+
     // STATE: top_level
 
     {
@@ -264,38 +265,6 @@ macro_rules! parse {
 
     {
         state: parse_methods,
-        buffer: { #[ruby_name = $ruby_name:tt] def $name:tt $($rest:tt)* },
-        stack: { $($stack:tt)* }
-    } => {
-        parse! {
-            state: parse_method,
-            buffer: { $($rest)* },
-            stack: {
-                rust_name: $name,
-                ruby_name: { $ruby_name },
-                $($stack)*
-            }
-        }
-    };
-
-    {
-        state: parse_methods,
-        buffer: { def $name:tt $($rest:tt)* },
-        stack: { $($stack:tt)* }
-    } => {
-        parse! {
-            state: parse_method,
-            buffer: { $($rest)* },
-            stack: {
-                rust_name: $name,
-                ruby_name: { stringify!($name) },
-                $($stack)*
-            }
-        }
-    };
-
-    {
-        state: parse_methods,
         buffer: {},
         stack: {
             class: $class:tt,
@@ -314,6 +283,121 @@ macro_rules! parse {
         }
     };
 
+    {
+        state: parse_methods,
+        buffer: $buffer:tt,
+        stack: { $($stack:tt)* }
+    } => {
+        parse! {
+            state: parse_method_attributes,
+            buffer: $buffer,
+            stack: {
+                rust_name: uninitialized,
+                ruby_name: uninitialized,
+                ruby_visibility: public,
+                $($stack)*
+            }
+        }
+    };
+
+    // STATE: parse_method_attributes
+
+    {
+        state: parse_method_attributes,
+        buffer: { #[ruby_visibility = $ruby_visibility:tt] $($rest:tt)* },
+        stack: {
+            rust_name: uninitialized,
+            ruby_name: $ruby_name:tt,
+            ruby_visibility: public,
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_method_attributes,
+            buffer: { $($rest)* },
+            stack: {
+                rust_name: uninitialized,
+                ruby_name: $ruby_name,
+                ruby_visibility: $ruby_visibility,
+                $($stack)*
+            }
+        }
+    };
+
+    {
+        state: parse_method_attributes,
+        buffer: { #[ruby_name = $ruby_name:tt] $($rest:tt)* },
+        stack: {
+            rust_name: uninitialized,
+            ruby_name: uninitialized,
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_method_attributes,
+            buffer: { $($rest)* },
+            stack: {
+                rust_name: uninitialized,
+                ruby_name: { $ruby_name },
+                $($stack)*
+            }
+        }
+    };
+
+    {
+        state: parse_method_attributes,
+        buffer: $buffer:tt,
+        stack: $stack:tt
+    } => {
+        parse! {
+            state: parse_method_name,
+            buffer: $buffer,
+            stack: $stack
+        }
+    };
+
+    // STATE: parse_method_name
+
+    {
+        state: parse_method_name,
+        buffer: { def $name:tt $($rest:tt)* },
+        stack: {
+            rust_name: uninitialized,
+            ruby_name: uninitialized,
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_method,
+            buffer: { $($rest)* },
+            stack: {
+                rust_name: $name,
+                ruby_name: { stringify!($name) },
+                $($stack)*
+            }
+        }
+    };
+
+    {
+        state: parse_method_name,
+        buffer: { def $name:tt $($rest:tt)* },
+        stack: {
+            rust_name: uninitialized,
+            ruby_name: $ruby_name:tt,
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_method,
+            buffer: { $($rest)* },
+            stack: {
+                rust_name: $name,
+                ruby_name: $ruby_name,
+                $($stack)*
+            }
+        }
+    };
+
     // STATE: parse_method
 
     {
@@ -322,6 +406,7 @@ macro_rules! parse {
         stack: {
             rust_name: initialize,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             class: $class:tt,
             $($stack:tt)*
         }
@@ -333,6 +418,7 @@ macro_rules! parse {
             state: parse_arguments_initialize,
             buffer: { $($args)* },
             stack: {
+                ruby_visibility: $ruby_visibility,
                 class_body: { $($rest)* },
                 class: $class,
                 $($stack)*
@@ -346,6 +432,7 @@ macro_rules! parse {
         stack: {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             $($stack:tt)*
         }
     } => {
@@ -355,6 +442,7 @@ macro_rules! parse {
             stack: {
                 rust_name: $rust_name,
                 ruby_name: $ruby_name,
+                ruby_visibility: $ruby_visibility,
                 class_body: { $($rest)* },
                 $($stack)*
             }
@@ -367,6 +455,7 @@ macro_rules! parse {
         state: parse_arguments_initialize,
         buffer: { $helix_arg:tt, $($args:tt)+ },
         stack: {
+            ruby_visibility: $ruby_visibility:tt,
             class_body: $class_body:tt,
             $($stack:tt)*
         }
@@ -381,6 +470,7 @@ macro_rules! parse {
                     type: initializer,
                     rust_name: initialize,
                     ruby_name: { "initialize" },
+                    ruby_visibility: $ruby_visibility,
                     self: {
                         ownership: { },
                         name: $helix_arg
@@ -398,6 +488,7 @@ macro_rules! parse {
         state: parse_arguments_initialize,
         buffer: { $helix_arg:tt },
         stack: {
+            ruby_visibility: $ruby_visibility:tt,
             class_body: $class_body:tt,
             $($stack:tt)*
         }
@@ -412,6 +503,7 @@ macro_rules! parse {
                     type: initializer,
                     rust_name: initialize,
                     ruby_name: { "initialize" },
+                    ruby_visibility: $ruby_visibility,
                     self: {
                         ownership: { },
                         name: $helix_arg
@@ -433,6 +525,7 @@ macro_rules! parse {
         stack: {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             class_body: $class_body:tt,
             $($stack:tt)*
         }
@@ -447,6 +540,7 @@ macro_rules! parse {
                     type: instance_method,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
+                    ruby_visibility: $ruby_visibility,
                     self: {
                         ownership: { &mut },
                         name: $self_arg
@@ -466,6 +560,7 @@ macro_rules! parse {
         stack: {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             class_body: $class_body:tt,
             $($stack:tt)*
         }
@@ -480,6 +575,7 @@ macro_rules! parse {
                     type: instance_method,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
+                    ruby_visibility: $ruby_visibility,
                     self: {
                         ownership: { &mut },
                         name: $self_arg
@@ -499,6 +595,7 @@ macro_rules! parse {
         stack: {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             class_body: $class_body:tt,
             $($stack:tt)*
         }
@@ -513,6 +610,7 @@ macro_rules! parse {
                     type: instance_method,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
+                    ruby_visibility: $ruby_visibility,
                     self: {
                         ownership: { & },
                         name: $self_arg
@@ -532,6 +630,7 @@ macro_rules! parse {
         stack: {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             class_body: $class_body:tt,
             $($stack:tt)*
         }
@@ -546,6 +645,7 @@ macro_rules! parse {
                     type: instance_method,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
+                    ruby_visibility: $ruby_visibility,
                     self: {
                         ownership: { & },
                         name: $self_arg
@@ -565,6 +665,7 @@ macro_rules! parse {
         stack: {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             class_body: $class_body:tt,
             $($stack:tt)*
         }
@@ -579,6 +680,7 @@ macro_rules! parse {
                     type: instance_method,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
+                    ruby_visibility: $ruby_visibility,
                     self: {
                         ownership: { },
                         name: $self_arg
@@ -598,6 +700,7 @@ macro_rules! parse {
         stack: {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             class_body: $class_body:tt,
             $($stack:tt)*
         }
@@ -612,6 +715,7 @@ macro_rules! parse {
                     type: instance_method,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
+                    ruby_visibility: $ruby_visibility,
                     self: {
                         ownership: { },
                         name: $self_arg
@@ -631,6 +735,7 @@ macro_rules! parse {
         stack: {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             class_body: $class_body:tt,
             $($stack:tt)*
         }
@@ -643,6 +748,7 @@ macro_rules! parse {
                     type: class_method,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
+                    ruby_visibility: $ruby_visibility,
                     self: (),
                     args: [ $($args)* ],
                     ret: uninitialized,
@@ -663,6 +769,7 @@ macro_rules! parse {
                 type: $type:tt,
                 rust_name: $rust_name:tt,
                 ruby_name: $ruby_name:tt,
+                ruby_visibility: $ruby_visibility:tt,
                 self: $self:tt,
                 args: $args:tt,
                 ret: uninitialized,
@@ -681,6 +788,7 @@ macro_rules! parse {
                     type: $type,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
+                    ruby_visibility: $ruby_visibility,
                     self: $self,
                     args: $args,
                     ret: { $ret },
@@ -699,6 +807,7 @@ macro_rules! parse {
                 type: initializer,
                 rust_name: $rust_method_name:tt,
                 ruby_name: $ruby_method_name:tt,
+                ruby_visibility: $ruby_visibility:tt,
                 self: $self:tt,
                 args: $args:tt,
                 ret: uninitialized,
@@ -723,6 +832,7 @@ macro_rules! parse {
                     type: initializer,
                     rust_name: $rust_method_name,
                     ruby_name: $ruby_method_name,
+                    ruby_visibility: $ruby_visibility,
                     self: $self,
                     args: $args,
                     ret: { $rust_class_name },
@@ -749,6 +859,7 @@ macro_rules! parse {
                 type: $type:tt,
                 rust_name: $rust_name:tt,
                 ruby_name: $ruby_name:tt,
+                ruby_visibility: $ruby_visibility:tt,
                 self: $self:tt,
                 args: $args:tt,
                 ret: uninitialized,
@@ -765,6 +876,7 @@ macro_rules! parse {
                     type: $type,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
+                    ruby_visibility: $ruby_visibility,
                     self: $self,
                     args: $args,
                     ret: { () },

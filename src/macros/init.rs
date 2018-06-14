@@ -86,6 +86,7 @@ macro_rules! codegen_define_method {
         type: class_method,
         rust_name: $rust_name:tt,
         ruby_name: { $($ruby_name:tt)* },
+        ruby_visibility: $ruby_visibility:tt,
         self: (),
         args: [ $($arg:tt : $argty:ty),* ],
         ret: { $($ret:tt)* },
@@ -141,6 +142,7 @@ macro_rules! codegen_define_method {
         type: instance_method,
         rust_name: $rust_name:tt,
         ruby_name: { $($ruby_name:tt)* },
+        ruby_visibility: $ruby_visibility:tt,
         self: { ownership: { $($ownership:tt)* }, name: $self:tt },
         args: [ $($arg:tt : $argty:ty),* ],
         ret: { $($ret:tt)* },
@@ -192,6 +194,29 @@ macro_rules! codegen_define_method {
     ($def:tt, {
         type: class,
         rust_name: $cls_rust_name:tt,
+        $($rest:tt)*
+    }, {
+        type: initializer,
+        rust_name: $rust_name:tt,
+        ruby_name: $ruby_name:tt,
+        ruby_visibility: unexported,
+        self: $self:tt,
+        args: [ $($arg:tt : $argty:ty),* ],
+        ret: { $($ret:tt)* },
+        body: $body:tt
+    }) => ({
+        impl $cls_rust_name {
+            pub fn new($($arg : $argty),*) -> $($ret)* {
+                $cls_rust_name::$rust_name(unsafe { $crate::sys::Qnil } , $($arg),*)
+            }
+        }
+
+        $def.undefine_class_method(cstr!("new"))
+    });
+
+    ($def:tt, {
+        type: class,
+        rust_name: $cls_rust_name:tt,
         ruby_name: $cls_ruby_name:tt,
         meta: $meta:tt,
         struct: $struct:tt,
@@ -200,6 +225,7 @@ macro_rules! codegen_define_method {
         type: initializer,
         rust_name: $rust_name:tt,
         ruby_name: { $($ruby_name:tt)* },
+        ruby_visibility: $ruby_visibility:tt,
         self: { ownership: {}, name: $self:tt },
         args: [ $($arg:tt : $argty:ty),* ],
         ret: { $($ret:tt)* },

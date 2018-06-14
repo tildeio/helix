@@ -70,4 +70,10 @@ impl ClassDefinition {
             }
         }
     }
+
+    pub fn undefine_class_method(&self, name: c_string) {
+        unsafe {
+            sys::rb_undef_method(sys::CLASS_OF(self.class.0), name);
+        }
+    }
 }

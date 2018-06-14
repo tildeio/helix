@@ -165,6 +165,7 @@ macro_rules! codegen_method {
             type: initializer,
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             self: {
                 ownership: {},
                 name: $self:tt
@@ -182,6 +183,7 @@ macro_rules! codegen_method {
             type: class_method,
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             self: (),
             args: [ $($args:tt)* ],
             ret: { $($ret:tt)* },
@@ -196,6 +198,7 @@ macro_rules! codegen_method {
             type: instance_method,
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            ruby_visibility: $ruby_visibility:tt,
             self: {
                 ownership: { $($ownership:tt)* },
                 name: $self:tt

@@ -167,6 +167,9 @@ extern "C" {
     #[link_name = "HELIX_OBJ_FROZEN"]
     pub fn OBJ_FROZEN(v: VALUE) -> bool;
 
+    #[link_name = "HELIX_CLASS_OF"]
+    pub fn CLASS_OF(v: VALUE) -> VALUE;
+
     #[link_name = "HELIX_T_OBJECT"]
     pub static T_OBJECT: isize;
 
@@ -210,9 +213,10 @@ extern "C" {
     pub fn rb_define_module_under(namespace: VALUE, name: c_string) -> VALUE;
     pub fn rb_define_class(name: c_string, superclass: VALUE) -> VALUE;
     pub fn rb_define_class_under(namespace: VALUE, name: c_string, superclass: VALUE) -> VALUE;
-    pub fn rb_define_alloc_func(klass: VALUE, func: extern "C" fn(klass: VALUE) -> VALUE);
+    pub fn rb_define_alloc_func(class: VALUE, func: extern "C" fn(class: VALUE) -> VALUE);
     pub fn rb_define_method(class: VALUE, name: c_string, func: c_func, arity: isize);
     pub fn rb_define_singleton_method(class: VALUE, name: c_string, func: c_func, arity: isize);
+    pub fn rb_undef_method(class: VALUE, name: c_string);
     pub fn rb_enc_get_index(obj: VALUE) -> isize;
     pub fn rb_utf8_encindex() -> isize;
     pub fn rb_sprintf(specifier: c_string, ...) -> VALUE;

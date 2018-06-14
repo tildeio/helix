@@ -20,8 +20,7 @@ travis-ci = { repository = "tildeio/helix", branch = "master" }
 appveyor = { repository = "tildeio/helix", branch = "master", service = "github" }
 
 [workspace]
-
-members = ["examples/calculator", "examples/console", "examples/game_of_life", "examples/geometry", "examples/duration", "examples/membership", "examples/text_transform", "examples/turbo_blank", "examples/json_builder"]
+members = ["examples/calculator", "examples/console", "examples/docopt", "examples/game_of_life", "examples/geometry", "examples/duration", "examples/membership", "examples/text_transform", "examples/turbo_blank", "examples/json_builder"]
 
 [dependencies]
 libc = "0.2.0"

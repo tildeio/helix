@@ -73,6 +73,10 @@ bool HELIX_rb_str_ascii_only_p(VALUE str) {
   return rb_enc_str_coderange(str) == ENC_CODERANGE_7BIT;
 }
 
+VALUE HELIX_CLASS_OF(VALUE v) {
+  return CLASS_OF(v);
+}
+
 VALUE HELIX_Data_Wrap_Struct(VALUE klass, HELIX_RUBY_DATA_FUNC mark, HELIX_RUBY_DATA_FUNC free, void* data) {
   return Data_Wrap_Struct(klass, mark, free, data);
 }
