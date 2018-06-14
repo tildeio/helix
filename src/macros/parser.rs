@@ -70,6 +70,7 @@
 #[doc(hidden)]
 #[macro_export]
 macro_rules! parse {
+
     // STATE: top_level
 
     {
@@ -264,38 +265,6 @@ macro_rules! parse {
 
     {
         state: parse_methods,
-        buffer: { #[ruby_name = $ruby_name:tt] def $name:tt $($rest:tt)* },
-        stack: { $($stack:tt)* }
-    } => {
-        parse! {
-            state: parse_method,
-            buffer: { $($rest)* },
-            stack: {
-                rust_name: $name,
-                ruby_name: { $ruby_name },
-                $($stack)*
-            }
-        }
-    };
-
-    {
-        state: parse_methods,
-        buffer: { def $name:tt $($rest:tt)* },
-        stack: { $($stack:tt)* }
-    } => {
-        parse! {
-            state: parse_method,
-            buffer: { $($rest)* },
-            stack: {
-                rust_name: $name,
-                ruby_name: { stringify!($name) },
-                $($stack)*
-            }
-        }
-    };
-
-    {
-        state: parse_methods,
         buffer: {},
         stack: {
             class: $class:tt,
@@ -310,6 +279,98 @@ macro_rules! parse {
             buffer: $program,
             stack: {
                 ast: [ $($ast)* $class ]
+            }
+        }
+    };
+
+    {
+        state: parse_methods,
+        buffer: $buffer:tt,
+        stack: { $($stack:tt)* }
+    } => {
+        parse! {
+            state: parse_method_attributes,
+            buffer: $buffer,
+            stack: {
+                rust_name: uninitialized,
+                ruby_name: uninitialized,
+                $($stack)*
+            }
+        }
+    };
+
+    // STATE: parse_method_attributes
+
+    {
+        state: parse_method_attributes,
+        buffer: { #[ruby_name = $ruby_name:tt] $($rest:tt)* },
+        stack: {
+            rust_name: uninitialized,
+            ruby_name: uninitialized,
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_method_attributes,
+            buffer: { $($rest)* },
+            stack: {
+                rust_name: uninitialized,
+                ruby_name: { $ruby_name },
+                $($stack)*
+            }
+        }
+    };
+
+    {
+        state: parse_method_attributes,
+        buffer: $buffer:tt,
+        stack: $stack:tt
+    } => {
+        parse! {
+            state: parse_method_name,
+            buffer: $buffer,
+            stack: $stack
+        }
+    };
+
+    // STATE: parse_method_name
+
+    {
+        state: parse_method_name,
+        buffer: { def $name:tt $($rest:tt)* },
+        stack: {
+            rust_name: uninitialized,
+            ruby_name: uninitialized,
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_method,
+            buffer: { $($rest)* },
+            stack: {
+                rust_name: $name,
+                ruby_name: { stringify!($name) },
+                $($stack)*
+            }
+        }
+    };
+
+    {
+        state: parse_method_name,
+        buffer: { def $name:tt $($rest:tt)* },
+        stack: {
+            rust_name: uninitialized,
+            ruby_name: $ruby_name:tt,
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_method,
+            buffer: { $($rest)* },
+            stack: {
+                rust_name: $name,
+                ruby_name: $ruby_name,
+                $($stack)*
             }
         }
     };
