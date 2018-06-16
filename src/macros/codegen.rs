@@ -166,6 +166,7 @@ macro_rules! codegen_method {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
             ruby_visibility: $ruby_visibility:tt,
+            attributes: { $($attributes:tt)* },
             self: {
                 ownership: {},
                 name: $self:tt
@@ -175,6 +176,7 @@ macro_rules! codegen_method {
             body: $body:block
         }
     } => {
+        $($attributes)*
         pub fn $rust_name($self : $crate::Metadata, $($arg : $argty),*) -> $($ret)* $body
     };
 
@@ -184,12 +186,14 @@ macro_rules! codegen_method {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
             ruby_visibility: $ruby_visibility:tt,
+            attributes: { $($attributes:tt)* },
             self: (),
             args: [ $($args:tt)* ],
             ret: { $($ret:tt)* },
             body: $body:block
         }
     } => {
+        $($attributes)*
         pub fn $rust_name($($args)*) -> $($ret)* $body
     };
 
@@ -199,6 +203,7 @@ macro_rules! codegen_method {
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
             ruby_visibility: $ruby_visibility:tt,
+            attributes: { $($attributes:tt)* },
             self: {
                 ownership: { $($ownership:tt)* },
                 name: $self:tt
@@ -208,6 +213,7 @@ macro_rules! codegen_method {
             body: $body:block
         }
     } => {
+        $($attributes)*
         pub fn $rust_name($($ownership)* $self, $($args)*) -> $($ret)* $body
     };
 }

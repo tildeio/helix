@@ -21,7 +21,7 @@ cache:
 
 env:
   global:
-    - EXAMPLES="duration calculator console game_of_life geometry membership text_transform turbo_blank json_builder"
+    - EXAMPLES="unit calculator console duration docopt game_of_life geometry json_builder membership text_transform turbo_blank"
     - VERBOSE=true
     - RUST_BACKTRACE=1
     - RUST_VERSION=stable
