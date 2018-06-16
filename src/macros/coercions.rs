@@ -4,6 +4,7 @@ macro_rules! codegen_coercions {
         type: class,
         rust_name: $rust_name:tt,
         ruby_name: $ruby_name:tt,
+        attributes: $attributes:tt,
         meta: { pub: $pub:tt, reopen: $reopen:tt },
         struct: (),
         methods: $methods:tt
@@ -36,6 +37,7 @@ macro_rules! codegen_coercions {
         type: class,
         rust_name: $rust_name:tt,
         ruby_name: $ruby_name:tt,
+        attributes: $attributes:tt,
         meta: { pub: $pub:tt, reopen: false },
         struct: $struct:tt,
         methods: $methods:tt

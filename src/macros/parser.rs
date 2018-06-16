@@ -87,14 +87,67 @@ macro_rules! parse {
         stack: { $($stack: tt)* }
     } => {
         parse! {
-            state: parse_class,
+            state: parse_class_attributes,
             buffer: $buffer,
             stack: {
                 ruby_name: uninitialized,
+                attributes: {},
                 pub: false,
                 reopen: false,
                 $($stack)*
             }
+        }
+    };
+
+    // STATE: parse_class_attributes
+
+    {
+        state: parse_class_attributes,
+        buffer: { #[ruby_name = $ruby_name:tt] $($rest:tt)* },
+        stack: {
+            ruby_name: uninitialized,
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_class_attributes,
+            buffer: { $($rest)* },
+            stack: {
+                ruby_name: { $ruby_name },
+                $($stack)*
+            }
+        }
+    };
+
+    {
+        state: parse_class_attributes,
+        buffer: { #[$($attribute:tt)*] $($rest:tt)* },
+        stack: {
+            ruby_name: $ruby_name:tt,
+            attributes: { $($attributes:tt)* },
+            $($stack:tt)*
+        }
+    } => {
+        parse! {
+            state: parse_class_attributes,
+            buffer: { $($rest)* },
+            stack: {
+                ruby_name: $ruby_name,
+                attributes: { $($attributes)* #[$($attribute)*] },
+                $($stack)*
+            }
+        }
+    };
+
+    {
+        state: parse_class_attributes,
+        buffer: $buffer:tt,
+        stack: $stack:tt
+    } => {
+        parse! {
+            state: parse_class,
+            buffer: $buffer,
+            stack: $stack
         }
     };
 
@@ -102,31 +155,10 @@ macro_rules! parse {
 
     {
         state: parse_class,
-        buffer: { #[ruby_name = $ruby_name:tt] $($rest:tt)* },
-        stack: {
-            ruby_name: uninitialized,
-            pub: false,
-            reopen: false,
-            $($stack:tt)*
-        }
-    } => {
-        parse! {
-            state: parse_class,
-            buffer: { $($rest)* },
-            stack: {
-                ruby_name: { $ruby_name },
-                pub: false,
-                reopen: false,
-                $($stack)*
-            }
-        }
-    };
-
-    {
-        state: parse_class,
         buffer: { pub $($rest:tt)* },
         stack: {
             ruby_name: $ruby_name:tt,
+            attributes: $attributes:tt,
             pub: false,
             reopen: false,
             $($stack:tt)*
@@ -137,6 +169,7 @@ macro_rules! parse {
             buffer: { $($rest)* },
             stack: {
                 ruby_name: $ruby_name,
+                attributes: $attributes,
                 pub: true,
                 reopen: false,
                 $($stack)*
@@ -149,6 +182,7 @@ macro_rules! parse {
         buffer: { reopen $($rest:tt)* },
         stack: {
             ruby_name: $ruby_name:tt,
+            attributes: $attributes:tt,
             pub: $pub:tt,
             reopen: false,
             $($stack:tt)*
@@ -159,6 +193,7 @@ macro_rules! parse {
             buffer: { $($rest)* },
             stack: {
                 ruby_name: $ruby_name,
+                attributes: $attributes,
                 pub: $pub,
                 reopen: true,
                 $($stack)*
@@ -189,6 +224,7 @@ macro_rules! parse {
         buffer: { class $name:tt { $($body:tt)* } $($rest:tt)* },
         stack: {
             ruby_name: $ruby_name:tt,
+            attributes: $attributes:tt,
             pub: $pub:tt,
             reopen: $reopen:tt,
 
@@ -203,6 +239,7 @@ macro_rules! parse {
                     type: class,
                     rust_name: $name,
                     ruby_name: $ruby_name,
+                    attributes: $attributes,
                     meta: { pub: $pub, reopen: $reopen },
                     struct: (),
                     methods: []
@@ -223,6 +260,7 @@ macro_rules! parse {
                 type: class,
                 rust_name: $rust_name:tt,
                 ruby_name: $ruby_name:tt,
+                attributes: $attributes:tt,
                 meta: { pub: $pub:tt, reopen: $reopen:tt },
                 struct: (),
                 methods: []
@@ -240,6 +278,7 @@ macro_rules! parse {
                     type: class,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
+                    attributes: $attributes,
                     meta: { pub: $pub, reopen: $reopen },
                     struct: { $($struct)* },
                     methods: []
@@ -857,7 +896,7 @@ macro_rules! parse {
                 rust_name: $rust_method_name:tt,
                 ruby_name: $ruby_method_name:tt,
                 ruby_visibility: $ruby_visibility:tt,
-                attributes: $attributes:tt,
+                attributes: $metod_attributes:tt,
                 self: $self:tt,
                 args: $args:tt,
                 ret: uninitialized,
@@ -867,6 +906,7 @@ macro_rules! parse {
                 type: class,
                 rust_name: $rust_class_name:ident,
                 ruby_name: $ruby_class_name:tt,
+                attributes: $class_attributes:tt,
                 meta: $meta:tt,
                 struct: $struct:tt,
                 methods: $methods:tt
@@ -883,7 +923,7 @@ macro_rules! parse {
                     rust_name: $rust_method_name,
                     ruby_name: $ruby_method_name,
                     ruby_visibility: $ruby_visibility,
-                    attributes: $attributes,
+                    attributes: $metod_attributes,
                     self: $self,
                     args: $args,
                     ret: { $rust_class_name },
@@ -893,6 +933,7 @@ macro_rules! parse {
                     type: class,
                     rust_name: $rust_class_name,
                     ruby_name: $ruby_class_name,
+                    attributes: $class_attributes,
                     meta: $meta,
                     struct: $struct,
                     methods: $methods
@@ -951,6 +992,7 @@ macro_rules! parse {
                 type: class,
                 rust_name: $rust_name:ident,
                 ruby_name: $ruby_name:tt,
+                attributes: $attributes:tt,
                 meta: $meta:tt,
                 struct: $struct:tt,
                 methods: [ $($methods:tt)* ]
@@ -966,6 +1008,7 @@ macro_rules! parse {
                     type: class,
                     rust_name: $rust_name,
                     ruby_name: $ruby_name,
+                    attributes: $attributes,
                     meta: $meta,
                     struct: $struct,
                     methods: [ $($methods)* $method ]
@@ -1025,6 +1068,7 @@ macro_rules! assert_not_reopen {
             type: class,
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            attributes: $attributes:tt,
             meta: { pub: $pub:tt, reopen: $reopen:tt },
             struct: $struct:tt,
             methods: $methods:tt
@@ -1044,6 +1088,7 @@ macro_rules! assert_has_initialize {
             type: class,
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            attributes: $attributes:tt,
             meta: $meta:tt,
             struct: $struct:tt,
             methods: $methods:tt
@@ -1067,6 +1112,7 @@ macro_rules! assert_has_struct {
             type: class,
             rust_name: $rust_name:tt,
             ruby_name: $ruby_name:tt,
+            attributes: $attributes:tt,
             meta: $meta:tt,
             struct: $struct:tt,
             methods: $methods:tt

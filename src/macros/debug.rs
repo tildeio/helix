@@ -9,11 +9,12 @@ macro_rules! print_ast {
     ({
         type: class,
         name: $name:tt,
+        attributes: $attributes:tt,
         meta: { pub: $pub:tt, reopen: $reopen:tt },
         struct: $struct:tt,
         methods: $methods:tt
     }) => {
-        println!("\nCLASS\n=====\nclass {} (pub:{} reopen:{})", stringify!($name), stringify!($pub), stringify!($reopen));
+        println!("\nCLASS\n=====\nclass {} (pub:{} reopen:{}, attributes: {})", stringify!($name), stringify!($pub), stringify!($reopen), stringify!($attributes));
         println!("{}", format_ast_class_struct!({ name: $name, tuple: $struct }));
         println!("\nMETHODS\n=======\n{}\n\n", format_ast_methods!($methods));
     };
