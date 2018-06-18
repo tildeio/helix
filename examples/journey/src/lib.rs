@@ -12,6 +12,7 @@ enum Token {
     LParen,
     RParen,
     Dot,
+    Or,
     Star(String),
     Symbol(String),
     Literal(String),
@@ -27,6 +28,7 @@ impl ToRuby for Token {
             LParen         => (RSymbol::from_string("LPAREN".to_string()), "(").to_ruby(),
             RParen         => (RSymbol::from_string("RPAREN".to_string()), ")").to_ruby(),
             Dot            => (RSymbol::from_string("DOT".to_string()), ".").to_ruby(),
+            Or             => (RSymbol::from_string("OR".to_string()), "|").to_ruby(),
             Star(ident)    => (RSymbol::from_string("STAR".to_string()), ident).to_ruby(),
             Symbol(ident)  => (RSymbol::from_string("SYMBOL".to_string()), ident).to_ruby(),
             Literal(ident) => (RSymbol::from_string("LITERAL".to_string()), ident).to_ruby(),
@@ -70,6 +72,10 @@ ruby! {
                 '.' => {
                     self.consume_char();
                     Dot
+                },
+                '|' => {
+                    self.consume_char();
+                    Or
                 },
                 '*' => Star(self.consume_symbol_or_star().unwrap()),
                 ':' => Symbol(self.consume_symbol_or_star().unwrap()),
