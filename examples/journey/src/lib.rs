@@ -71,8 +71,8 @@ ruby! {
                     self.consume_char();
                     Dot
                 },
-                '*' => Star(self.consume_star().unwrap()),
-                ':' => Symbol(self.consume_symbol().unwrap()),
+                '*' => Star(self.consume_symbol_or_star().unwrap()),
+                ':' => Symbol(self.consume_symbol_or_star().unwrap()),
                 _   => Literal(self.consume_literal().unwrap()),
             })
         }
@@ -95,31 +95,7 @@ impl Scanner {
         })
     }
 
-    fn consume_star(&mut self) -> Option<String> {
-        if self.peek_char().is_none() {
-            return None
-        } else {
-            let mut ident = String::new();
-
-            loop {
-                ident.push(self.consume_char().unwrap());
-
-                let is_boundary = match self.peek_char() {
-                    Some(c) => match c {
-                        '_' => false,
-                        c   => !c.is_ascii_alphanumeric(),
-                    },
-                    None => true
-                };
-
-                if is_boundary { break; }
-            }
-
-            Some(ident)
-        }
-    }
-
-    fn consume_symbol(&mut self) -> Option<String> {
+    fn consume_symbol_or_star(&mut self) -> Option<String> {
         if self.peek_char().is_none() {
             return None
         } else {
