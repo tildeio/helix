@@ -7,6 +7,7 @@ module Journey
         "(" => :LPAREN,
         ")" => :RPAREN,
         "." => :DOT,
+        "|" => :OR,
         ":" => :SYMBOL
       }
 
