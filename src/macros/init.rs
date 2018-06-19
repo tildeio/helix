@@ -19,6 +19,7 @@ macro_rules! codegen_class_binding {
         type: class,
         rust_name: $rust_name:tt,
         ruby_name: { $($ruby_name:tt)* },
+        attributes: $attributes:tt,
         meta: { pub: $pub:tt, reopen: false },
         struct: (),
         methods: [ $($method:tt)* ]
@@ -37,6 +38,7 @@ macro_rules! codegen_class_binding {
         type: class,
         rust_name: $rust_name:tt,
         ruby_name: { $($ruby_name:tt)* },
+        attributes: $attributes:tt,
         meta: { pub: $pub:tt, reopen: true },
         struct: (),
         methods: [ $($method:tt)* ]
@@ -55,6 +57,7 @@ macro_rules! codegen_class_binding {
         type: class,
         rust_name: $rust_name:tt,
         ruby_name: { $($ruby_name:tt)* },
+        attributes: $attributes:tt,
         meta: { pub: $pub:tt, reopen: $reopen:tt },
         struct: { $($struct:tt)* },
         methods: [ $($method:tt)* ]
@@ -87,6 +90,7 @@ macro_rules! codegen_define_method {
         rust_name: $rust_name:tt,
         ruby_name: { $($ruby_name:tt)* },
         ruby_visibility: $ruby_visibility:tt,
+        attributes: $attributes:tt,
         self: (),
         args: [ $($arg:tt : $argty:ty),* ],
         ret: { $($ret:tt)* },
@@ -135,6 +139,7 @@ macro_rules! codegen_define_method {
         type: class,
         rust_name: $cls_rust_name:tt,
         ruby_name: $cls_ruby_name:tt,
+        attributes: $cls_attributes:tt,
         meta: $meta:tt,
         struct: $struct:tt,
         $($rest:tt)*
@@ -143,6 +148,7 @@ macro_rules! codegen_define_method {
         rust_name: $rust_name:tt,
         ruby_name: { $($ruby_name:tt)* },
         ruby_visibility: $ruby_visibility:tt,
+        attributes: $metohd_attributes:tt,
         self: { ownership: { $($ownership:tt)* }, name: $self:tt },
         args: [ $($arg:tt : $argty:ty),* ],
         ret: { $($ret:tt)* },
@@ -200,6 +206,7 @@ macro_rules! codegen_define_method {
         rust_name: $rust_name:tt,
         ruby_name: $ruby_name:tt,
         ruby_visibility: unexported,
+        attributes: $attributes:tt,
         self: $self:tt,
         args: [ $($arg:tt : $argty:ty),* ],
         ret: { $($ret:tt)* },
@@ -218,6 +225,7 @@ macro_rules! codegen_define_method {
         type: class,
         rust_name: $cls_rust_name:tt,
         ruby_name: $cls_ruby_name:tt,
+        attributes: $cls_attributes:tt,
         meta: $meta:tt,
         struct: $struct:tt,
         $($rest:tt)*
@@ -226,6 +234,7 @@ macro_rules! codegen_define_method {
         rust_name: $rust_name:tt,
         ruby_name: { $($ruby_name:tt)* },
         ruby_visibility: $ruby_visibility:tt,
+        attributes: $methohd_attributes:tt,
         self: { ownership: {}, name: $self:tt },
         args: [ $($arg:tt : $argty:ty),* ],
         ret: { $($ret:tt)* },

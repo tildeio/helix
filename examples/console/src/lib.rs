@@ -4,6 +4,7 @@
 extern crate helix;
 
 ruby! {
+    #[derive(Debug)]
     class Console {
         def log(&self, string: String) {
             println!("{}", string);
