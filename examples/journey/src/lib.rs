@@ -83,6 +83,23 @@ ruby! {
             })
         }
     }
+
+    #[ruby_name="RustJourneyParser"]
+    class Parser {
+        struct { }
+
+        def initialize(helix) {
+            Parser { helix }
+        }
+
+        def parse(&mut self, _token_string: String) {
+        }
+
+        // How to call a method called `type`?
+        // def type(&mut self) {
+        //
+        // }
+    }
 }
 
 impl Scanner {
