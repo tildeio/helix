@@ -11,4 +11,9 @@ crate-type = ["cdylib"]
 path = "../.."
 
 [dependencies]
-owned_chars = "0.3"
+owned_chars = "0.3.0"
+lalrpop-util = "0.15.2"
+regex = "1.0.1"
+
+[build-dependencies]
+lalrpop = "0.15.2"
