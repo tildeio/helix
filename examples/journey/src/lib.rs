@@ -4,8 +4,16 @@
 extern crate helix;
 extern crate owned_chars;
 
+#[allow(warnings)]
+mod parser;
+mod nodes;
+
+#[cfg(test)]
+mod tests;
+
 use helix::{ToRuby, ToRubyResult};
 use owned_chars::{OwnedCharsExt, OwnedChars};
+use parser::ExpressionsParser;
 
 enum Token {
     Slash,
@@ -92,7 +100,8 @@ ruby! {
             Parser { helix }
         }
 
-        def parse(&mut self, _token_string: String) {
+        def parse(&mut self, token_string: String) {
+            // StarParser::new().parse(&token_string).unwrap().to_string()
         }
 
         // FIXME: Need to call 'type' on the return value,
