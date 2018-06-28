@@ -95,10 +95,12 @@ ruby! {
         def parse(&mut self, _token_string: String) {
         }
 
-        // How to call a method called `type`?
-        // def type(&mut self) {
-        //
-        // }
+        // FIXME: Need to call 'type' on the return value,
+        // not on the Parser instance itself.
+        // Can't name a function type, using format instead.
+        #[ruby_name="type"]
+        def format(&mut self) {
+        }
     }
 }
 
