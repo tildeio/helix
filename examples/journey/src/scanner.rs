@@ -1,5 +1,5 @@
 use std;
-use owned_chars::{OwnedCharsExt, OwnedChars};
+use owned_chars::{OwnedCharsExt, OwnedCharIndices};
 
 pub enum Token {
     Slash,
@@ -14,49 +14,19 @@ pub enum Token {
 
 #[derive(Debug)]
 pub struct Scanner {
-    chars: OwnedChars,
-    peeked: Option<char>,
+    chars: OwnedCharIndices,
+    peeked: Option<(usize, char)>,
 }
 
 impl Scanner {
     pub fn new(pattern: String) -> Scanner {
         Scanner {
-            chars: pattern.into_chars(),
+            chars: pattern.into_char_indices(),
             peeked: None,
         }
     }
 
-    pub fn next_token(&mut self) -> Option<Token> {
-        use self::Token::*;
-
-        self.peek_char().map(|character| match character {
-            '/' => {
-                self.consume_char();
-                Slash
-            },
-            '(' => {
-                self.consume_char();
-                LParen
-            },
-            ')' => {
-                self.consume_char();
-                RParen
-            },
-            '.' => {
-                self.consume_char();
-                Dot
-            },
-            '|' => {
-                self.consume_char();
-                Or
-            },
-            '*' => Star(self.consume_symbol_or_star().unwrap()),
-            ':' => Symbol(self.consume_symbol_or_star().unwrap()),
-            _   => Literal(self.consume_literal().unwrap()),
-        })
-    }
-
-    fn consume_char(&mut self) -> Option<char> {
+    fn consume_char(&mut self) -> Option<(usize, char)> {
         if self.peeked.is_some() {
             std::mem::replace(&mut self.peeked, None)
         } else {
@@ -64,24 +34,29 @@ impl Scanner {
         }
     }
 
-    fn peek_char(&mut self) -> Option<char> {
+    fn peek_char(&mut self) -> Option<(usize, char)> {
         self.peeked.or_else(|| {
             self.peeked = self.consume_char();
             self.peeked
         })
     }
 
-    fn consume_symbol_or_star(&mut self) -> Option<String> {
+    fn consume_symbol_or_star(&mut self) -> Option<(usize, String, usize)> {
         if self.peek_char().is_none() {
             return None
         } else {
             let mut ident = String::new();
+            let start = self.peek_char().unwrap().0;
+            let mut end;
 
             loop {
-                ident.push(self.consume_char().unwrap());
+                let (loc, character) = self.consume_char().unwrap();
+
+                ident.push(character);
+                end = loc;
 
                 let is_boundary = match self.peek_char() {
-                    Some(c) => match c {
+                    Some((_, c)) => match c {
                         '_' => false,
                         c   => !c.is_ascii_alphanumeric(),
                     },
@@ -91,18 +66,22 @@ impl Scanner {
                 if is_boundary { break; }
             }
 
-            Some(ident)
+            Some((start, ident, end))
         }
     }
 
-    fn consume_literal(&mut self) -> Option<String> {
+    fn consume_literal(&mut self) -> Option<(usize, String, usize)> {
         if self.peek_char().is_none() {
             return None
         } else {
             let mut ident = String::new();
+            let start = self.peek_char().unwrap().0;
+            let mut end;
 
             loop {
-                let character = self.consume_char().unwrap();
+                let (loc, character) = self.consume_char().unwrap();
+
+                end = loc;
 
                 if character == '\\' {
                     continue;
@@ -111,7 +90,7 @@ impl Scanner {
                 }
 
                 let is_boundary = match self.peek_char() {
-                    Some(c) => match c {
+                    Some((_, c)) => match c {
                         '/' => true,
                         _   => false,
                     },
@@ -121,7 +100,53 @@ impl Scanner {
                 if is_boundary { break; }
             }
 
-            Some(ident)
+            Some((start, ident, end))
         }
+    }
+}
+
+#[derive(Debug)]
+pub enum NotPossible {}
+
+impl Iterator for Scanner {
+    type Item = Result<(usize, Token, usize), NotPossible>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        use self::Token::*;
+
+        self.peek_char().map(|(loc, character)| match character {
+            '/' => {
+                self.consume_char();
+                Ok((loc, Slash, loc))
+            },
+            '(' => {
+                self.consume_char();
+                Ok((loc, LParen, loc))
+            },
+            ')' => {
+                self.consume_char();
+                Ok((loc, RParen, loc))
+            },
+            '.' => {
+                self.consume_char();
+                Ok((loc, Dot, loc))
+            },
+            '|' => {
+                self.consume_char();
+                Ok((loc, Or, loc))
+            },
+            '*' => {
+                let (start, ident, end) = self.consume_symbol_or_star().unwrap();
+                Ok((start, Star(ident), end))
+            },
+            ':' => {
+                let (start, ident, end) = self.consume_symbol_or_star().unwrap();
+                Ok((start, Symbol(ident), end))
+            },
+            _   => {
+                let (start, ident, end) = self.consume_literal().unwrap();
+                Ok((start, Literal(ident), end))
+            },
+        })
     }
 }
