@@ -1,5 +1,5 @@
 use std;
-use owned_chars::{OwnedCharsExt, OwnedCharIndices};
+use owned_chars::{OwnedCharsExt, OwnedChars};
 
 pub enum Token {
     Slash,
@@ -14,19 +14,19 @@ pub enum Token {
 
 #[derive(Debug)]
 pub struct Scanner {
-    chars: OwnedCharIndices,
-    peeked: Option<(usize, char)>,
+    chars: OwnedChars,
+    peeked: Option<char>,
 }
 
 impl Scanner {
     pub fn new(pattern: String) -> Scanner {
         Scanner {
-            chars: pattern.into_char_indices(),
+            chars: pattern.into_chars(),
             peeked: None,
         }
     }
 
-    fn consume_char(&mut self) -> Option<(usize, char)> {
+    fn consume_char(&mut self) -> Option<char> {
         if self.peeked.is_some() {
             std::mem::replace(&mut self.peeked, None)
         } else {
@@ -34,29 +34,26 @@ impl Scanner {
         }
     }
 
-    fn peek_char(&mut self) -> Option<(usize, char)> {
+    fn peek_char(&mut self) -> Option<char> {
         self.peeked.or_else(|| {
             self.peeked = self.consume_char();
             self.peeked
         })
     }
 
-    fn consume_symbol_or_star(&mut self) -> Option<(usize, String, usize)> {
+    fn consume_symbol_or_star(&mut self) -> Option<String> {
         if self.peek_char().is_none() {
             return None
         } else {
             let mut ident = String::new();
-            let start = self.peek_char().unwrap().0;
-            let mut end;
 
             loop {
-                let (loc, character) = self.consume_char().unwrap();
+                let character = self.consume_char().unwrap();
 
                 ident.push(character);
-                end = loc;
 
                 let is_boundary = match self.peek_char() {
-                    Some((_, c)) => match c {
+                    Some(c) => match c {
                         '_' => false,
                         c   => !c.is_ascii_alphanumeric(),
                     },
@@ -66,22 +63,18 @@ impl Scanner {
                 if is_boundary { break; }
             }
 
-            Some((start, ident, end))
+            Some(ident)
         }
     }
 
-    fn consume_literal(&mut self) -> Option<(usize, String, usize)> {
+    fn consume_literal(&mut self) -> Option<String> {
         if self.peek_char().is_none() {
             return None
         } else {
             let mut ident = String::new();
-            let start = self.peek_char().unwrap().0;
-            let mut end;
 
             loop {
-                let (loc, character) = self.consume_char().unwrap();
-
-                end = loc;
+                let character = self.consume_char().unwrap();
 
                 if character == '\\' {
                     continue;
@@ -90,7 +83,7 @@ impl Scanner {
                 }
 
                 let is_boundary = match self.peek_char() {
-                    Some((_, c)) => match c {
+                    Some(c) => match c {
                         '/' => true,
                         _   => false,
                     },
@@ -100,7 +93,7 @@ impl Scanner {
                 if is_boundary { break; }
             }
 
-            Some((start, ident, end))
+            Some(ident)
         }
     }
 }
@@ -109,43 +102,43 @@ impl Scanner {
 pub enum NotPossible {}
 
 impl Iterator for Scanner {
-    type Item = Result<(usize, Token, usize), NotPossible>;
+    type Item = Result<Token, NotPossible>;
 
     fn next(&mut self) -> Option<Self::Item> {
         use self::Token::*;
 
-        self.peek_char().map(|(loc, character)| match character {
+        self.peek_char().map(|character| match character {
             '/' => {
                 self.consume_char();
-                Ok((loc, Slash, loc))
+                Ok(Slash)
             },
             '(' => {
                 self.consume_char();
-                Ok((loc, LParen, loc))
+                Ok(LParen)
             },
             ')' => {
                 self.consume_char();
-                Ok((loc, RParen, loc))
+                Ok(RParen)
             },
             '.' => {
                 self.consume_char();
-                Ok((loc, Dot, loc))
+                Ok(Dot)
             },
             '|' => {
                 self.consume_char();
-                Ok((loc, Or, loc))
+                Ok(Or)
             },
             '*' => {
-                let (start, ident, end) = self.consume_symbol_or_star().unwrap();
-                Ok((start, Star(ident), end))
+                let ident = self.consume_symbol_or_star().unwrap();
+                Ok(Star(ident))
             },
             ':' => {
-                let (start, ident, end) = self.consume_symbol_or_star().unwrap();
-                Ok((start, Symbol(ident), end))
+                let ident = self.consume_symbol_or_star().unwrap();
+                Ok(Symbol(ident))
             },
             _   => {
-                let (start, ident, end) = self.consume_literal().unwrap();
-                Ok((start, Literal(ident), end))
+                let ident = self.consume_literal().unwrap();
+                Ok(Literal(ident))
             },
         })
     }

@@ -30,7 +30,7 @@ ruby! {
 
         def next_token(&mut self) -> Option<scanner::Token> {
             self.inner.as_mut().and_then(|s| {
-                s.next().map(|r| r.unwrap().1)
+                s.next().map(|r| r.unwrap())
             })
         }
     }
