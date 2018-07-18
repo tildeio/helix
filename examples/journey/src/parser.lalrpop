@@ -1,27 +1,36 @@
+use scanner::*;
 use nodes::*;
 
 grammar;
 
-pub Expressions: Node = {
-    <left:Expression> <right:Expressions> => { trace(Node::Cat(Box::new(left), Box::new(right))) },
-    <node:Expression> => { trace(node) }
+pub Path: Vec<Token> = {
+    <s: Slash> => { vec![s] },
+    <t: Terminal> => { vec![t] },
+    <s: Slash> <t: Terminal> => { vec![s, t] },
+    <s: Slash> <t: Terminal> <p: Path> => {
+        let mut v = vec![s, t];
+        v.extend(p);
+        v
+    }
 }
 
-Expression: Node = {
-    <Terminal>,
+pub Terminal: Token = {
+    <Literal>,
     <Star>
 }
 
-Terminal: Node = {
-    <Symbol>,
-    <Literal>,
-    <Slash>,
-    <Dot>
-}
+extern {
+    type Location = usize;
+    type Error = NotPossible;
 
-Star: Node = <string:r"\*[0-9A-Za-z]+"> => Node::Star(string.to_string());
-Symbol: Node = <string:r":[0-9A-Za-z]+"> => Node::Symbol(string.to_string());
-Literal: Node = <string:r"[^*/|:.]*"> => Node::Literal(string.to_string());
-Or: Node = "|" => Node::Or;
-Slash: Node = "/" => Node::Slash;
-Dot: Node = "." => Node::Dot;
+    enum Token {
+        Slash => Token::Slash,
+        LParen => Token::LParen,
+        RParen => Token::RParen,
+        Dot => Token::Dot,
+        Or => Token::Or,
+        Star => Token::Star(_),
+        Symbol => Token::Symbol(_),
+        Literal => Token::Literal(_),
+    }
+}

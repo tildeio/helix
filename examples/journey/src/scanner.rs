@@ -1,6 +1,7 @@
 use std;
 use owned_chars::{OwnedCharsExt, OwnedCharIndices};
 
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Token {
     Slash,
     LParen,
