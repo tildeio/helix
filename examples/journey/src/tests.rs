@@ -87,6 +87,21 @@ fn parse_star() {
         Token::Star("*bar".to_string()),
         Token::Slash
     ]);
+
+    assert_eq!(parse("/*foo/bar").unwrap(), vec![
+        Token::Slash,
+        Token::Star("*foo".to_string()),
+        Token::Slash,
+        Token::Literal("bar".to_string())
+    ]);
+
+    assert_eq!(parse("/*foo/bar/").unwrap(), vec![
+        Token::Slash,
+        Token::Star("*foo".to_string()),
+        Token::Slash,
+        Token::Literal("bar".to_string()),
+        Token::Slash
+    ]);
 }
 
 #[test]
@@ -94,7 +109,10 @@ fn parse_invalid_paths() {
     assert!(parse("").is_err());
     assert!(parse("//").is_err());
     assert!(parse("//foo").is_err());
+    assert!(parse("//foo/").is_err());
+    assert!(parse("//foo//").is_err());
     assert!(parse("/foo//bar").is_err());
+    assert!(parse("/foo//bar///").is_err());
 }
 
 // #[test]
