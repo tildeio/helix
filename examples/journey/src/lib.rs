@@ -50,9 +50,9 @@ ruby! {
         // FIXME: Need to call 'type' on the return value,
         // not on the Parser instance itself.
         // Can't name a function type, using format instead.
-        #[ruby_name="type"]
-        def format(&mut self) {
-        }
+        // #[ruby_name="type"]
+        // def format(&mut self) {
+        // }
     }
 }
 

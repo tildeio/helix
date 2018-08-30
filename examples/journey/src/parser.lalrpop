@@ -3,20 +3,31 @@ use nodes::*;
 
 grammar;
 
-pub Path: Vec<Token> = {
-    <s: Slash> => { vec![s] },
-    <t: Terminal> => { vec![t] },
-    <s: Slash> <t: Terminal> => { vec![s, t] },
-    <s: Slash> <t: Terminal> <p: Path> => {
-        let mut v = vec![s, t];
-        v.extend(p);
+pub Expressions: Vec<Expression> = {
+    <e: Expression> <rest: Expressions> => {
+        let mut v = Vec::with_capacity(1 + rest.len());
+        v.push(e);
+        v.extend_from_slice(&rest);
         v
-    }
+    },
+    <Expression> => { vec![<>] },
+}
+
+pub Expression: Expression = {
+    <Terminal> => { Expression::Token(<>) },
+    <Group> => { Expression::Group(<>) },
+    <Star> => { Expression::Token(<>) }
+}
+
+pub Group: Vec<Expression> = {
+  LParen <Expressions> RParen
 }
 
 pub Terminal: Token = {
+    <Symbol>,
     <Literal>,
-    <Star>
+    <Slash>,
+    <Dot>
 }
 
 extern {
