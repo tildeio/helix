@@ -1,4 +1,5 @@
 use sys::{self, VALUE};
+use libc::c_long;
 
 use super::{CheckResult, FromRuby, ToRuby, ToRubyResult};
 use super::super::{inspect};
@@ -7,7 +8,7 @@ impl<T: FromRuby> FromRuby for Vec<T> {
     type Checked = Vec<T::Checked>;
 
     fn from_ruby(value: VALUE) -> CheckResult<Self::Checked> {
-        if unsafe { sys::RB_TYPE_P(value, sys::T_ARRAY) } {
+        if unsafe { sys::RB_TYPE_P(value, sys::T_ARRAY) > 0 } {
             // Make sure we can actually do the conversions for the values.
             let len = unsafe { sys::RARRAY_LEN(value) };
             let mut checked = Vec::with_capacity(len as usize);
@@ -33,7 +34,7 @@ impl<T: FromRuby> FromRuby for Vec<T> {
 
 impl<T: ToRuby> ToRuby for Vec<T> {
     fn to_ruby(self) -> ToRubyResult {
-        let ary = unsafe { sys::rb_ary_new_capa(self.len() as isize) };
+        let ary = unsafe { sys::rb_ary_new_capa(self.len() as c_long) };
         for item in self {
             unsafe { sys::rb_ary_push(ary, item.to_ruby()?); }
         }

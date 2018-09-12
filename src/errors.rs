@@ -1,6 +1,8 @@
 use super::{Class, ToRuby};
 use std::{any, fmt};
-use sys::{VALUE, SPRINTF_TO_S, c_string, rb_eRuntimeError, rb_raise};
+use std::ffi::{CStr,CString};
+use sys::{VALUE, PRIsVALUE, rb_eRuntimeError, rb_raise};
+use libc::c_char;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Error {
@@ -10,12 +12,12 @@ pub struct Error {
 
 #[derive(Copy, Clone, Debug)]
 enum ErrorMessage {
-    Static(c_string),
+    Static(*const c_char),
     Dynamic(VALUE)
 }
 
 impl Error {
-    pub fn with_c_string(message: c_string) -> Error {
+    pub fn with_c_string(message: *const c_char) -> Error {
         Error { class: unsafe { Class(rb_eRuntimeError) }, message: ErrorMessage::Static(message) }
     }
 
@@ -38,7 +40,10 @@ impl Error {
     pub unsafe fn raise(self) -> ! {
         match self.message {
             ErrorMessage::Static(c_string) => rb_raise(self.class.to_value(), c_string),
-            ErrorMessage::Dynamic(value) => rb_raise(self.class.to_value(), SPRINTF_TO_S, value)
+            ErrorMessage::Dynamic(value) => {
+                let format = format!("%{}", CStr::from_ptr(PRIsVALUE).to_string_lossy());
+                rb_raise(self.class.to_value(), CString::new(format).unwrap().as_ptr(), value)
+            }
         }
     }
 }

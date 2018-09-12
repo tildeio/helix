@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "bin"
-  spec.extensions    = ["ext/helix_runtime/native/extconf.rb"]
+  # spec.extensions    = ["ext/helix_runtime/native/extconf.rb"]
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 

@@ -99,7 +99,7 @@ impl RubyMethod for extern "C" fn(VALUE) -> VALUE {
             sys::rb_define_method(
                 class,
                 name.as_ptr(),
-                self as *const libc::c_void,
+                sys::ANYARGS::from_arity_1(self),
                 0
             );
         }
@@ -112,7 +112,7 @@ impl RubyMethod for extern "C" fn(VALUE, VALUE) -> VALUE {
             sys::rb_define_method(
                 class,
                 name.as_ptr(),
-                self as *const libc::c_void,
+                sys::ANYARGS::from_arity_2(self),
                 1
             );
         }

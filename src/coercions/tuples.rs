@@ -1,4 +1,5 @@
 use sys::{self, VALUE};
+use libc::c_long;
 
 use super::{CheckResult, FromRuby, ToRuby, ToRubyResult};
 use super::super::{inspect};
@@ -22,7 +23,7 @@ macro_rules! impl_tuple_from_ruby {
             type Checked = ($($name::Checked,)*);
 
             fn from_ruby(value: VALUE) -> CheckResult<Self::Checked> {
-                if unsafe { sys::RB_TYPE_P(value, sys::T_ARRAY) } {
+                if unsafe { sys::RB_TYPE_P(value, sys::T_ARRAY) > 0 } {
                     // Make sure we can actually do the conversions for the values.
                     let len = unsafe { sys::RARRAY_LEN(value) };
 
@@ -57,7 +58,7 @@ macro_rules! extract_tuple_elements_from_ruby {
     ($value:ident, $offset:tt, $name:ident $($rest:tt)*) => {
         #[allow(non_snake_case)]
         let $name = {
-            let val = unsafe { sys::rb_ary_entry($value, $offset as isize) };
+            let val = unsafe { sys::rb_ary_entry($value, $offset as c_long) };
             match $name::from_ruby(val) {
                 Ok(v) => v,
                 Err(e) => type_error!(format!("Failed to convert {}, element {} has the wrong type: {}", inspect($value), $offset, e)),
@@ -77,7 +78,7 @@ macro_rules! impl_tuple_to_ruby {
     ($count:expr, $($name:ident),*) => {
         impl<$($name: ToRuby,)*> ToRuby for ($($name,)*) {
             fn to_ruby(self) -> ToRubyResult {
-                let ary = unsafe { sys::rb_ary_new_capa($count as isize) };
+                let ary = unsafe { sys::rb_ary_new_capa($count as c_long) };
 
                 #[allow(non_snake_case)]
                 let ($($name,)*) = self;

@@ -4,7 +4,7 @@ macro_rules! codegen_init {
         #[allow(non_snake_case)]
         #[no_mangle]
         pub extern "C" fn Init_native() {
-            $crate::sys::check_version();
+            // $crate::sys::check_version();
 
             $(
                 codegen_class_binding!($class, $class);
@@ -129,7 +129,8 @@ macro_rules! codegen_define_method {
         }
 
         let name = cstr!($($ruby_name)*);
-        let method = __ruby_method__ as *const $crate::libc::c_void;
+
+        let method = $crate::sys::ANYARGS::<VALUE>::from_arity_0(unsafe { transmute(__ruby_method__ as *const ()) });
         let arity = method_arity!($($arg)*);
 
         $def.define_method($crate::MethodDefinition::class(name, method, arity));
@@ -191,7 +192,7 @@ macro_rules! codegen_define_method {
         }
 
         let name = cstr!($($ruby_name)*);
-        let method = __ruby_method__ as *const $crate::libc::c_void;
+        let method = $crate::sys::ANYARGS::from_arity_0(unsafe { transmute(__ruby_method__ as *const ()) });
         let arity = method_arity!($($arg)*);
 
         $def.define_method($crate::MethodDefinition::instance(name, method, arity))
@@ -280,7 +281,7 @@ macro_rules! codegen_define_method {
         }
 
         let arity = method_arity!($($arg)*);
-        let method = __ruby_initialize__ as *const $crate::libc::c_void;
+        let method = $crate::sys::ANYARGS::from_arity_0(unsafe { transmute(__ruby_initialize__ as *const ()) });
 
         $def.define_method($crate::MethodDefinition::instance(cstr!($($ruby_name)*), method, arity));
     });

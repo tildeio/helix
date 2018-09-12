@@ -6,7 +6,7 @@ impl FromRuby for Symbol {
     type Checked = CheckedValue<Symbol>;
 
     fn from_ruby(value: VALUE) -> CheckResult<CheckedValue<Symbol>> {
-        if unsafe { RB_TYPE_P(value, T_SYMBOL) } {
+        if unsafe { RB_TYPE_P(value, T_SYMBOL) > 0 } {
             unsafe { Ok(CheckedValue::new(value)) }
         } else {
             type_error!(value, "a symbol")

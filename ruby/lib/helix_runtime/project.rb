@@ -91,8 +91,9 @@ module HelixRuntime
       rustc_args = []
 
       if ENV['DEBUG_RUST_MACROS']
-        rustc_args << "--pretty expanded"
-        rustc_args << "-Z unstable-options"
+        # rustc_args << "--pretty expanded"
+        # rustc_args << "-Z unstable-options"
+        rustc_args << "-Z external-macro-backtrace"
       end
       unless debug_rust?
         cargo_args << ["--release"]

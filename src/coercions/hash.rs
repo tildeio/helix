@@ -1,20 +1,20 @@
-use sys::{VALUE, RB_TYPE_P, T_HASH, RHASH_SIZE, rb_hash_foreach, rb_hash_new, rb_hash_aset, void, st_retval};
+use sys::{VALUE, RB_TYPE_P, T_HASH, RHASH_SIZE, rb_hash_foreach, rb_hash_new, rb_hash_aset, st_retval, ST_CONTINUE};
 use super::{FromRuby, CheckResult, ToRuby, ToRubyResult};
 use std::collections::hash_map::HashMap;
 use std::hash::Hash;
 use ::std::mem::transmute;
 
-extern "C" fn rb_hash_collect(key: VALUE, value: VALUE, vec: *mut void) -> st_retval {
+extern "C" fn rb_hash_collect(key: VALUE, value: VALUE, vec: VALUE) -> st_retval {
     let vec: &mut Vec<(VALUE, VALUE)> = unsafe { transmute(vec) };
     vec.push((key, value));
-    st_retval::ST_CONTINUE
+    unsafe { ST_CONTINUE }
 }
 
 impl<K: FromRuby + Eq + Hash, V: FromRuby> FromRuby for HashMap<K, V> {
     type Checked = Vec<(K::Checked, V::Checked)>;
 
     fn from_ruby(value: VALUE) -> CheckResult<Self::Checked> {
-        if unsafe { RB_TYPE_P(value, T_HASH) } {
+        if unsafe { RB_TYPE_P(value, T_HASH) > 0 } {
             let len = unsafe { RHASH_SIZE(value) };
 
             let mut pairs = Vec::<(VALUE, VALUE)>::with_capacity(len as usize);

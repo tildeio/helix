@@ -1,8 +1,8 @@
 desc "Test Helix Examples"
 task :test do
-  cd "ruby" do
-    sh "bundle exec rake"
-  end
+  # cd "ruby" do
+  #   sh "bundle exec rake"
+  # end
 
   examples = ENV["EXAMPLES"] || "unit calculator console docopt duration game_of_life geometry json_builder membership text_transform turbo_blank"
 
