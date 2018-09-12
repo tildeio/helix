@@ -4,30 +4,31 @@ use nodes::*;
 grammar;
 
 pub Expressions: Vec<Expression> = {
-    <e: Expression> <rest: Expressions> => {
-        let mut v = Vec::with_capacity(1 + rest.len());
-        v.push(e);
-        v.extend_from_slice(&rest);
-        v
-    },
+    <e: Expression> <rest: Expressions> => { concat(e, &rest) },
     <Expression> => { vec![<>] },
+    <Or> => { vec![Expression::Or(<>)] }
 }
 
 pub Expression: Expression = {
     <Terminal> => { Expression::Token(<>) },
     <Group> => { Expression::Group(<>) },
-    <Star> => { Expression::Token(<>) }
+    <STAR> => { Expression::Token(<>) }
 }
 
 pub Group: Vec<Expression> = {
-  LParen <Expressions> RParen
+  LPAREN <Expressions> RPAREN
+}
+
+pub Or: Vec<Expression> = {
+    <lhs: Expression> OR <rhs: Expression> => { vec![lhs, rhs] },
+    <lhs: Expression> OR <rhs: Or> => { concat(lhs, &rhs) },
 }
 
 pub Terminal: Token = {
-    <Symbol>,
-    <Literal>,
-    <Slash>,
-    <Dot>
+    <SYMBOL>,
+    <LITERAL>,
+    <SLASH>,
+    <DOT>
 }
 
 extern {
@@ -35,13 +36,13 @@ extern {
     type Error = NotPossible;
 
     enum Token {
-        Slash => Token::Slash,
-        LParen => Token::LParen,
-        RParen => Token::RParen,
-        Dot => Token::Dot,
-        Or => Token::Or,
-        Star => Token::Star(_),
-        Symbol => Token::Symbol(_),
-        Literal => Token::Literal(_),
+        SLASH => Token::Slash,
+        LPAREN => Token::LParen,
+        RPAREN => Token::RParen,
+        DOT => Token::Dot,
+        OR => Token::Or,
+        STAR => Token::Star(_),
+        SYMBOL => Token::Symbol(_),
+        LITERAL => Token::Literal(_),
     }
 }

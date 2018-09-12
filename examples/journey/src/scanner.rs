@@ -1,5 +1,5 @@
+use owned_chars::{OwnedCharIndices, OwnedCharsExt};
 use std;
-use owned_chars::{OwnedCharsExt, OwnedCharIndices};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Token {
@@ -44,7 +44,7 @@ impl Scanner {
 
     fn consume_symbol_or_star(&mut self) -> Option<(usize, String, usize)> {
         if self.peek_char().is_none() {
-            return None
+            return None;
         } else {
             let mut ident = String::new();
             let start = self.peek_char().unwrap().0;
@@ -59,12 +59,14 @@ impl Scanner {
                 let is_boundary = match self.peek_char() {
                     Some((_, c)) => match c {
                         '_' => false,
-                        c   => !c.is_ascii_alphanumeric(),
+                        c => !c.is_ascii_alphanumeric(),
                     },
-                    None => true
+                    None => true,
                 };
 
-                if is_boundary { break; }
+                if is_boundary {
+                    break;
+                }
             }
 
             Some((start, ident, end))
@@ -73,7 +75,7 @@ impl Scanner {
 
     fn consume_literal(&mut self) -> Option<(usize, String, usize)> {
         if self.peek_char().is_none() {
-            return None
+            return None;
         } else {
             let mut ident = String::new();
             let start = self.peek_char().unwrap().0;
@@ -92,13 +94,15 @@ impl Scanner {
 
                 let is_boundary = match self.peek_char() {
                     Some((_, c)) => match c {
-                        '/' => true,
-                        _   => false,
+                        '/' | '(' | ')' | '.' | '|' => true,
+                        _ => false,
                     },
-                    None => true
+                    None => true,
                 };
 
-                if is_boundary { break; }
+                if is_boundary {
+                    break;
+                }
             }
 
             Some((start, ident, end))
@@ -119,35 +123,35 @@ impl Iterator for Scanner {
             '/' => {
                 self.consume_char();
                 Ok((loc, Slash, loc))
-            },
+            }
             '(' => {
                 self.consume_char();
                 Ok((loc, LParen, loc))
-            },
+            }
             ')' => {
                 self.consume_char();
                 Ok((loc, RParen, loc))
-            },
+            }
             '.' => {
                 self.consume_char();
                 Ok((loc, Dot, loc))
-            },
+            }
             '|' => {
                 self.consume_char();
                 Ok((loc, Or, loc))
-            },
+            }
             '*' => {
                 let (start, ident, end) = self.consume_symbol_or_star().unwrap();
                 Ok((start, Star(ident), end))
-            },
+            }
             ':' => {
                 let (start, ident, end) = self.consume_symbol_or_star().unwrap();
                 Ok((start, Symbol(ident), end))
-            },
-            _   => {
+            }
+            _ => {
                 let (start, ident, end) = self.consume_literal().unwrap();
                 Ok((start, Literal(ident), end))
-            },
+            }
         })
     }
 }
