@@ -132,5 +132,5 @@ if RUBY_PLATFORM =~ /mingw/
   task "compile:native" => :native_lib_files
 end
 
-task :rspec => :compile
+# task :rspec => :compile
 task :default => :rspec

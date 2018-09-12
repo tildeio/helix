@@ -28,9 +28,6 @@ libc = "0.2.0"
 [dependencies.libcruby-sys]
 git = "https://github.com/tildeio/libcruby-sys.git"
 branch = "helix"
-# path = "crates/libcruby-sys"
-# path = "/Users/peterwagenet/Development/Ruby/libcruby-sys"
-# version = "0.7.5"
 
 [dependencies.cstr-macro]
 path = "crates/cstr-macro"

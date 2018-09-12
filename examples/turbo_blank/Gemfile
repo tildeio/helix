@@ -2,4 +2,5 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'libcruby_sys', git: 'https://github.com/tildeio/libcruby-sys', branch: 'helix'
 gem 'helix_runtime', path: '../../ruby'

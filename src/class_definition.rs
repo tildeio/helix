@@ -74,7 +74,7 @@ impl ClassDefinition {
 
     pub fn undefine_class_method(&self, name: *const c_char) {
         unsafe {
-            sys::rb_undef_method(sys::rb_obj_class(self.class.0), name);
+            sys::rb_undef_method(sys::CLASS_OF(self.class.0), name);
         }
     }
 }

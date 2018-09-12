@@ -4,10 +4,9 @@ require 'helix_runtime/project'
 require 'helix_runtime/parent_project'
 
 begin
-  # require "helix_runtime/native"
-  require "/Users/peterwagenet/Development/Ruby/libcruby-sys/lib/libcruby_sys"
+  require "libcruby-sys"
 rescue LoadError
-  warn "Unable to load helix_runtime/native. Please run `rake compile` in #{File.expand_path("../..", __FILE__)}."
+  warn "Unable to load libcruby-sys."
 end
 
 module HelixRuntime
@@ -46,13 +45,14 @@ module HelixRuntime
 
   def self.copy_dll
     if IS_WINDOWS
-      so_path = File.expand_path("../helix_runtime/native.#{Platform.dlext}", __FILE__)
-      raise "Unable to find native bundle at #{so_path}" unless File.exists?(so_path)
+      raise "not implemented"
+      # so_path = File.expand_path("../helix_runtime/native.#{Platform.dlext}", __FILE__)
+      # raise "Unable to find native bundle at #{so_path}" unless File.exists?(so_path)
 
-      bindir = RbConfig::CONFIG['bindir']
-      raise "Unable to determine Ruby bindir" unless bindir
+      # bindir = RbConfig::CONFIG['bindir']
+      # raise "Unable to determine Ruby bindir" unless bindir
 
-      FileUtils.cp so_path, File.join(bindir, dll_filename)
+      # FileUtils.cp so_path, File.join(bindir, dll_filename)
     else
       # No-op
     end
