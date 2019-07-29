@@ -1,31 +1,17 @@
 #[macro_export]
 macro_rules! codegen_init {
-    // Extracts the list of rust class names and calls the actual codegen_init with that
-    { [ $({
-        type: class,
-        rust_name: $rust_name:tt,
-        ruby_name: { $($ruby_name:tt) * },
-        meta: { pub: $pub:tt, reopen: $reopen:tt },
-        struct: $struct:tt,
-        methods: [ $($method:tt) * ]
-    })* ] } => (
-        codegen_init!{ [ $($rust_name)* ] }
-    );
-
-    { [ $($rust_name:tt)* ] } => {
+    { [ $($class:tt)* ] } => {
         #[allow(non_snake_case)]
         #[no_mangle]
         pub extern "C" fn Init_native() {
-            use $crate::InitRuby;
             $crate::sys::check_version();
 
             $(
-                $rust_name::init_ruby();
+                codegen_class_binding!($class, $class);
             )*
         }
-    };
+    }
 }
-
 
 #[macro_export]
 macro_rules! codegen_class_binding {

@@ -100,9 +100,6 @@ module HelixRuntime
       if ENV['VERBOSE']
         cargo_args << " --verbose"
       end
-      if ENV['CARGO_EXTRA_ARGS']
-        cargo_args << ENV['CARGO_EXTRA_ARGS']
-      end
       if link_args
         rustc_args << "-C link-args=#{link_args}"
       end
