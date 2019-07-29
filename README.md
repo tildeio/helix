@@ -82,3 +82,10 @@ hello
 hello world
  => nil
 ```
+
+To run all tests in the repository, run
+
+```shell
+rake install
+rake
+```
