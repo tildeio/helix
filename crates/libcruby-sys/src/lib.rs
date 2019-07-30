@@ -6,6 +6,9 @@ extern crate libc;
 use std::ffi::CStr;
 use std::mem::size_of;
 
+#[macro_use]
+mod macros;
+
 pub const PKG_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 pub fn check_version() {
@@ -36,6 +39,17 @@ unsafe impl Sync for ID {}
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct VALUE(*mut void);
 
+impl VALUE {
+    pub fn wrap(ptr: *mut void) -> VALUE {
+        VALUE(ptr)
+    }
+
+     // Is this correct?
+    pub fn as_ptr(&self) -> *mut void {
+        self.0
+    }
+}
+
 #[repr(C)]
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct RubyException(isize);
@@ -51,6 +65,14 @@ impl RubyException {
 
     pub fn for_tag(tag: isize) -> RubyException {
         RubyException(tag)
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0 == 0
+    }
+
+    pub fn state(&self) -> isize {
+        self.0
     }
 }
 
@@ -203,31 +225,25 @@ extern "C" {
     #[link_name = "HELIX_T_DATA"]
     pub static T_DATA: isize;
 
-    // unknown if working?
-    // fn rb_define_variable(name: c_string, value: *const VALUE);
+    // It doesn't appear that these functions will rb_raise. If it turns out they can, we
+    // should make sure to safe wrap them.
     pub fn rb_obj_class(obj: VALUE) -> VALUE;
     pub fn rb_obj_classname(obj: VALUE) -> c_string;
-    pub fn rb_const_get(class: VALUE, name: ID) -> VALUE;
-    pub fn rb_define_global_const(name: c_string, value: VALUE);
-    pub fn rb_define_module(name: c_string) -> VALUE;
-    pub fn rb_define_module_under(namespace: VALUE, name: c_string) -> VALUE;
-    pub fn rb_define_class(name: c_string, superclass: VALUE) -> VALUE;
-    pub fn rb_define_class_under(namespace: VALUE, name: c_string, superclass: VALUE) -> VALUE;
-    pub fn rb_define_alloc_func(class: VALUE, func: extern "C" fn(class: VALUE) -> VALUE);
-    pub fn rb_define_method(class: VALUE, name: c_string, func: c_func, arity: isize);
-    pub fn rb_define_singleton_method(class: VALUE, name: c_string, func: c_func, arity: isize);
+    pub fn rb_intern(string: c_string) -> ID;
+    pub fn rb_intern_str(string: VALUE) -> ID;
+
+    // FIXME: BEGIN: Review these for safe calls
     pub fn rb_undef_method(class: VALUE, name: c_string);
     pub fn rb_enc_get_index(obj: VALUE) -> isize;
     pub fn rb_utf8_encindex() -> isize;
     pub fn rb_sprintf(specifier: c_string, ...) -> VALUE;
-    pub fn rb_inspect(value: VALUE) -> VALUE;
-    pub fn rb_intern(string: c_string) -> ID;
-    pub fn rb_intern_str(string: VALUE) -> ID;
+
     pub fn rb_sym2id(symbol: VALUE) -> ID;
     pub fn rb_id2sym(id: ID) -> VALUE;
     pub fn rb_id2str(id: ID) -> VALUE;
     pub fn rb_ary_new() -> VALUE;
     pub fn rb_ary_new_capa(capa: isize) -> VALUE;
+    pub fn rb_ary_new_from_values(n: isize, elts: *const VALUE) -> VALUE;
     pub fn rb_ary_entry(ary: VALUE, offset: isize) -> VALUE;
     pub fn rb_ary_push(ary: VALUE, item: VALUE) -> VALUE;
     pub fn rb_hash_new() -> VALUE;
@@ -235,35 +251,58 @@ extern "C" {
     pub fn rb_hash_aset(hash: VALUE, key: VALUE, value: VALUE) -> VALUE;
     pub fn rb_hash_foreach(hash: VALUE, f: extern "C" fn(key: VALUE, value: VALUE, farg: *mut void) -> st_retval, farg: *mut void);
     pub fn rb_gc_mark(value: VALUE);
-    pub fn rb_funcall(value: VALUE, mid: ID, argc: libc::c_int, ...) -> VALUE;
-    pub fn rb_funcallv(value: VALUE, mid: ID, argc: libc::c_int, argv: *const VALUE) -> VALUE;
-    pub fn rb_scan_args(argc: libc::c_int, argv: *const VALUE, fmt: c_string, ...);
+    pub fn rb_funcall(value: VALUE, mid: ID, argc: isize, ...) -> VALUE;
+    pub fn rb_funcallv(value: VALUE, mid: ID, argc: isize, argv: *const VALUE) -> VALUE;
+    pub fn rb_scan_args(argc: isize, argv: *const VALUE, fmt: c_string, ...);
     pub fn rb_block_given_p() -> bool;
     pub fn rb_yield(value: VALUE) -> VALUE;
     pub fn rb_obj_dup(value: VALUE) -> VALUE;
     pub fn rb_obj_init_copy(value: VALUE, orig: VALUE) -> VALUE;
-
-    pub fn rb_raise(exc: VALUE, string: c_string, ...) -> !;
-    pub fn rb_jump_tag(state: RubyException) -> !;
-    pub fn rb_protect(try: extern "C" fn(v: *mut void) -> VALUE,
-                      arg: *mut void,
-                      state: *mut RubyException)
-                      -> VALUE;
 
     #[link_name = "HELIX_rb_str_valid_encoding_p"]
     pub fn rb_str_valid_encoding_p(string: VALUE) -> bool;
 
     #[link_name = "HELIX_rb_str_ascii_only_p"]
     pub fn rb_str_ascii_only_p(string: VALUE) -> bool;
+    // FIXME: END: Review these for safe calls
+
+    pub fn rb_raise(exc: VALUE, string: c_string, ...) -> !;
+    pub fn rb_jump_tag(state: RubyException) -> !;
+
+    // In official Ruby docs, all of these *mut voids are actually VALUEs.
+    // However, they are interchangeable in practice and using a *mut void allows us to pass
+    // other things that aren't VALUEs
+    pub fn rb_protect(try: extern "C" fn(v: *mut void) -> *mut void,
+                      arg: *mut void,
+                      state: *mut RubyException)
+                      -> *mut void;
+}
+
+// These may not all be strictly necessary. If we're concerned about performance we can
+// audit and if we're sure that `rb_raise` won't be called we can avoid the safe wrapper
+ruby_safe_c! {
+    rb_const_get(class: VALUE, name: ID) -> VALUE;
+    rb_define_global_const(name: c_string, value: VALUE);
+    rb_define_module(name: c_string) -> VALUE;
+    rb_define_module_under(namespace: VALUE, name: c_string) -> VALUE;
+    rb_define_class(name: c_string, superclass: VALUE) -> VALUE;
+    rb_define_class_under(namespace: VALUE, name: c_string, superclass: VALUE) -> VALUE;
+    rb_define_alloc_func(klass: VALUE, func: extern "C" fn(klass: VALUE) -> VALUE);
+    rb_define_method(class: VALUE, name: c_string, func: c_func, arity: isize);
+    rb_define_singleton_method(class: VALUE, name: c_string, func: c_func, arity: isize);
+    rb_inspect(value: VALUE) -> VALUE;
 
     #[link_name = "HELIX_Data_Wrap_Struct"]
-    pub fn Data_Wrap_Struct(klass: VALUE, mark: extern "C" fn(*mut void), free: extern "C" fn(*mut void), data: *mut void) -> VALUE;
+    Data_Wrap_Struct(klass: VALUE, mark: extern "C" fn(*mut void), free: extern "C" fn(*mut void), data: *mut void) -> VALUE;
 
     #[link_name = "HELIX_Data_Get_Struct_Value"]
-    pub fn Data_Get_Struct_Value(obj: VALUE) -> *mut void;
+    Data_Get_Struct_Value(obj: VALUE) -> *mut void {
+        fn ret_to_ptr(ret: *mut void) -> *mut void { ret }
+        fn ptr_to_ret(ptr: *mut void) -> *mut void { ptr }
+    }
 
     #[link_name = "HELIX_Data_Set_Struct_Value"]
-    pub fn Data_Set_Struct_Value(obj: VALUE, data: *mut void);
+    Data_Set_Struct_Value(obj: VALUE, data: *mut void);
 }
 
 #[inline]

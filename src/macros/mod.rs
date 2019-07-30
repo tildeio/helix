@@ -13,6 +13,9 @@ mod coercions;
 #[macro_use]
 mod alloc;
 
+#[macro_use]
+mod safe;
+
 #[macro_export]
 macro_rules! ruby {
     { $($rest:tt)* } => {

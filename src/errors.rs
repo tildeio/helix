@@ -1,26 +1,32 @@
 use super::{Class, ToRuby};
 use std::{any, fmt};
-use sys::{VALUE, SPRINTF_TO_S, c_string, rb_eRuntimeError, rb_raise};
+use sys::{VALUE, RubyException, SPRINTF_TO_S, c_string, rb_eRuntimeError, rb_raise, rb_jump_tag};
 
 #[derive(Copy, Clone, Debug)]
-pub struct Error {
-    class: Class,
-    message: ErrorMessage
+pub enum Error {
+    Library { class: Class, message: ErrorMessage },
+    Ruby(RubyException)
 }
 
 #[derive(Copy, Clone, Debug)]
-enum ErrorMessage {
+pub enum ErrorMessage {
     Static(c_string),
     Dynamic(VALUE)
 }
 
 impl Error {
+    // Currently unused
     pub fn with_c_string(message: c_string) -> Error {
-        Error { class: unsafe { Class(rb_eRuntimeError) }, message: ErrorMessage::Static(message) }
+        Error::Library { class: unsafe { Class(rb_eRuntimeError) }, message: ErrorMessage::Static(message) }
     }
 
     pub fn with_value(message: VALUE) -> Error {
-        Error { class: unsafe { Class(rb_eRuntimeError) }, message: ErrorMessage::Dynamic(message) }
+        Error::Library { class: unsafe { Class(rb_eRuntimeError) }, message: ErrorMessage::Dynamic(message) }
+    }
+
+    // TODO: Can we use a trait for this?
+    pub fn from_ruby(exception: RubyException) -> Error {
+        Error::Ruby(exception)
     }
 
     pub fn from_any(any: Box<any::Any>) -> Error {
@@ -32,27 +38,39 @@ impl Error {
     }
 
     pub fn with_class(self, class: Class) -> Error {
-        Error { class, message: self.message }
+        match self {
+            Error::Library { message, .. } => Error::Library { class, message },
+            _ => panic!("Only supported for Error::Library")
+        }
     }
 
     pub unsafe fn raise(self) -> ! {
-        match self.message {
-            ErrorMessage::Static(c_string) => rb_raise(self.class.to_value(), c_string),
-            ErrorMessage::Dynamic(value) => rb_raise(self.class.to_value(), SPRINTF_TO_S, value)
+        match self {
+            Error::Library { class, message } => match message {
+                ErrorMessage::Static(c_string) => rb_raise(class.to_value(), c_string),
+                ErrorMessage::Dynamic(value) => rb_raise(class.to_value(), SPRINTF_TO_S, value)
+            },
+            Error::Ruby(exception) => rb_jump_tag(exception)
         }
     }
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.message {
-            ErrorMessage::Static(c_string) => {
-                use ::std::ffi::CStr;
-                write!(f, "{}", unsafe { CStr::from_ptr(c_string) }.to_str().unwrap())
+        match *self {
+            Error::Library { message, .. } => match message {
+                ErrorMessage::Static(c_string) => {
+                    use ::std::ffi::CStr;
+                    write!(f, "{}", unsafe { CStr::from_ptr(c_string) }.to_str().unwrap())
+                },
+                ErrorMessage::Dynamic(value) => {
+                    use super::FromRuby;
+                    write!(f, "{}", String::from_ruby_unwrap(value))
+                }
             },
-            ErrorMessage::Dynamic(value) => {
-                use super::FromRuby;
-                write!(f, "{}", String::from_ruby_unwrap(value))
+            Error::Ruby(_exception) => {
+                // FIXME: Implement properly
+                write!(f, "Ruby Exception")
             }
         }
     }
@@ -80,5 +98,11 @@ impl<'a> ToError for &'a str {
 impl ToError for String {
     fn to_error(self) -> Error {
         Error::with_value(self.to_ruby().unwrap())
+    }
+}
+
+impl ToError for RubyException {
+    fn to_error(self) -> Error {
+        Error::from_ruby(self)
     }
 }

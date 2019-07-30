@@ -12,7 +12,7 @@ mod slice;
 mod vec;
 mod hash;
 
-use sys::{VALUE};
+use sys::VALUE;
 use super::{Error, ToError};
 use std::marker::{PhantomData, Sized};
 

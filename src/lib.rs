@@ -46,10 +46,12 @@ macro_rules! type_error {
     };
 }
 
+#[macro_use]
+mod macros;
+
 mod class_definition;
 mod coercions;
 mod errors;
-mod macros;
 
 pub use coercions::*;
 pub use errors::*;
@@ -95,27 +97,23 @@ pub trait RubyMethod {
 
 impl RubyMethod for extern "C" fn(VALUE) -> VALUE {
     fn install(self, class: VALUE, name: &CStr) {
-        unsafe {
-            sys::rb_define_method(
-                class,
-                name.as_ptr(),
-                self as *const libc::c_void,
-                0
-            );
-        }
+        ruby_try!(sys::safe::rb_define_method(
+            class,
+            name.as_ptr(),
+            self as *const libc::c_void,
+            0
+        ));
     }
 }
 
 impl RubyMethod for extern "C" fn(VALUE, VALUE) -> VALUE {
     fn install(self, class: VALUE, name: &CStr) {
-        unsafe {
-            sys::rb_define_method(
-                class,
-                name.as_ptr(),
-                self as *const libc::c_void,
-                1
-            );
-        }
+        ruby_try!(sys::safe::rb_define_method(
+            class,
+            name.as_ptr(),
+            self as *const libc::c_void,
+            1
+        ));
     }
 }
 
@@ -150,7 +148,7 @@ impl Class {
 }
 
 pub fn inspect(val: VALUE) -> String {
-    unsafe { String::from_ruby_unwrap(sys::rb_inspect(val)) }
+    String::from_ruby_unwrap(ruby_try!(sys::safe::rb_inspect(val)))
 }
 
 pub unsafe fn as_usize(value: ::VALUE) -> usize {

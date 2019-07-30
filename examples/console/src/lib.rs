@@ -2,6 +2,7 @@
 
 #[macro_use]
 extern crate helix;
+use helix::{sys,FromRuby};
 
 ruby! {
     #[derive(Debug)]
@@ -52,6 +53,17 @@ ruby! {
 
         def panic(&self) {
             panic!("raised from Rust with `panic`");
+        }
+
+        def behave_badly(&self) {
+            ruby_funcall!(sys::rb_cObject, "does_not_exist", String::from("one"));
+        }
+
+        def call_ruby(&self) -> String {
+            let a = ruby_funcall!(sys::rb_cObject, "name"); // No arg
+            let b = ruby_funcall!(sys::rb_cObject, "is_a?", sys::rb_cObject); // One arg
+            let c = ruby_funcall!(sys::rb_cObject, "respond_to?", String::from("inspect"), true); // Two args
+            format!("{:?}, {:?}, {:?}", String::from_ruby_unwrap(a), bool::from_ruby_unwrap(b), bool::from_ruby_unwrap(c))
         }
     }
 }
