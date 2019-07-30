@@ -49,7 +49,3 @@ pub type ToRubyResult = Result<VALUE, Error>;
 pub trait ToRuby {
     fn to_ruby(self) -> ToRubyResult;
 }
-
-pub trait InitRuby {
-    fn init_ruby();
-}
