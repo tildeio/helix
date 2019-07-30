@@ -9,17 +9,23 @@ environment:
   RUST_BACKTRACE: 1
   matrix:
     # 32-bit
-    - RUBY_VERSION: 23
+    - RUBY_VERSION: 26
       RUST_HOST: i686-pc-windows-msvc
       RUST_VERSION: stable
+      MINGW64_PATH: C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1\mingw32
+      MSYS_PATH: C:\MinGW\msys\1.0
     # 64-bit
-    - RUBY_VERSION: 23-x64
+    - RUBY_VERSION: 26-x64
       RUST_HOST: x86_64-pc-windows-msvc
       RUST_VERSION: stable
+      MINGW64_PATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64
+      MSYS_PATH: C:\msys64
     # 64-bit
-    - RUBY_VERSION: 23-x64
+    - RUBY_VERSION: 26-x64
       RUST_HOST: x86_64-pc-windows-msvc
       RUST_VERSION: nightly
+      MINGW64_PATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64
+      MSYS_PATH: C:\msys64
 
 matrix:
   allow_failures:
@@ -29,7 +35,7 @@ matrix:
   fast_finish: true
 
 install:
-  - set PATH=C:\Ruby%RUBY_VERSION%\bin;C:\Ruby%RUBY_VERSION%\DevKit\bin;C:\Ruby%RUBY_VERSION%\DevKit\mingw\bin;%HOMEDRIVE%%HOMEPATH%\.cargo\bin;%APPVEYOR_BUILD_FOLDER%\ruby\windows_build;%PATH%
+  - set PATH=C:\Ruby%RUBY_VERSION%\bin;%MINGW64_PATH%\bin;%MSYS_PATH%\bin;%HOMEDRIVE%%HOMEPATH%\.cargo\bin;%APPVEYOR_BUILD_FOLDER%\ruby\windows_build;%PATH%
   - echo %PATH%
   - set HELIX_ROOT=%APPVEYOR_BUILD_FOLDER%
   - IF NOT EXIST %HOMEDRIVE%%HOMEPATH%\.cargo\bin (curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain %RUST_VERSION% --default-host %RUST_HOST% -y)

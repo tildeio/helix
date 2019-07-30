@@ -82,3 +82,9 @@ hello
 hello world
  => nil
 ```
+
+## Local Windows Development
+
+```
+set PATH=c:\Ruby26-x64\msys64\usr\bin;c:\Ruby26-x64\msys64\mingw64\bin;PATH_TO_HELIX\ruby\windows_build;%PATH%
+```
