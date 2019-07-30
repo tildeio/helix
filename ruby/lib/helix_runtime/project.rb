@@ -87,12 +87,18 @@ module HelixRuntime
       env = {}
       env['HELIX_LIB_DIR'] = helix_lib_dir if helix_lib_dir
 
+      nightly = false
       cargo_args = []
       rustc_args = []
 
-      if ENV['DEBUG_RUST_MACROS']
+      if ENV['EXPAND_MACROS']
         rustc_args << "--pretty expanded"
         rustc_args << "-Z unstable-options"
+        nightly = true
+      end
+      if ENV['TRACE_MACROS']
+        rustc_args << "-Z external-macro-backtrace"
+        nightly = true
       end
       unless debug_rust?
         cargo_args << ["--release"]
@@ -108,7 +114,10 @@ module HelixRuntime
         cargo_args << "-- #{rustc_args.join(' ')}"
       end
 
-      run env, "cargo rustc #{cargo_args.join(' ')}"
+      cmd = "cargo rustc #{cargo_args.join(' ')}"
+      cmd = "rustup run nightly #{cmd}" if nightly
+
+      run env, cmd
     end
 
     def cargo_clean
