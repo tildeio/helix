@@ -1,7 +1,33 @@
 [![Travis Build Status](https://travis-ci.org/tildeio/helix.svg?branch=master)](https://travis-ci.org/tildeio/helix)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/tildeio/helix?branch=master&svg=true)](https://ci.appveyor.com/project/wagenet/helix)
 
-# Helix
+# ~~Helix~~
+
+> :warning: **Deprecated** :warning:
+>
+> Sadly, we have made the decision to deprecate this project. While we had
+> hoped to bootstrap the project to a point where it could flourish as a
+> community project, unfortunately we ran into a number of roadblocks along the
+> way, along with the need for significant architectural overhaul. While these
+> issues are solvable on a technical level, doing so correctly requires more
+> resources than we have been able to provide and progress has stalled.
+>
+> One of our goals was also to integrate our own Skylight agent with Helix,
+> aligning the company's priorities with the project. While the Skylight agent
+> is still written in Rust with a thin layer of C bindings (which is the part
+> Helix would replace), we were not able to get the project to the point where
+> we felt comfortable running it on our customer's servers. We did not identify
+> any specific blockers that would prevent us from doing this, but ultimate, we
+> did not have the necessary time and resources to realize this.
+>
+> Since we are a small team, it is unlikely that we will be able to provide the
+> necessary investment in the foreseeable future to achieve our ambitions for
+> the project. At this point, we believe it is in everyone's best interest to
+> formally deprecate the project, accurately reflecting its effective state.
+> Meanwhile, others in the Ruby and Rust communities have continued to explore
+> in the adjacent research areas. Some of them have made great progress and
+> brought new ideas and innovations to the table. We look forward to seeing
+> these new ideas come to fruition and fill the void we are leaving.
 
 Helix allows you to write Ruby classes in Rust without having to write the glue code yourself.
 
